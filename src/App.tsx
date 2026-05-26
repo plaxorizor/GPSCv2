@@ -1,12 +1,16 @@
-import "./App.css";
+import { SignInLayout } from "./pages/public/SignInLayout";
+import { SignUpLayout } from "./pages/public/SignUpLayout";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 function App() {
     return (
-        <>
-            <div>
-                <h1>Hello World! Pwede Ko Maka CA</h1>
-            </div>
-        </>
+        <BrowserRouter>
+            <Routes>
+                <Route path="/signin" element={<SignInLayout />} />
+                <Route path="/signup" element={<SignUpLayout />} />
+                <Route path="*" element={<SignInLayout />} />
+            </Routes>
+        </BrowserRouter>
     );
 }
 
