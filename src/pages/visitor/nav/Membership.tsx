@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { auth } from "../../../firebase/config";
 import type { User } from "firebase/auth";
 import { GlobalStyles } from "../GlobalStyles";
-import { PublicNav } from "../PublicNav";
+import PublicNav from "../PublicNav";
 import { Footer } from "../Footer";
 
 const Membership: React.FC = () => {

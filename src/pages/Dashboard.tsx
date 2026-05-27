@@ -1,6 +1,5 @@
 import { useMember } from "../hooks/useMember.ts";
 import { useCommissions } from "../hooks/useCommissions.ts";
-import LogoutButton from "../components/LogoutButton.tsx";
 
 const PACKAGE_LABELS = {
     basic: "Basic — ₱698",
@@ -20,7 +19,6 @@ export default function Dashboard() {
             {/* Header */}
             <div>
                 <h2 className="text-xl font-bold">Welcome, {member.firstName}!</h2>
-                <LogoutButton />
             </div>
 
             {/* Status cards */}

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { auth } from "../../firebase/config"; // ✅ 3 levels up to src/firebase/config
 import type { User } from "firebase/auth"; // import type for the user parameter
 import { GlobalStyles } from "./GlobalStyles";
-import { PublicNav } from "./PublicNav";
+import PublicNav from "./PublicNav";
 import { Footer } from "./Footer";
 import { Hero } from "./Hero";
 import { Pillars } from "./Pillars";
@@ -11,12 +11,11 @@ import { Packages } from "./Packages";
 import { Testimonial } from "./Testimonial";
 import { TrustStrip } from "./TrustStrip";
 
-const Home: React.FC = () => {
+export default function Home(): React.ReactElement {
     const [loggedUser, setLoggedUser] = useState<string | null>(null);
 
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((user: User | null) => {
-            // ✅ explicit type
             setLoggedUser(user?.email ?? null);
         });
         return unsubscribe;
@@ -39,6 +38,4 @@ const Home: React.FC = () => {
             <Footer />
         </div>
     );
-};
-
-export default Home;
+}

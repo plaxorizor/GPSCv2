@@ -1,7 +1,7 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "./context/AuthContext";
+import AuthProvider from "./context/AuthProvider";
 
 import Home from "./pages/visitor/Home.tsx";
 import SignIn from "./pages/public/SignIn";

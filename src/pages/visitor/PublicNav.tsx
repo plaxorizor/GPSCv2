@@ -7,7 +7,7 @@ interface PublicNavProps {
     loggedUser: string | null;
 }
 
-export const PublicNav: React.FC<PublicNavProps> = ({ loggedUser }) => {
+export default function PublicNav({ loggedUser }: PublicNavProps): React.ReactElement {
     const [mobileOpen, setMobileOpen] = useState(false);
     const items = [
         { id: "home", label: "Home" },
@@ -106,4 +106,4 @@ export const PublicNav: React.FC<PublicNavProps> = ({ loggedUser }) => {
             </div>
         </header>
     );
-};
+}
