@@ -24,11 +24,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return unsubscribe; // cleanup on unmount
     }, []);
 
-    return (
-        <AuthContext.Provider value={{ currentUser, loading }}>
-            {!loading && children}
-        </AuthContext.Provider>
-    );
+    return <AuthContext.Provider value={{ currentUser, loading }}>{!loading && children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => useContext(AuthContext);

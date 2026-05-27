@@ -10,6 +10,11 @@ export default function SignIn() {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
 
+    const user = null; // Placeholder for auth state
+    if (user) {
+        navigate("/"); // Redirect if already logged in
+    }
+
     const handleSubmit = async (e: React.SubmitEvent) => {
         e.preventDefault();
         setError("");
@@ -43,38 +48,39 @@ export default function SignIn() {
                     />
                 </div>
 
-                <div className="bg-white rounded-3xl p-8 border space-y-4">
+                {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+                <form onSubmit={handleSubmit} className="bg-white rounded-3xl p-8 border space-y-4">
                     <div>
-                        <label className="text-xs uppercase tracking-wider">
-                            Email
-                        </label>
+                        <label className="text-xs uppercase tracking-wider">Email</label>
                         <input
                             type="email"
                             placeholder="your@email.com"
                             className="w-full mt-1 px-4 py-3 rounded-xl border focus:outline-none focus:ring-2"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                         />
                     </div>
                     <div>
-                        <label className="text-xs uppercase tracking-wider">
-                            Password
-                        </label>
+                        <label className="text-xs uppercase tracking-wider">Password</label>
                         <input
                             type="password"
                             placeholder=""
                             className="w-full mt-1 px-4 py-3 rounded-xl border focus:outline-none focus:ring-2"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
                         />
-                        <button
-                            type="button"
-                            className="text-xs mt-2 hover:underline"
-                        >
+                        <button type="button" className="text-xs mt-2 hover:underline">
                             Forgot password?
                         </button>
-
-                        <Button variant="outline" className="w-full mt-4">
-                            Login
-                        </Button>
                     </div>
-                    <Button className="w-full">Sign in</Button>
+
+                    <button
+                        type="submit"
+                        className="bg-green-50 text-green-700 font-medium rounded-xl w-full py-3 hover:bg-green-100 transition-colors"
+                    >
+                        Sign In
+                    </button>
+
                     <div className="text-center text-xs pt-2">
                         New here?{" "}
                         <Link to="/signup" className="hover:underline">
@@ -85,52 +91,9 @@ export default function SignIn() {
 
                 {/* Optional demo hint – purely visual */}
                 <div className="mt-6 p-4 rounded-xl text-xs text-center">
-                    <span className="font-medium">Demo credentials:</span> any
-                    email / any password
+                    <span className="font-medium">Demo credentials:</span> any email / any password
                 </div>
             </div>
-
-            {/* Custom global styles to enhance existing elements without changing any variables */}
-            <style>{`
-                /* Enhance existing input styles without changing class names */
-                .peer:focus {
-                    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
-                    border-radius: 0.375rem;
-                }
-                
-                /* Smooth transitions for buttons */
-                button {
-                    transition: all 0.2s ease;
-                }
-                
-                button:active {
-                    transform: scale(0.98);
-                }
-                
-                /* Card inner elements spacing improvement */
-                .bg-white\\/80 .space-y-5 > :not([hidden]) ~ :not([hidden]) {
-                    margin-top: 1.25rem;
-                }
-                
-                /* Make demo credentials box more readable */
-                .mt-8 p-4 {
-                    backdrop-filter: blur(8px);
-                }
-                
-                /* Improve button hover effects (globally, not changing variables) */
-                .rounded-xl.border {
-                    transition: all 0.2s;
-                }
-                
-                .rounded-xl.border:hover {
-                    border-color: #c7d2fe;
-                }
-                
-                /* Subtle animation for logo hover */
-                .transform.transition-all.duration-500:hover {
-                    filter: drop-shadow(0 10px 8px rgb(0 0 0 / 0.04));
-                }
-            `}</style>
         </div>
     );
 }
