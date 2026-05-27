@@ -13,6 +13,7 @@ import Referral from "./pages/visitor/nav/Referral";
 import FAQ from "./pages/visitor/nav/FAQ";
 import Contact from "./pages/visitor/nav/Contact";
 
+import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminRoute from "./components/AdminRoute";
 import AdminMembers from "./pages/admin/AdminMembers";
 import AdminClaims from "./pages/admin/AdminClaims";
@@ -40,6 +41,14 @@ createRoot(document.getElementById("root")!).render(
                     <Route path="/faq" element={<FAQ />} />
                     <Route path="/contact" element={<Contact />} />
 
+                    <Route
+                        path="/admin"
+                        element={
+                            <AdminRoute>
+                                <AdminDashboard />
+                            </AdminRoute>
+                        }
+                    />
                     <Route
                         path="/admin/members"
                         element={
