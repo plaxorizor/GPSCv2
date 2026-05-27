@@ -18,31 +18,26 @@ export default function Home() {
             <div className="text-center">{loggedUser && <p className="mt-4 text-lg text-gray-600">{loggedUser}</p>}</div>
 
             <div className="max-w-2xl mx-auto mt-10 p-6 bg-white rounded-xl border">
-                <div className="flex space-x-4 mb-6">
-                    {loggedUser ? (
+                {loggedUser ? (
+                    <button
+                        className="bg-red-50 text-red-700 font-medium rounded-xl px-6 py-3 hover:bg-red-100 transition-colors"
+                        onClick={() => auth.signOut()}
+                    >
+                        Log OuZ
+                    </button>
+                ) : (
+                    <div className="flex space-x-4">
                         <a
-                            href="/dashboard"
+                            href="/signup"
                             className="bg-green-50 text-green-700 font-medium rounded-xl px-6 py-3 hover:bg-green-100 transition-colors"
                         >
-                            Go to Dashboard
+                            Sign Up
                         </a>
-                    ) : (
-                        <>
-                            <a
-                                href="/signup"
-                                className="bg-green-50 text-green-700 font-medium rounded-xl px-6 py-3 hover:bg-green-100 transition-colors"
-                            >
-                                Sign Up
-                            </a>
-                            <a
-                                href="/signin"
-                                className="bg-blue-50 text-blue-700 font-medium rounded-xl px-6 py-3 hover:bg-blue-100 transition-colors"
-                            >
-                                Sign In
-                            </a>
-                        </>
-                    )}
-                </div>
+                        <a href="/signin" className="bg-blue-50 text-blue-700 font-medium rounded-xl px-6 py-3 hover:bg-blue-100 transition-colors">
+                            Sign In
+                        </a>
+                    </div>
+                )}
             </div>
         </div>
     );

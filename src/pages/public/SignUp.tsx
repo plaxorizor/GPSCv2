@@ -6,8 +6,17 @@ import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { Link, useNavigate } from "react-router-dom";
 import { Logo } from "../../components/ui/Logo";
 
+import { auth } from "../../firebase/config";
+
 export default function SignUpLayout() {
     const navigate = useNavigate();
+
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+            navigate("/"); // Redirect to home if already logged in
+        }
+    });
+
     const [form, setForm] = useState({
         firstName: "",
         lastName: "",
