@@ -1,10 +1,17 @@
-import { StrictMode } from "react";
+import React from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
 
-import Home from "./pages/public/Home.tsx";
-import SignIn from "./pages/public/SignIn.tsx";
+import Home from "./pages/visitor/Home.tsx";
+import SignIn from "./pages/public/SignIn";
 import SignUp from "./pages/public/SignUp.tsx";
+import Dashboard from "./pages/Dashboard.tsx";
+import About from "./pages/visitor/nav/About";
+import Membership from "./pages/visitor/nav/Membership";
+import Referral from "./pages/visitor/nav/Referral";
+import FAQ from "./pages/visitor/nav/FAQ";
+import Contact from "./pages/visitor/nav/Contact";
 
 import { firebaseConfig } from "./firebase/config.ts";
 import { initializeApp } from "firebase/app";
@@ -14,13 +21,21 @@ import "./index.css";
 initializeApp(firebaseConfig);
 
 createRoot(document.getElementById("root")!).render(
-    <StrictMode>
-        <BrowserRouter>
-            <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/signin" element={<SignIn />} />
-                <Route path="/signup" element={<SignUp />} />
-            </Routes>
-        </BrowserRouter>
-    </StrictMode>,
+    <React.StrictMode>
+        <AuthProvider>
+            <BrowserRouter>
+                <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/signin" element={<SignIn />} />
+                    <Route path="/signup" element={<SignUp />} />
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/membership" element={<Membership />} />
+                    <Route path="/referral" element={<Referral />} />
+                    <Route path="/faq" element={<FAQ />} />
+                    <Route path="/contact" element={<Contact />} />
+                </Routes>
+            </BrowserRouter>
+        </AuthProvider>
+    </React.StrictMode>,
 );

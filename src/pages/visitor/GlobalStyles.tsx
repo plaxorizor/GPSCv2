@@ -1,0 +1,39 @@
+import React from "react";
+
+export const GlobalStyles: React.FC = () => (
+  <style>{`
+    @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,800&family=DM+Sans:wght@400;500;600;700&display=swap');
+    .font-display { font-family: 'Fraunces', Georgia, serif; font-optical-sizing: auto; }
+    .font-body { font-family: 'DM Sans', system-ui, sans-serif; }
+    body, html, #root { font-family: 'DM Sans', system-ui, sans-serif; }
+    .gpsc-cream { background-color: #FAF6EE; }
+    .gpsc-cream-dark { background-color: #F0E9D9; }
+    .text-gpsc-navy { color: #14365C; }
+    .text-gpsc-navy-light { color: #2D5A85; }
+    .text-gpsc-green { color: #4A8A2C; }
+    .text-gpsc-green-light { color: #5DAB3A; }
+    .text-gpsc-stone { color: #6B6862; }
+    .text-gpsc-ink { color: #1A1E22; }
+    .bg-gpsc-navy { background-color: #14365C; }
+    .bg-gpsc-navy-light { background-color: #2D5A85; }
+    .bg-gpsc-green { background-color: #4A8A2C; }
+    .bg-gpsc-green-light { background-color: #5DAB3A; }
+    .border-gpsc-navy { border-color: #14365C; }
+    .border-gpsc-green { border-color: #4A8A2C; }
+    .border-gpsc-cream-dark { border-color: #E5DDC8; }
+    .ring-gpsc-green { --tw-ring-color: #4A8A2C; }
+    .hover\\:bg-gpsc-navy:hover { background-color: #14365C; }
+    .hover\\:bg-gpsc-green:hover { background-color: #4A8A2C; }
+    .hover\\:bg-gpsc-cream-dark:hover { background-color: #F0E9D9; }
+    .grain-overlay {
+      background-image: radial-gradient(circle at 1px 1px, rgba(20,54,92,0.04) 1px, transparent 0);
+      background-size: 24px 24px;
+    }
+    @keyframes fade-up { from { opacity:0; transform: translateY(12px); } to { opacity:1; transform: translateY(0); } }
+    .anim-fade-up { animation: fade-up 0.6s ease-out forwards; }
+    .anim-delay-100 { animation-delay: 0.1s; opacity: 0; }
+    .anim-delay-200 { animation-delay: 0.2s; opacity: 0; }
+    .anim-delay-300 { animation-delay: 0.3s; opacity: 0; }
+    .anim-delay-400 { animation-delay: 0.4s; opacity: 0; }
+  `}</style>
+);
