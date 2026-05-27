@@ -13,6 +13,11 @@ import Referral from "./pages/visitor/nav/Referral";
 import FAQ from "./pages/visitor/nav/FAQ";
 import Contact from "./pages/visitor/nav/Contact";
 
+import AdminRoute from "./components/AdminRoute";
+import AdminMembers from "./pages/admin/AdminMembers";
+import AdminClaims from "./pages/admin/AdminClaims";
+import AdminCommissions from "./pages/admin/AdminCommissions";
+
 import { firebaseConfig } from "./firebase/config.ts";
 import { initializeApp } from "firebase/app";
 
@@ -34,6 +39,31 @@ createRoot(document.getElementById("root")!).render(
                     <Route path="/referral" element={<Referral />} />
                     <Route path="/faq" element={<FAQ />} />
                     <Route path="/contact" element={<Contact />} />
+
+                    <Route
+                        path="/admin/members"
+                        element={
+                            <AdminRoute>
+                                <AdminMembers />
+                            </AdminRoute>
+                        }
+                    />
+                    <Route
+                        path="/admin/claims"
+                        element={
+                            <AdminRoute>
+                                <AdminClaims />
+                            </AdminRoute>
+                        }
+                    />
+                    <Route
+                        path="/admin/commissions"
+                        element={
+                            <AdminRoute>
+                                <AdminCommissions />
+                            </AdminRoute>
+                        }
+                    />
                 </Routes>
             </BrowserRouter>
         </AuthProvider>
