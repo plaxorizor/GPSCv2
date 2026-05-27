@@ -13,9 +13,37 @@ export default function Home() {
     });
 
     return (
-        <div className="min-h-screen flex items-center justify-center">
-            <h1 className="text-5xl font-bold text-gpsc-navy">Welcome to GPSC!</h1>
-            {loggedUser && <p className="mt-4 text-lg text-gray-600">{loggedUser}</p>}
+        <div className="min-h-screen bg-gray-50">
+            <h1 className="text-4xl font-bold text-center pt-20">Welcome to GPSC</h1>
+            <div className="text-center">{loggedUser && <p className="mt-4 text-lg text-gray-600">{loggedUser}</p>}</div>
+
+            <div className="max-w-2xl mx-auto mt-10 p-6 bg-white rounded-xl border">
+                <div className="flex space-x-4 mb-6">
+                    {loggedUser ? (
+                        <a
+                            href="/dashboard"
+                            className="bg-green-50 text-green-700 font-medium rounded-xl px-6 py-3 hover:bg-green-100 transition-colors"
+                        >
+                            Go to Dashboard
+                        </a>
+                    ) : (
+                        <>
+                            <a
+                                href="/signup"
+                                className="bg-green-50 text-green-700 font-medium rounded-xl px-6 py-3 hover:bg-green-100 transition-colors"
+                            >
+                                Sign Up
+                            </a>
+                            <a
+                                href="/signin"
+                                className="bg-blue-50 text-blue-700 font-medium rounded-xl px-6 py-3 hover:bg-blue-100 transition-colors"
+                            >
+                                Sign In
+                            </a>
+                        </>
+                    )}
+                </div>
+            </div>
         </div>
     );
 }

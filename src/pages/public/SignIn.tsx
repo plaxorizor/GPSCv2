@@ -10,11 +10,6 @@ export default function SignIn() {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
 
-    const user = null; // Placeholder for auth state
-    if (user) {
-        navigate("/"); // Redirect if already logged in
-    }
-
     const handleSubmit = async (e: React.SubmitEvent) => {
         e.preventDefault();
         setError("");
@@ -49,6 +44,7 @@ export default function SignIn() {
                 </div>
 
                 {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+
                 <form onSubmit={handleSubmit} className="bg-white rounded-3xl p-8 border space-y-4">
                     <div>
                         <label className="text-xs uppercase tracking-wider">Email</label>
