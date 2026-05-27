@@ -2,8 +2,8 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-import { SignInLayout } from "./pages/public/SignInLayout";
-import { SignUpLayout } from "./pages/public/SignUpLayout";
+import SignIn from "./pages/public/SignIn.tsx";
+import SignUp from "./pages/public/SignUp.tsx";
 
 import "./index.css";
 import App from "./App.tsx";
@@ -13,8 +13,8 @@ createRoot(document.getElementById("root")!).render(
         <BrowserRouter>
             <Routes>
                 <Route path="/" element={<App />} />
-                <Route path="/signin" element={<SignInLayout />} />
-                <Route path="/signup" element={<SignUpLayout />} />
+                <Route path="/signin" element={<SignIn />} />
+                <Route path="/signup" element={<SignUp />} />
             </Routes>
         </BrowserRouter>
     </StrictMode>,

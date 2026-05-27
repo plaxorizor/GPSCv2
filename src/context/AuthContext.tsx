@@ -3,7 +3,7 @@ import { User } from "firebase/auth";
 import { onAuthChange } from "../firebase/auth";
 
 interface AuthContextType {
-    currentUser: User | null;
+    currentUser: null;
     loading: boolean;
 }
 

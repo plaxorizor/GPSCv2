@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "../../components/ui/Button";
 import { Logo } from "../../components/ui/Logo";
 
-export function SignInLayout() {
+export default function SignInLayout() {
     return (
         <div className="min-h-screen flex items-center justify-center">
             <div className="max-w-md w-full mx-auto px-6 py-16">
