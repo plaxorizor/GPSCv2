@@ -8,9 +8,7 @@ export function SignInLayout() {
             <div className="max-w-md w-full mx-auto px-6 py-16">
                 <div className="text-center mb-10">
                     <Logo size={56} />
-                    <h1 className="font-display text-3xl text-gpsc-navy mt-4">
-                        Welcome back
-                    </h1>
+
                     <p className="text-sm text-gpsc-stone mt-2">
                         Sign in to your member dashboard
                     </p>
