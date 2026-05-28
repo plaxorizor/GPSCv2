@@ -17,7 +17,7 @@ export default function SignIn() {
         try {
             await loginUser(email, password);
             // Redirect to dashboard or home page after successful login
-            navigate("/dashboard");
+            navigate("/");
         } catch (err) {
             setError(err instanceof Error ? err.message : "An unknown error occurred");
         }

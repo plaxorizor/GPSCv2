@@ -21,8 +21,6 @@ export default function Home(): React.ReactElement {
     };
 
     if (loading) return <p>Loading...</p>; // Show loading state while checking admin status
-
-    if (isAdmin) return <Navigate to="/admin" />; // Show redirecting state if user is admin
     if (!User)
         // visitor → show landing page
         return (
@@ -39,5 +37,6 @@ export default function Home(): React.ReactElement {
             </div>
         );
 
+    if (isAdmin) return <Navigate to="/admin" />; // Show redirecting state if user is admin
     return <Navigate to="/dashboard" />; // Redirect logged-in users to dashboard
 }

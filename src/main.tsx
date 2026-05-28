@@ -13,8 +13,10 @@ import Referral from "./pages/visitor/nav/Referral";
 import FAQ from "./pages/visitor/nav/FAQ";
 import Contact from "./pages/visitor/nav/Contact";
 
-import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminRoute from "./components/AdminRoute";
+import GuestRoute from "./components/GuestRoute";
+import ProtectedRoute from "./components/ProtectedRoute";
+import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminMembers from "./pages/admin/AdminMembers";
 import AdminClaims from "./pages/admin/AdminClaims";
 import AdminCommissions from "./pages/admin/AdminCommissions";
@@ -32,14 +34,38 @@ createRoot(document.getElementById("root")!).render(
             <BrowserRouter>
                 <Routes>
                     <Route path="/" element={<Home />} />
-                    <Route path="/signin" element={<SignIn />} />
-                    <Route path="/signup" element={<SignUp />} />
-                    <Route path="/dashboard" element={<Dashboard />} />
+
+                    <Route
+                        path="/signin"
+                        element={
+                            <GuestRoute>
+                                <SignIn />
+                            </GuestRoute>
+                        }
+                    />
+                    <Route
+                        path="/signup"
+                        element={
+                            <GuestRoute>
+                                <SignUp />
+                            </GuestRoute>
+                        }
+                    />
+
                     <Route path="/about" element={<About />} />
                     <Route path="/membership" element={<Membership />} />
                     <Route path="/referral" element={<Referral />} />
                     <Route path="/faq" element={<FAQ />} />
                     <Route path="/contact" element={<Contact />} />
+
+                    <Route
+                        path="/dashboard"
+                        element={
+                            <ProtectedRoute>
+                                <Dashboard />
+                            </ProtectedRoute>
+                        }
+                    />
 
                     <Route
                         path="/admin"
