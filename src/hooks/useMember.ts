@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase/config";
 import { useAuth } from "../context/AuthContext";
+//import { getAuth } from "firebase/auth";
 
 interface Member {
     uid: string;
@@ -15,19 +16,20 @@ interface Member {
 }
 
 export default function useMember() {
-    const { User } = useAuth();
+    const currentUser = useAuth().User;
+
     const [member, setMember] = useState<Member | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (!User) return;
+        if (!currentUser) return;
         const fetch = async () => {
-            const snap = await getDoc(doc(db, "members", User.uid));
+            const snap = await getDoc(doc(db, "members", currentUser.uid));
             if (snap.exists()) setMember(snap.data() as Member);
             setLoading(false);
         };
         fetch();
-    }, [User]);
+    }, [currentUser]);
 
     return { member, loading };
 }
