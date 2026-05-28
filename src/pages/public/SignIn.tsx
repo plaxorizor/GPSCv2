@@ -1,27 +1,33 @@
 import { Link } from "react-router-dom";
 import { Logo } from "../../components/ui/Logo";
-import { loginUser } from "../../firebase/auth";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 
 export default function SignIn() {
     const navigate = useNavigate();
+    const auth = getAuth();
+
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
 
-    const handleSubmit = async (e: React.SubmitEvent) => {
+    async function handleLogin(e: React.SubmitEvent) {
         e.preventDefault();
-        setError("");
-
-        try {
-            await loginUser(email, password);
-            // Redirect to dashboard or home page after successful login
-            navigate("/");
-        } catch (err) {
-            setError(err instanceof Error ? err.message : "An unknown error occurred");
-        }
-    };
+        signInWithEmailAndPassword(auth, email, password)
+            .then((userCredential) => {
+                // Signed in
+                console.log(userCredential);
+                navigate("/dashboard");
+                // ...
+            })
+            .catch((error) => {
+                console.log(error);
+                const errorMessage = error.message;
+                setError(errorMessage);
+                // ...
+            });
+    }
 
     return (
         <div className="min-h-screen flex items-center justify-center relative bg-linear-to-br from-slate-50 to-indigo-50/30">
@@ -45,7 +51,7 @@ export default function SignIn() {
 
                 {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
 
-                <form onSubmit={handleSubmit} className="bg-white rounded-3xl p-8 border space-y-4">
+                <form onSubmit={handleLogin} className="bg-white rounded-3xl p-8 border space-y-4">
                     <div>
                         <label className="text-xs uppercase tracking-wider">Email</label>
                         <input

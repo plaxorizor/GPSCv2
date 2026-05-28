@@ -1,5 +1,7 @@
-import { useMember } from "../hooks/useMember.ts";
+import { useAdmin } from "../hooks/useAdmin.ts";
+import useMember from "../hooks/useMember.ts";
 import { useCommissions } from "../hooks/useCommissions.ts";
+import { Navigate } from "react-router-dom";
 
 const PACKAGE_LABELS = {
     basic: "Basic — ₱698",
@@ -8,23 +10,25 @@ const PACKAGE_LABELS = {
 };
 
 export default function Dashboard() {
+    const { isAdmin } = useAdmin();
     const { member, loading: memberLoading } = useMember();
     const { commissions, totalEarned, loading: commLoading } = useCommissions();
 
     if (memberLoading) return <p>Loading...</p>;
-    if (!member) return <p>Member not found.</p>;
+
+    if (isAdmin) return <Navigate to="/admin" />;
 
     return (
         <div>
             {/* Header */}
             <div>
-                <h2 className="text-xl font-bold">Welcome, {member.firstName}!</h2>
+                <h2 className="text-xl font-bold">Welcome, {member?.firstName}!</h2>
             </div>
 
             {/* Status cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <StatCard label="Membership" value={member.package ? PACKAGE_LABELS[member.package] : "No package yet"} />
-                <StatCard label="Status" value={member.status} />
+                <StatCard label="Membership" value={member?.package ? PACKAGE_LABELS[member.package] : "No package yet"} />
+                <StatCard label="Status" value={member?.status} />
                 <StatCard label="Total Earnings" value={`₱${totalEarned.toLocaleString()}`} />
             </div>
 

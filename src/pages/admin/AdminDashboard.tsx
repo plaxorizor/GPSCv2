@@ -3,7 +3,7 @@ import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../../firebase/config";
 import { useNavigate } from "react-router-dom";
 import { logoutUser } from "../../firebase/auth";
-import { useMember } from "../../hooks/useMember";
+import useMember from "../../hooks/useMember";
 
 const AdminDashboard = () => {
     const navigate = useNavigate();

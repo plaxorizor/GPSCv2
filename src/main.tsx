@@ -13,6 +13,8 @@ import Referral from "./pages/visitor/nav/Referral";
 import FAQ from "./pages/visitor/nav/FAQ";
 import Contact from "./pages/visitor/nav/Contact";
 
+import ReferralTree from "./pages/ReferralTree";
+
 import AdminRoute from "./components/AdminRoute";
 import GuestRoute from "./components/GuestRoute";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -51,12 +53,18 @@ createRoot(document.getElementById("root")!).render(
                             </GuestRoute>
                         }
                     />
-
-                    <Route path="/about" element={<About />} />
-                    <Route path="/membership" element={<Membership />} />
-                    <Route path="/referral" element={<Referral />} />
+                    <Route
+                        path="/referral"
+                        element={
+                            <ProtectedRoute>
+                                <ReferralTree />
+                            </ProtectedRoute>
+                        }
+                    />
                     <Route path="/faq" element={<FAQ />} />
                     <Route path="/contact" element={<Contact />} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/membership" element={<Membership />} />
 
                     <Route
                         path="/dashboard"

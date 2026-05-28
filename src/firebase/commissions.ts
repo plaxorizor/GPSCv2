@@ -3,6 +3,13 @@ import { db } from "./config";
 
 type Package = "basic" | "family" | "premium";
 
+// Add this map
+const MAX_LEVELS: Record<Package, number> = {
+    basic: 1,
+    family: 3,
+    premium: 6,
+};
+
 // Commission amounts per level per package
 const COMMISSION_TABLE: Record<Package, Record<number, number>> = {
     basic: { 1: 100, 2: 50, 3: 30, 4: 20, 5: 15, 6: 10 },
@@ -15,24 +22,32 @@ export const triggerCommissions = async (newMemberId: string, pkg: Package) => {
     let currentUid = newMemberId;
 
     for (let level = 1; level <= 6; level++) {
-        // Get current member's doc to find who referred them
         const memberSnap = await getDoc(doc(db, "members", currentUid));
         if (!memberSnap.exists()) break;
 
         const referredBy = memberSnap.data().referredBy as string | null;
-        if (!referredBy) break; // no more upline, stop
+        if (!referredBy) break;
 
-        // Write commission record for the upline member
-        await addDoc(collection(db, "commissions"), {
-            earnedBy: referredBy,
-            fromMember: newMemberId,
-            level,
-            amount: commissions[level],
-            status: "pending",
-            createdAt: serverTimestamp(),
-        });
+        // Fetch the upline member's package
+        const uplineSnap = await getDoc(doc(db, "members", referredBy));
+        if (!uplineSnap.exists()) break;
 
-        // Move one level up
+        const uplinePackage = uplineSnap.data().package as Package | null;
+        if (!uplinePackage) break; // upline has no package, skip
+
+        // Check if upline's package unlocks this level
+        const maxLevel = MAX_LEVELS[uplinePackage];
+        if (level <= maxLevel) {
+            await addDoc(collection(db, "commissions"), {
+                earnedBy: referredBy,
+                fromMember: newMemberId,
+                level,
+                amount: commissions[level],
+                status: "pending",
+                createdAt: serverTimestamp(),
+            });
+        }
+
         currentUid = referredBy;
     }
 };

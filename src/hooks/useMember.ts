@@ -14,20 +14,20 @@ interface Member {
     dateCreated: Date;
 }
 
-export const useMember = () => {
-    const { currentUser } = useAuth();
+export default function useMember() {
+    const { User } = useAuth();
     const [member, setMember] = useState<Member | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (!currentUser) return;
+        if (!User) return;
         const fetch = async () => {
-            const snap = await getDoc(doc(db, "members", currentUser.uid));
+            const snap = await getDoc(doc(db, "members", User.uid));
             if (snap.exists()) setMember(snap.data() as Member);
             setLoading(false);
         };
         fetch();
-    }, [currentUser]);
+    }, [User]);
 
     return { member, loading };
-};
+}

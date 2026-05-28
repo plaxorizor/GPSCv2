@@ -15,7 +15,7 @@ import { Navigate } from "react-router";
 export default function Home(): React.ReactElement {
     const { User } = useAuth(); // Get the current user from Firebase Auth
     const { isAdmin, loading } = useAdmin(); // Get admin status and loading state
-
+    
     const handleCta = (action: string) => {
         alert(`${action} (demo mode)`);
     };
