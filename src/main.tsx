@@ -1,3 +1,4 @@
+// main.tsx
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -16,13 +17,10 @@ import Contact from "./pages/visitor/nav/Contact";
 
 import ReferralTree from "./pages/ReferralTree";
 
-import AdminRoute from "./components/AdminRoute";
 //import GuestRoute from "./components/GuestRoute";
 import ProtectedRoute from "./components/ProtectedRoute";
-import AdminDashboard from "./pages/admin/AdminDashboard";
-//import AdminMembers from "./pages/admin/AdminMembers";
-//import AdminClaims from "./pages/admin/AdminClaims";
-//import AdminCommissions from "./pages/admin/AdminCommissions";
+// Import AdminArea directly - it now handles its own data fetching
+import AdminArea from "./pages/admin/AdminArea";
 
 import { firebaseConfig } from "./firebase/config.ts";
 import { initializeApp } from "firebase/app";
@@ -63,10 +61,10 @@ createRoot(document.getElementById("root")!).render(
                     />
 
                     <Route
-                        path="/dashboard/admin"
+                        path="/dashboard/admin/*"
                         element={
                             <ProtectedRoute>
-                                <Dashboard />
+                                <AdminArea />
                             </ProtectedRoute>
                         }
                     />
