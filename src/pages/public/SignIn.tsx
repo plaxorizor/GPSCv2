@@ -18,7 +18,7 @@ export default function SignIn() {
             .then((userCredential) => {
                 // Signed in
                 console.log(userCredential);
-                navigate("/dashboard");
+                navigate("/");
                 // ...
             })
             .catch((error) => {
@@ -80,7 +80,7 @@ export default function SignIn() {
                         type="submit"
                         className="bg-green-50 text-green-700 font-medium rounded-xl w-full py-3 hover:bg-green-100 transition-colors"
                     >
-                        Sign In
+                        Log In
                     </button>
 
                     <div className="text-center text-xs pt-2">

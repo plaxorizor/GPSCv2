@@ -3,17 +3,20 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase/config";
 import useAuth from "../context/useAuth";
 
-interface Member {
+export interface Member {
     uid: string;
     firstName: string;
     lastName: string;
     email: string;
-    phone: string | null;
-    city: string | null;
-    province: string | null;
-    package: "basic" | "family" | "premium" | null;
+    mobile: string;
+    birthDate: Date;
+    civilStatus: "single" | "married" | "divorced" | "widowed";
+    city: string;
+    province: string;
+    package: "basic" | "family" | "premium";
     status: "pending" | "active" | "inactive";
-    referredBy: string | null;
+    referredBy: string;
+    rank: number;
     dateCreated: Date;
 }
 
@@ -25,6 +28,7 @@ const useMember = () => {
     useEffect(() => {
         if (!currentUser) return;
         const fetch = async () => {
+            await Promise.resolve();
             const snap = await getDoc(doc(db, "members", currentUser.uid));
             if (snap.exists()) setMember(snap.data() as Member);
             setLoading(false);

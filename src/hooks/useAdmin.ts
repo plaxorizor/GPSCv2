@@ -11,14 +11,13 @@ export const useAdmin = () => {
     useEffect(() => {
         let cancelled = false;
 
+        if (!currentUser) return;
+
         const check = async () => {
-            if (!currentUser) {
-                await Promise.resolve();
-                if (!cancelled) {
-                    setIsAdmin(false);
-                    setLoading(false);
-                }
-                return;
+            await Promise.resolve();
+            if (!cancelled) {
+                setIsAdmin(false);
+                setLoading(false);
             }
 
             const snap = await getDoc(doc(db, "members", currentUser.uid));

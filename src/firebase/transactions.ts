@@ -17,7 +17,7 @@ export const createTransaction = async (memberId: string, pkg: Package) => {
         package: pkg,
         amount: PACKAGE_AMOUNTS[pkg],
         status: "pending",
-        createdAt: serverTimestamp(),
+        dateCreated: serverTimestamp(),
     });
     return txRef.id;
 };

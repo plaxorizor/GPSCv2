@@ -44,7 +44,7 @@ export const triggerCommissions = async (newMemberId: string, pkg: Package) => {
                 level,
                 amount: commissions[level],
                 status: "pending",
-                createdAt: serverTimestamp(),
+                dateCreated: serverTimestamp(),
             });
         }
 

@@ -34,7 +34,7 @@ export const createPaymentLink = functions.https.onCall(async (data, context) =>
         package: pkg,
         amount: PACKAGE_AMOUNTS[pkg] / 100,
         status: "pending",
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        dateCreated: admin.firestore.FieldValue.serverTimestamp(),
     });
 
     // Create PayMongo payment link
@@ -182,7 +182,7 @@ const triggerCommissions = async (newMemberId: string, pkg: string) => {
                 level,
                 amount: commissions[level],
                 status: "pending",
-                createdAt: admin.firestore.FieldValue.serverTimestamp(),
+                dateCreated: admin.firestore.FieldValue.serverTimestamp(),
             });
         }
 

@@ -44,13 +44,13 @@ export default function PublicNav(): React.ReactElement {
 
                     <div className="hidden lg:flex items-center gap-3">
                         <Link to="/signin" className="text-sm text-gpsc-navy hover:underline">
-                            Sign In
+                            Log In
                         </Link>
                         <Link
                             to="/signup"
                             className="bg-gpsc-navy text-white px-5 py-2.5 rounded-full text-sm font-medium hover:bg-gpsc-green transition-colors"
                         >
-                            Join now
+                            Sign Up
                         </Link>
                     </div>
 
@@ -68,10 +68,10 @@ export default function PublicNav(): React.ReactElement {
                         ))}
 
                         <Link to="/signin" className="block text-sm text-gpsc-navy">
-                            Sign In
+                            Log In
                         </Link>
                         <Link to="/signup" className="bg-gpsc-navy text-white px-5 py-2 rounded-full text-sm inline-block">
-                            Join now
+                            Sign Up
                         </Link>
                     </div>
                 )}

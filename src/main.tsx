@@ -17,12 +17,12 @@ import Contact from "./pages/visitor/nav/Contact";
 import ReferralTree from "./pages/ReferralTree";
 
 import AdminRoute from "./components/AdminRoute";
-import GuestRoute from "./components/GuestRoute";
+//import GuestRoute from "./components/GuestRoute";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminDashboard from "./pages/admin/AdminDashboard";
-import AdminMembers from "./pages/admin/AdminMembers";
-import AdminClaims from "./pages/admin/AdminClaims";
-import AdminCommissions from "./pages/admin/AdminCommissions";
+//import AdminMembers from "./pages/admin/AdminMembers";
+//import AdminClaims from "./pages/admin/AdminClaims";
+//import AdminCommissions from "./pages/admin/AdminCommissions";
 
 import { firebaseConfig } from "./firebase/config.ts";
 import { initializeApp } from "firebase/app";
@@ -38,22 +38,8 @@ createRoot(document.getElementById("root")!).render(
                 <Routes>
                     <Route path="/" element={<Home />} />
 
-                    <Route
-                        path="/signin"
-                        element={
-                            <GuestRoute>
-                                <SignIn />
-                            </GuestRoute>
-                        }
-                    />
-                    <Route
-                        path="/signup"
-                        element={
-                            <GuestRoute>
-                                <SignUp />
-                            </GuestRoute>
-                        }
-                    />
+                    <Route path="/signin" element={<SignIn />} />
+                    <Route path="/signup" element={<SignUp />} />
                     <Route
                         path="/referral"
                         element={
@@ -67,38 +53,21 @@ createRoot(document.getElementById("root")!).render(
                     <Route path="/about" element={<About />} />
                     <Route path="/membership" element={<Membership />} />
 
-                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route
+                        path="/dashboard/member"
+                        element={
+                            <ProtectedRoute>
+                                <Dashboard />
+                            </ProtectedRoute>
+                        }
+                    />
 
                     <Route
-                        path="/admin"
+                        path="/dashboard/admin"
                         element={
-                            <AdminRoute>
-                                <AdminDashboard />
-                            </AdminRoute>
-                        }
-                    />
-                    <Route
-                        path="/admin/members"
-                        element={
-                            <AdminRoute>
-                                <AdminMembers />
-                            </AdminRoute>
-                        }
-                    />
-                    <Route
-                        path="/admin/claims"
-                        element={
-                            <AdminRoute>
-                                <AdminClaims />
-                            </AdminRoute>
-                        }
-                    />
-                    <Route
-                        path="/admin/commissions"
-                        element={
-                            <AdminRoute>
-                                <AdminCommissions />
-                            </AdminRoute>
+                            <ProtectedRoute>
+                                <Dashboard />
+                            </ProtectedRoute>
                         }
                     />
                 </Routes>
