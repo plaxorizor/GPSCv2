@@ -1,7 +1,8 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import AuthProvider from "./context/AuthProvider";
+
+import AuthProvider from "./context/AuthProvider.tsx";
 
 import Home from "./pages/visitor/Home.tsx";
 import SignIn from "./pages/public/SignIn";
@@ -66,14 +67,7 @@ createRoot(document.getElementById("root")!).render(
                     <Route path="/about" element={<About />} />
                     <Route path="/membership" element={<Membership />} />
 
-                    <Route
-                        path="/dashboard"
-                        element={
-                            <ProtectedRoute>
-                                <Dashboard />
-                            </ProtectedRoute>
-                        }
-                    />
+                    <Route path="/dashboard" element={<Dashboard />} />
 
                     <Route
                         path="/admin"

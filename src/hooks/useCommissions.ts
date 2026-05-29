@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { collection, query, where, orderBy, getDocs } from "firebase/firestore";
 import { db } from "../firebase/config";
-import { useAuth } from "../context/AuthContext";
+import useAuth from "../context/useAuth";
 
 interface Commission {
     id: string;

@@ -1,23 +1,24 @@
 import { useEffect, useState } from "react";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase/config";
-import { useAuth } from "../context/AuthContext";
-//import { getAuth } from "firebase/auth";
+import useAuth from "../context/useAuth";
 
 interface Member {
     uid: string;
     firstName: string;
     lastName: string;
     email: string;
+    phone: string | null;
+    city: string | null;
+    province: string | null;
     package: "basic" | "family" | "premium" | null;
     status: "pending" | "active" | "inactive";
     referredBy: string | null;
     dateCreated: Date;
 }
 
-export default function useMember() {
-    const currentUser = useAuth().User;
-
+const useMember = () => {
+    const { currentUser } = useAuth();
     const [member, setMember] = useState<Member | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -32,4 +33,5 @@ export default function useMember() {
     }, [currentUser]);
 
     return { member, loading };
-}
+};
+export default useMember;

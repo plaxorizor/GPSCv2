@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase/config";
-import { useAuth } from "../context/AuthContext";
+import useAuth from "../context/useAuth";
 
 export const useAdmin = () => {
-    const { User } = useAuth();
+    const { currentUser } = useAuth();
     const [isAdmin, setIsAdmin] = useState(false);
     const [loading, setLoading] = useState(true);
 
@@ -12,8 +12,8 @@ export const useAdmin = () => {
         let cancelled = false;
 
         const check = async () => {
-            if (!User) {
-                await Promise.resolve(); // avoids synchronous setState in effect
+            if (!currentUser) {
+                await Promise.resolve();
                 if (!cancelled) {
                     setIsAdmin(false);
                     setLoading(false);
@@ -21,7 +21,7 @@ export const useAdmin = () => {
                 return;
             }
 
-            const snap = await getDoc(doc(db, "members", User.uid));
+            const snap = await getDoc(doc(db, "members", currentUser.uid));
             if (!cancelled) {
                 setIsAdmin(snap.exists() ? snap.data().isAdmin === true : false);
                 setLoading(false);
@@ -31,8 +31,8 @@ export const useAdmin = () => {
         check();
         return () => {
             cancelled = true;
-        }; // cleanup to prevent setState on unmounted component
-    }, [User]);
+        };
+    }, [currentUser]);
 
     return { isAdmin, loading };
 };

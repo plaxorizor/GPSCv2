@@ -1,6 +1,18 @@
 import { useContext } from "react";
-import { AuthContext } from "./AuthContext";
+import { createContext } from "react";
+import { type User } from "firebase/auth";
 
-export default function useAuth() {
-    return useContext(AuthContext);
+interface AuthContextType {
+    currentUser: User | null;
+    loading: boolean;
 }
+
+export const AuthContext = createContext<AuthContextType>({
+    currentUser: null,
+    loading: true,
+});
+
+const useAuth = () => {
+    return useContext(AuthContext);
+};
+export default useAuth;

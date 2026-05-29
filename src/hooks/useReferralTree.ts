@@ -1,19 +1,19 @@
 import { useEffect, useState } from "react";
-import { useAuth } from "../context/AuthContext";
+import useAuth from "../context/useAuth";
 import { buildReferralTree, type TreeNode } from "../firebase/referral";
 
 export const useReferralTree = () => {
-    const { User } = useAuth();
+    const { currentUser } = useAuth();
     const [tree, setTree] = useState<TreeNode[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (!User) return;
-        buildReferralTree(User.uid).then((data) => {
+        if (!currentUser) return;
+        buildReferralTree(currentUser.uid).then((data) => {
             setTree(data);
             setLoading(false);
         });
-    }, [User]);
+    }, [currentUser]);
 
     return { tree, loading };
 };
