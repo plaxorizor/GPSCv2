@@ -110,67 +110,6 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onRefresh, onExport, 
                         </thead>
 
                         <AllMembers />
-                        {/*
-                        <tbody>
-                            {filtered.map((member) => (
-                                <tr key={member.id} className="border-gpsc-cream-dark hover:bg-gpsc-cream/40 border-t transition-colors">
-                                    <td className="p-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="bg-gpsc-navy font-display flex h-9 w-9 items-center justify-center rounded-full text-xs text-white">
-                                                {member.initials}
-                                            </div>
-                                            <div>
-                                                <div className="text-gpsc-navy font-medium">
-                                                    {member.firstName} {member.lastName}
-                                                </div>
-                                                <div className="text-gpsc-stone text-xs">{member.email}</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="text-gpsc-stone p-4">
-                                        {member.packageId ? packageNames[member.packageId] || member.packageId : "—"}
-                                    </td>
-                                    <td className="text-gpsc-stone p-4 text-xs">—</td>
-                                    <td className="text-gpsc-stone p-4 text-xs">{rankNames[member.rankId] || member.rankId || "Member"}</td>
-                                    <td className="text-gpsc-stone p-4">{formatDate(member.memberSince)}</td>
-                                    <td className="p-4">
-                                        <span
-                                            className={`rounded-full px-2 py-1 text-xs ${
-                                                member.status === "active"
-                                                    ? "bg-gpsc-green/10 text-gpsc-green"
-                                                    : member.status === "pending_kyc"
-                                                      ? "bg-amber-100 text-amber-700"
-                                                      : "bg-red-100 text-red-700"
-                                            }`}
-                                        >
-                                            {member.status.replace("_", " ")}
-                                        </span>
-                                    </td>
-                                    <td className="p-4 text-right">
-                                        <div className="flex items-center justify-end gap-2">
-                                            <button
-                                                onClick={() => setSelectedMember(member)}
-                                                className="text-gpsc-stone hover:bg-gpsc-cream rounded p-1 transition-colors"
-                                                title="View details"
-                                            >
-                                                <Eye size={16} />
-                                            </button>
-                                            <button
-                                                onClick={() => onUpdateStatus(member.id, member.status === "active" ? "inactive" : "active")}
-                                                className={`rounded p-1 transition-colors ${member.status === "active" ? "text-red-500 hover:bg-red-50" : "text-gpsc-green hover:bg-gpsc-green/10"}`}
-                                                title={member.status === "active" ? "Deactivate" : "Activate"}
-                                            >
-                                                {member.status === "active" ? <XCircle size={16} /> : <CheckCircle size={16} />}
-                                            </button>
-                                            <button className="text-gpsc-stone hover:bg-gpsc-cream rounded p-1 transition-colors">
-                                                <MoreVertical size={16} />
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                        */}
                     </table>
                 </div>
             </div>

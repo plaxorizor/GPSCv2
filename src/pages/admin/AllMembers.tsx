@@ -1,5 +1,6 @@
 import { useAllMembers } from "../../hooks/useAllMembers";
 import { Eye, MoreVertical, CheckCircle, XCircle } from "lucide-react";
+import { PACKAGE_INFO } from "../../pages/types";
 
 const AllMembers = () => {
     const { members, loading } = useAllMembers();
@@ -36,8 +37,8 @@ const AllMembers = () => {
                         </div>
                     </td>
                     <td className="text-gpsc-stone p-4">{m.package}</td>
-                    <td className="text-gpsc-stone p-4">{m.sponsorName}</td> {/* TODO: add who is their upline */}
-                    <td className="text-gpsc-stone p-4">{m.rank}</td> {/* TODO: add rank to member */}
+                    <td className="text-gpsc-stone p-4">{m.sponsorName}</td>
+                    <td className="text-gpsc-stone p-4">{m.package ? (PACKAGE_INFO[m.package]?.rank ?? "—") : "—"}</td>
                     <td className="text-gpsc-stone p-4">{m.dateCreated?.toDate?.()?.toLocaleDateString() ?? "—"}</td>
                     <td className="p-4">
                         <span

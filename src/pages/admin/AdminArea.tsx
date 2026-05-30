@@ -3,9 +3,8 @@ import { useState, useEffect, useMemo } from "react";
 import useAuth from "../../context/useAuth";
 import { Navigate } from "react-router-dom";
 import AdminDashboard from "./index";
-import type { Member } from "../types";
+import type { Member, Claim } from "../types";
 import type { DashboardStats, GrowthDataPoint, PackageMixItem, TopRecruiter, PendingCommission, CommissionRecord } from "./types";
-import type { Claim } from "../types";
 
 // Mock data fetching functions - replace with your actual API calls
 const fetchDashboardStats = async (): Promise<DashboardStats> => {
@@ -100,7 +99,7 @@ export default function AdminArea() {
     const [packageMix, setPackageMix] = useState<PackageMixItem[]>([]);
     const [topRecruiters, setTopRecruiters] = useState<TopRecruiter[]>([]);
     const [recentClaims, setRecentClaims] = useState<Claim[]>([]);
-    const [members, setMembers] = useState<User[]>([]);
+    const [members, setMembers] = useState<Member[]>([]);
     const [claims, setClaims] = useState<Claim[]>([]);
     const [pendingCommissions, setPendingCommissions] = useState<PendingCommission[]>([]);
     const [commissionHistory, setCommissionHistory] = useState<CommissionRecord[]>([]);
