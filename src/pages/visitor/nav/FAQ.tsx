@@ -1,21 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { ChevronRight } from "lucide-react";
-import { auth } from "../../../firebase/config";
-import type { User } from "firebase/auth";
 import { GlobalStyles } from "../GlobalStyles";
-import PublicNav from "../PublicNav";
 import { Footer } from "../Footer";
 
 const FAQ: React.FC = () => {
-    const [loggedUser, setLoggedUser] = useState<string | null>(null);
     const [openIndex, setOpenIndex] = useState<number | null>(0);
-
-    useEffect(() => {
-        const unsubscribe = auth.onAuthStateChanged((user: User | null) => {
-            setLoggedUser(user?.email ?? null);
-        });
-        return unsubscribe;
-    }, []);
 
     const faqs = [
         {
@@ -39,23 +28,22 @@ const FAQ: React.FC = () => {
     ];
 
     return (
-        <div className="min-h-screen font-body text-gpsc-ink antialiased">
+        <div className="font-body text-gpsc-ink min-h-screen antialiased">
             <GlobalStyles />
-            <PublicNav loggedUser={loggedUser} />
-            <main className="max-w-3xl mx-auto px-6 py-20">
-                <h1 className="font-display text-4xl text-gpsc-navy mb-8">Frequently Asked Questions</h1>
+            <main className="mx-auto max-w-3xl px-6 py-20">
+                <h1 className="font-display text-gpsc-navy mb-8 text-4xl">Frequently Asked Questions</h1>
                 <div className="space-y-3">
                     {faqs.map((faq, i) => (
-                        <div key={i} className="border border-gpsc-cream-dark rounded-2xl bg-white overflow-hidden">
+                        <div key={i} className="border-gpsc-cream-dark overflow-hidden rounded-2xl border bg-white">
                             <button
                                 onClick={() => setOpenIndex(openIndex === i ? null : i)}
-                                className="w-full p-5 text-left flex items-center justify-between hover:bg-gpsc-cream/40 transition-colors"
+                                className="hover:bg-gpsc-cream/40 flex w-full items-center justify-between p-5 text-left transition-colors"
                             >
-                                <span className="font-display text-lg text-gpsc-navy">{faq.q}</span>
+                                <span className="font-display text-gpsc-navy text-lg">{faq.q}</span>
                                 <ChevronRight size={20} className={`text-gpsc-stone transition-transform ${openIndex === i ? "rotate-90" : ""}`} />
                             </button>
                             {openIndex === i && (
-                                <div className="px-5 pb-5 text-gpsc-stone leading-relaxed border-t border-gpsc-cream-dark pt-4">{faq.a}</div>
+                                <div className="text-gpsc-stone border-gpsc-cream-dark border-t px-5 pt-4 pb-5 leading-relaxed">{faq.a}</div>
                             )}
                         </div>
                     ))}

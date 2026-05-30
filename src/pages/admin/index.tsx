@@ -6,19 +6,14 @@ import { Overview } from "./Overview";
 import { Members } from "./Members";
 import { Claims } from "./Claims";
 import { Commissions } from "./Commissions";
-import { DatabaseViewer } from "./DatabaseViewer";
-import type { User } from "../types";
-import type { DashboardStats, GrowthDataPoint, PackageMixItem, TopRecruiter, PendingCommission, CommissionRecord } from "./types";
+import type { Member } from "../types";
+import type { DashboardStats, PendingCommission, CommissionRecord } from "./types";
 import type { Claim } from "../types";
 
 interface AdminDashboardProps {
-    adminUser: User;
+    adminUser: Member;
     stats: DashboardStats;
-    growthData: GrowthDataPoint[];
-    packageMix: PackageMixItem[];
-    topRecruiters: TopRecruiter[];
     recentClaims: Claim[];
-    members: User[];
     claims: Claim[];
     pendingCommissions: PendingCommission[];
     commissionHistory: CommissionRecord[];
@@ -43,11 +38,7 @@ interface AdminDashboardProps {
 
 export default function AdminDashboard({
     adminUser,
-    growthData,
-    packageMix,
-    topRecruiters,
     recentClaims,
-    members,
     claims,
     pendingCommissions,
     commissionHistory,
@@ -90,19 +81,9 @@ export default function AdminDashboard({
                 onLogout={onLogout}
             />
             <main className="max-w-6xl flex-1 p-6 lg:p-10">
-                {currentSection === "overview" && (
-                    <Overview
-                        growthData={growthData}
-                        packageMix={packageMix}
-                        topRecruiters={topRecruiters}
-                        recentClaims={recentClaims}
-                        loading={loading.stats || false}
-                        onRefresh={onRefreshStats}
-                    />
-                )}
+                {currentSection === "overview" && <Overview loading={loading.stats || false} onRefresh={onRefreshStats} />}
                 {currentSection === "members" && (
                     <Members
-                        members={members}
                         loading={loading.members || false}
                         onUpdateStatus={onUpdateMemberStatus}
                         onRefresh={onRefreshMembers}
@@ -127,9 +108,6 @@ export default function AdminDashboard({
                         onRelease={onReleaseCommission}
                         onRefresh={onRefreshCommissions}
                     />
-                )}
-                {currentSection === "database" && (
-                    <DatabaseViewer members={members} claims={claims} commissions={commissionHistory} payouts={[]} loading={loading} />
                 )}
             </main>
 

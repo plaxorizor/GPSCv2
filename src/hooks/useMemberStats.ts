@@ -13,7 +13,6 @@ interface MemberStats {
     recentCommissions: any[];
 }
 
-
 export const useMemberStats = () => {
     const { currentUser } = useAuth();
     const [stats, setStats] = useState<MemberStats | null>(null);

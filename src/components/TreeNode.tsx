@@ -27,7 +27,9 @@ const TreeNodeCard = ({ node }: { node: TreeNode }) => {
                     boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
                 }}
             >
-                <p style={{ margin: 0, fontWeight: 600, fontSize: 13 }}>{node.fullName}</p>
+                <p style={{ margin: 0, fontWeight: 600, fontSize: 13 }}>
+                    {node.firstName} {node.lastName}
+                </p>
                 <p style={{ margin: "2px 0 0", fontSize: 11, color: "#888" }}>
                     Level {node.level} · {node.package ?? "no package"}
                 </p>

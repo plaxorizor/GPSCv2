@@ -95,11 +95,6 @@ export default function AdminArea() {
     const { currentUser: user, loading: authLoading } = useAuth();
     const [isLoading, setIsLoading] = useState(true);
     const [stats, setStats] = useState<DashboardStats | null>(null);
-    const [growthData, setGrowthData] = useState<GrowthDataPoint[]>([]);
-    const [packageMix, setPackageMix] = useState<PackageMixItem[]>([]);
-    const [topRecruiters, setTopRecruiters] = useState<TopRecruiter[]>([]);
-    const [recentClaims, setRecentClaims] = useState<Claim[]>([]);
-    const [members, setMembers] = useState<Member[]>([]);
     const [claims, setClaims] = useState<Claim[]>([]);
     const [pendingCommissions, setPendingCommissions] = useState<PendingCommission[]>([]);
     const [commissionHistory, setCommissionHistory] = useState<CommissionRecord[]>([]);
@@ -109,19 +104,22 @@ export default function AdminArea() {
         if (!user) return null;
 
         return {
-            id: user.uid,
+            uid: user.uid,
             firstName: user.displayName?.split(" ")[0] || "Admin",
             lastName: user.displayName?.split(" ")[1] || "",
             email: user.email || "",
-            phone: user.phoneNumber || "",
-            role: "admin" as const,
-            rankId: "national_director",
-            sponsorId: null,
-            packageId: null,
-            memberSince: new Date().toISOString(),
+            mobile: user.phoneNumber || "",
+            birthDate: new Date().toISOString(),
+            civilStatus: "single" as const,
             city: "",
             province: "",
+            package: "Basic" as const,
             status: "active" as const,
+            referralCode: "",
+            referredBy: "",
+            beneficiaries: [],
+            isAdmin: true,
+            dateCreated: new Date(),
             initials: (user.displayName?.[0] || "A").toUpperCase(),
         };
     }, [user]);
@@ -133,14 +131,6 @@ export default function AdminArea() {
             try {
                 const [
                     statsData,
-                    growthDataData,
-                    packageMixData,
-                    topRecruitersData,
-                    recentClaimsData,
-                    membersData,
-                    claimsData,
-                    pendingCommissionsData,
-                    commissionHistoryData,
                 ] = await Promise.all([
                     fetchDashboardStats(),
                     fetchGrowthData(),
@@ -153,14 +143,7 @@ export default function AdminArea() {
                     fetchCommissionHistory(),
                 ]);
                 setStats(statsData);
-                setGrowthData(growthDataData);
-                setPackageMix(packageMixData);
-                setTopRecruiters(topRecruitersData);
-                setRecentClaims(recentClaimsData);
-                setMembers(membersData);
-                setClaims(claimsData);
-                setPendingCommissions(pendingCommissionsData);
-                setCommissionHistory(commissionHistoryData);
+                
             } catch (error) {
                 console.error("Failed to fetch admin data:", error);
             } finally {
@@ -269,11 +252,6 @@ export default function AdminArea() {
         <AdminDashboard
             adminUser={adminUser}
             stats={stats}
-            growthData={growthData}
-            packageMix={packageMix}
-            topRecruiters={topRecruiters}
-            recentClaims={recentClaims}
-            members={members}
             claims={claims}
             pendingCommissions={pendingCommissions}
             commissionHistory={commissionHistory}

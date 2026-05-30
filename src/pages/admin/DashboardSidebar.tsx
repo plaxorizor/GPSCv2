@@ -1,9 +1,8 @@
 // admin/DashboardSidebar.tsx
 import React from "react";
 import { LogOut } from "lucide-react";
-import type { User } from "../types";
+import type { Member } from "../types";
 import logoSrc from "../../components/ui/Logo.png";
-
 
 interface SidebarItem {
     id: string;
@@ -13,7 +12,7 @@ interface SidebarItem {
 }
 
 interface Props {
-    user: User;
+    user: Member;
     rankName: string;
     currentSection: string;
     onSectionChange: (section: string) => void;
@@ -39,7 +38,7 @@ export const DashboardSidebar: React.FC<Props> = ({ user, rankName, currentSecti
         <div className="border-gpsc-cream-dark border-b p-4">
             <div className="flex items-center gap-3">
                 <div className="bg-gpsc-navy font-display flex h-10 w-10 items-center justify-center rounded-full text-sm text-white">
-                    {user.initials}
+                    {user.firstName.charAt(0).toUpperCase() + user.lastName.charAt(0).toUpperCase()}
                 </div>
                 <div className="min-w-0 flex-1">
                     <div className="font-display text-gpsc-navy truncate text-sm">

@@ -1,7 +1,7 @@
 import React from "react";
 import { LogOut } from "lucide-react";
-import type { User } from "./types";
-import logo from '../../components/ui/Logo.png';
+import type { Member } from "../types";
+import logo from "../../components/ui/Logo.png";
 
 interface SidebarItem {
     id: string;
@@ -11,7 +11,7 @@ interface SidebarItem {
 }
 
 interface Props {
-    user: User;
+    user: Member;
     rankName: string;
     currentSection: string;
     onSectionChange: (section: string) => void;
@@ -21,17 +21,17 @@ interface Props {
 
 export const DashboardSidebar: React.FC<Props> = ({ user, rankName, currentSection, onSectionChange, items, onLogout }) => (
     <aside className="border-gpsc-cream-dark hidden min-h-screen w-64 flex-col border-r bg-white lg:flex">
-       <div className="flex items-center gap-3">
-               <img src={logo} alt="GPSC Logo" className="h-14 w-14 object-contain rounded-full ml-2" />
-                <div className="leading-tight">
-                    <div className="font-display text-gpsc-navy text-base font-semibold tracking-tight">Green Pasture</div>
-                    <div className="font-display text-gpsc-green text-xs italic">Shepherd's Care</div>
-                </div>
+        <div className="flex items-center gap-3">
+            <img src={logo} alt="GPSC Logo" className="ml-2 h-14 w-14 rounded-full object-contain" />
+            <div className="leading-tight">
+                <div className="font-display text-gpsc-navy text-base font-semibold tracking-tight">Green Pasture</div>
+                <div className="font-display text-gpsc-green text-xs italic">Shepherd's Care</div>
             </div>
+        </div>
         <div className="border-gpsc-cream-dark border-b p-4">
             <div className="flex items-center gap-3">
                 <div className="bg-gpsc-navy font-display flex h-10 w-10 items-center justify-center rounded-full text-sm text-white">
-                    {user.initials}
+                    {user.firstName.charAt(0).toUpperCase() + user.lastName.charAt(0).toUpperCase()}
                 </div>
                 <div className="min-w-0 flex-1">
                     <div className="font-display text-gpsc-navy truncate text-sm">

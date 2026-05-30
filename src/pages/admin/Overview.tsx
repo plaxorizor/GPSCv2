@@ -3,20 +3,17 @@ import React from "react";
 import { Users, TrendingUp, FileText, Wallet, UserCheck } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { StatCard } from "./StatCard";
-import type { PackageMixItem, TopRecruiter } from "./types";
-import type { Claim } from "../types";
+import type { PackageMixItem } from "./types";
 import { formatCurrency } from "./utils";
 
 import useAdminStats from "../../hooks/useAdminStats";
 
 interface Props {
-    topRecruiters: TopRecruiter[];
-    recentClaims: Claim[];
     loading: boolean;
     onRefresh: () => void;
 }
 
-export const Overview: React.FC<Props> = ({ recentClaims, loading, onRefresh }) => {
+export const Overview: React.FC<Props> = ({ loading, onRefresh }) => {
     const { stats: adminStats, loading: adminStatsLoading } = useAdminStats();
 
     if (loading || adminStatsLoading || !adminStats) {
@@ -34,12 +31,12 @@ export const Overview: React.FC<Props> = ({ recentClaims, loading, onRefresh }) 
         );
     }
 
-    const pendingClaims = recentClaims.filter((c) => c.status === "submitted" || c.status === "under_review");
+    //const pendingClaims = recentClaims.filter((c) => c.status === "submitted" || c.status === "under_review");
 
     // Package mix derived from adminStats — pie + legend always in sync
     const syncedPackageMix: PackageMixItem[] = [
-        { name: "Basic",   value: adminStats.packageCounts.Basic,   color: "#4F46E5" },
-        { name: "Family",  value: adminStats.packageCounts.Family,  color: "#65A30D" },
+        { name: "Basic", value: adminStats.packageCounts.Basic, color: "#4F46E5" },
+        { name: "Family", value: adminStats.packageCounts.Family, color: "#65A30D" },
         { name: "Premium", value: adminStats.packageCounts.Premium, color: "#EAB308" },
     ].filter((p) => p.value > 0);
 
@@ -126,8 +123,8 @@ export const Overview: React.FC<Props> = ({ recentClaims, loading, onRefresh }) 
 
                     <div className="mt-2 space-y-2">
                         {[
-                            { label: "Basic Care",   color: "#4F46E5", count: adminStats.packageCounts.Basic   },
-                            { label: "Family Care",  color: "#65A30D", count: adminStats.packageCounts.Family  },
+                            { label: "Basic Care", color: "#4F46E5", count: adminStats.packageCounts.Basic },
+                            { label: "Family Care", color: "#65A30D", count: adminStats.packageCounts.Family },
                             { label: "Premium Care", color: "#EAB308", count: adminStats.packageCounts.Premium },
                         ].map(({ label, color, count }) => (
                             <div key={label} className="flex items-center gap-2 text-sm">
@@ -150,7 +147,12 @@ export const Overview: React.FC<Props> = ({ recentClaims, loading, onRefresh }) 
                                 <div key={r.uid} className="flex items-center gap-3">
                                     <div className="font-display text-gpsc-stone w-6 text-xs">#{i + 1}</div>
                                     <div className="bg-gpsc-navy font-display flex h-10 w-10 items-center justify-center rounded-full text-xs text-white">
-                                        {r.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()}
+                                        {r.name
+                                            .split(" ")
+                                            .map((n: string) => n[0])
+                                            .join("")
+                                            .slice(0, 2)
+                                            .toUpperCase()}
                                     </div>
                                     <div className="flex-1">
                                         <div className="text-gpsc-navy text-sm">{r.name}</div>
@@ -171,27 +173,7 @@ export const Overview: React.FC<Props> = ({ recentClaims, loading, onRefresh }) 
                 <div className="border-gpsc-cream-dark rounded-2xl border bg-white p-6">
                     <h2 className="font-display text-gpsc-navy mb-4 text-lg">Claims queue</h2>
                     <div className="space-y-3">
-                        {pendingClaims.length > 0 ? (
-                            pendingClaims.map((claim) => (
-                                <div
-                                    key={claim.id}
-                                    className="border-gpsc-cream-dark hover:bg-gpsc-cream/40 flex items-center gap-3 rounded-xl border p-3 transition-colors"
-                                >
-                                    <div className={`h-12 w-2 rounded-full ${claim.status === "under_review" ? "bg-amber-400" : "bg-gpsc-navy"}`} />
-                                    <div className="flex-1">
-                                        <div className="text-gpsc-navy text-sm">{claim.benefit}</div>
-                                        <div className="text-gpsc-stone text-xs">Claimant ID: {claim.userId.slice(0, 8)}</div>
-                                        <div className="text-gpsc-stone mt-0.5 text-xs">{claim.status.replace("_", " ")}</div>
-                                    </div>
-                                    <div className="text-right">
-                                        <div className="text-gpsc-navy text-sm font-medium">{formatCurrency(claim.amount)}</div>
-                                        <button className="text-gpsc-green text-xs hover:underline">Review →</button>
-                                    </div>
-                                </div>
-                            ))
-                        ) : (
-                            <div className="text-gpsc-stone py-8 text-center">No pending claims</div>
-                        )}
+                        <div className="text-gpsc-stone py-8 text-center">No pending claims</div>
                     </div>
                 </div>
             </div>
