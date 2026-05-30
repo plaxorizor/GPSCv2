@@ -17,13 +17,13 @@ import Contact from "./pages/visitor/nav/Contact";
 
 import ReferralTree from "./pages/ReferralTree";
 
-import AdminRoute from "./components/AdminRoute";
 //import GuestRoute from "./components/GuestRoute";
 import ProtectedRoute from "./components/ProtectedRoute";
-import AdminDashboard from "./pages/admin/AdminDashboard";
 //import AdminMembers from "./pages/admin/AdminMembers";
 //import AdminClaims from "./pages/admin/AdminClaims";
 //import AdminCommissions from "./pages/admin/AdminCommissions";
+
+import AdminArea from "./pages/admin/AdminArea";
 
 import { firebaseConfig } from "./firebase/config.ts";
 import { initializeApp } from "firebase/app";

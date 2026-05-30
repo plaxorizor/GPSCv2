@@ -8,15 +8,15 @@ import type { Member, Commission, ReferralNode, EarningsTrendPoint, Claim, Payou
 
 // Rank mapping based on rank number
 const getRankName = (rank: number): string => {
-  const ranks: Record<number, string> = {
-    0: "Sales Consultant",
-    1: "Team Consultant", 
-    2: "Sales Manager",
-    3: "Provincial Director",
-    4: "Regional Director",
-    5: "National Director",
-  };
-  return ranks[rank] || "Member";
+    const ranks: Record<number, string> = {
+        0: "Sales Consultant",
+        1: "Team Consultant",
+        2: "Sales Manager",
+        3: "Provincial Director",
+        4: "Regional Director",
+        5: "National Director",
+    };
+    return ranks[rank] || "Member";
 };
 
 export default function MemberArea() {

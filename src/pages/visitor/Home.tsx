@@ -29,6 +29,4 @@ export default function Home(): React.ReactElement {
             <Footer />
         </div>
     );
-
-    return <Navigate to="/dashboard" />; // Redirect logged-in users to dashboard
 }

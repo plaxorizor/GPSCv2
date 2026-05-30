@@ -10,9 +10,9 @@ import { MemberProfile } from "./Profile";
 import type { Member, Package, Commission, ReferralNode, EarningsTrendPoint, Claim, Payout, Beneficiary } from "./types";
 
 interface MemberDashboardProps {
-    user: User;
+    user: Member;
     packageData: Package | null;
-    rankData: Rank | null;
+    rankData: string | null;
     commissions: Commission[];
     directReferrals: ReferralNode[];
     earningsTrend: EarningsTrendPoint[];
@@ -50,42 +50,27 @@ export default function MemberDashboard({
     onEnable2FA,
     onLogout,
 }: MemberDashboardProps) {
-    
     const [currentSection, setCurrentSection] = useState("overview");
 
-  const sidebarItems = [
-    { id: "overview", label: "Overview", icon: LayoutGrid },
-    { id: "referrals", label: "My referrals", icon: Share2, badge: directReferrals.length },
-    { id: "earnings", label: "Earnings", icon: Wallet },
-    { id: "claims", label: "Claims", icon: FileText },
-    { id: "profile", label: "Profile", icon: Settings },
-  ];
+    // Calculate dashboard stats
+    const availableToWithdraw = commissions.filter((c) => c.status === "payable").reduce((sum, c) => sum + c.amount, 0);
 
-  // Calculate dashboard stats
-  const availableToWithdraw = commissions
-    .filter(c => c.status === "payable")
-    .reduce((sum, c) => sum + c.amount, 0);
-  
-  const totalEarned = commissions
-    .filter(c => c.status === "paid")
-    .reduce((sum, c) => sum + c.amount, 0);
-  
-  const activeReferrals = directReferrals.filter(r => r.status === "active").length;
-  const approvedClaimsTotal = claims
-    .filter(c => c.status === "approved")
-    .reduce((sum, c) => sum + c.amount, 0);
+    const totalEarned = commissions.filter((c) => c.status === "paid").reduce((sum, c) => sum + c.amount, 0);
 
-  const packageName = packageData?.name || "No Package";
-  const rankName = rankData?.name || "Member";
+    const activeReferrals = directReferrals.filter((r) => r.status === "active").length;
+    const approvedClaimsTotal = claims.filter((c) => c.status === "approved").reduce((sum, c) => sum + c.amount, 0);
 
-  // Eligibility timeline (example - you can make this dynamic based on member's join date)
-  const eligibilityTimeline = [
-    { label: "Accidental death assistance", months: 1, unlocked: true },
-    { label: "Natural death (₱20k tier)", months: 5, unlocked: true },
-    { label: "Hospital cash assistance", months: 6, unlocked: true },
-    { label: "Birthday care gift", months: 8, unlocked: true },
-    { label: "Natural/Accidental ₱40k tier", months: 10, unlocked: false },
-  ];
+    const packageName = packageData?.name || "No Package";
+    const rankName = rankData?.name || "Member";
+
+    // Eligibility timeline (example - you can make this dynamic based on member's join date)
+    const eligibilityTimeline = [
+        { label: "Accidental death assistance", months: 1, unlocked: true },
+        { label: "Natural death (₱20k tier)", months: 5, unlocked: true },
+        { label: "Hospital cash assistance", months: 6, unlocked: true },
+        { label: "Birthday care gift", months: 8, unlocked: true },
+        { label: "Natural/Accidental ₱40k tier", months: 10, unlocked: false },
+    ];
 
     const recentCommissions = commissions.slice(0, 5).map((c) => ({
         id: c.id,
@@ -108,11 +93,8 @@ export default function MemberDashboard({
         { id: "profile", label: "Profile", icon: Settings },
     ];
 
-    const packageName = packageData?.name || "—";
-    const rankName = rankData?.name || "Member";
-
     return (
-        <div className="flex min-h-screen gpsc-cream">
+        <div className="gpsc-cream flex min-h-screen">
             <DashboardSidebar
                 user={user}
                 rankName={rankName}
@@ -121,7 +103,7 @@ export default function MemberDashboard({
                 items={sidebarItems}
                 onLogout={onLogout}
             />
-            <main className="flex-1 p-6 lg:p-10 max-w-6xl">
+            <main className="max-w-6xl flex-1 p-6 lg:p-10">
                 {currentSection === "overview" && (
                     <MemberOverview
                         user={user}
