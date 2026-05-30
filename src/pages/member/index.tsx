@@ -1,17 +1,17 @@
 // member/index.tsx
 import { useState } from "react";
-import { LayoutGrid, Wallet, FileText, Settings, Share2, Network } from "lucide-react";
+import { LayoutGrid, Wallet, FileText, Settings, Network } from "lucide-react";
 import { DashboardSidebar } from "./DashboardSidebar";
 import { MemberOverview } from "./Overview";
 import { MemberReferrals } from "./Referrals";
 import { MemberEarnings } from "./Earnings";
 import { MemberClaims } from "./Claims";
 import { MemberProfile } from "./Profile";
-import type { Member, Package, Commission, ReferralNode, EarningsTrendPoint, Claim, Payout, Beneficiary } from "./types";
+import type { Member, PackageName, Commission, ReferralNode, EarningsTrendPoint, Claim, Payout, Beneficiary } from "./types";
 
 interface MemberDashboardProps {
     user: Member;
-    packageData: Package | null;
+    packageData: PackageName | null;
     rankData: string | null;
     commissions: Commission[];
     directReferrals: ReferralNode[];
@@ -54,17 +54,16 @@ export default function MemberDashboard({
 
     // Calculate dashboard stats
     const availableToWithdraw = commissions.filter((c) => c.status === "payable").reduce((sum, c) => sum + c.amount, 0);
-
     const totalEarned = commissions.filter((c) => c.status === "paid").reduce((sum, c) => sum + c.amount, 0);
-
+    const activeReferralsCount = directReferrals.filter((r) => r.status === "active").length;
+    const totalReferralsCount = directReferrals.length;
+    const approvedClaimsCount = claims.filter((c) => c.status === "approved").length;
+    const approvedClaimsTotal = claims.filter((c) => c.status === "approved").reduce((sum, c) => sum + c.amount, 0);
     const pendingHold = commissions.filter((c) => c.status === "pending").reduce((sum, c) => sum + c.amount, 0);
     const lifetimePaid = commissions.filter((c) => c.status === "paid").reduce((sum, c) => sum + c.amount, 0);
-    const activeReferralsCount = directReferrals.filter((r) => r.status === "active").length;
-    const activeReferrals = directReferrals.filter((r) => r.status === "active").length;
-    const approvedClaimsTotal = claims.filter((c) => c.status === "approved").reduce((sum, c) => sum + c.amount, 0);
 
-    const packageName = packageData?.name || "No Package";
-    const rankName = rankData?.name || "Member";
+    const packageName = packageData || "No Package";
+    const rankName = rankData || "Member";
 
     // Eligibility timeline (example - you can make this dynamic based on member's join date)
     const eligibilityTimeline = [
@@ -88,8 +87,6 @@ export default function MemberDashboard({
         date: c.date,
     }));
 
-    const totalReferralsCount = directReferrals.length;
-    const approvedClaimsCount = claims.filter((c) => c.status === "approved").length;
     const sidebarItems = [
         { id: "overview", label: "Overview", icon: LayoutGrid },
         { id: "referrals", label: "My referrals", icon: Network, badge: totalReferralsCount },
