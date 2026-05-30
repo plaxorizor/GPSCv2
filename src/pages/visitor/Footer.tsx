@@ -1,12 +1,15 @@
 import React from "react";
-import { LogoLockup } from "./Logo";
+import logoSrc from "../../components/ui/Logo.png";
 
 export const Footer: React.FC = () => (
   <footer className="bg-gpsc-navy text-white">
     <div className="max-w-6xl mx-auto px-6 lg:px-8 py-16">
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
         <div>
-          <LogoLockup dark />
+            <button
+                        className="flex items-center cursor-pointer">
+                        <img src={logoSrc} width={40} height={40} alt="Logo" />
+                    </button>
           <p className="text-sm text-white/60 mt-4 leading-relaxed">
             A community-owned safety net for Filipino families, rooted in faith and Bayanihan spirit.
           </p>

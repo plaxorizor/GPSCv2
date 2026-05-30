@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Logo } from "../../components/ui/Logo";
+import logoSrc from "../../components/ui/Logo.png";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
@@ -19,9 +19,9 @@ export default function SignIn() {
     const navigate = useNavigate();
     const auth = getAuth();
 
-    const [email, setEmail] = useState("");
+    const [email, setEmail]       = useState("");
     const [password, setPassword] = useState("");
-    const [error, setError] = useState("");
+    const [error, setError]       = useState("");
 
     async function handleLogin(e: React.FormEvent) {
         e.preventDefault();
@@ -41,11 +41,43 @@ export default function SignIn() {
         <>
             <style>{css}</style>
 
-            <div className="gpsc-signin-root flex min-h-screen items-center justify-center px-6 py-12" style={{ backgroundColor: "#FAF6EE" }}>
+            <div
+                className="gpsc-signin-root min-h-screen flex items-center justify-center py-12 px-6"
+                style={{ backgroundColor: "#FAF6EE" }}
+            >
                 <div className="mx-auto w-full max-w-md">
+
+                    {/* ── Back Button ── */}
+                    <button
+                        type="button"
+                        onClick={() => navigate(-1)}
+                        className="flex items-center gap-1 text-sm mb-6 hover:underline"
+                        style={{ color: "#6B6862" }}
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        >
+                            <path d="M19 12H5" />
+                            <path d="M12 19l-7-7 7-7" />
+                        </svg>
+                        Back
+                    </button>
+
                     {/* ── Header ── */}
                     <div className="mb-10 text-center">
-                        <Logo size={56} />
+                        <div className="flex justify-center">
+                            <Link to="/">
+                             <img src={logoSrc} width={125} height={125} alt="Logo" />
+                            </Link>
+                        </div>
                         <h1 className="font-display mt-4 text-4xl" style={{ color: "#14365C" }}>
                             Welcome back
                         </h1>
@@ -55,9 +87,15 @@ export default function SignIn() {
                     </div>
 
                     {/* ── Card ── */}
-                    <div className="space-y-4 rounded-3xl p-8" style={{ backgroundColor: "#fff", border: "1px solid #E5DDC8" }}>
+                    <div
+                        className="rounded-3xl p-8 space-y-4"
+                        style={{ backgroundColor: "#fff", border: "1px solid #E5DDC8" }}
+                    >
                         {error && (
-                            <div className="rounded-xl px-4 py-3 text-sm" style={{ backgroundColor: "#FEE2E2", color: "#B91C1C" }}>
+                            <div
+                                className="px-4 py-3 rounded-xl text-sm"
+                                style={{ backgroundColor: "#FEE2E2", color: "#B91C1C" }}
+                            >
                                 {error}
                             </div>
                         )}
@@ -81,30 +119,45 @@ export default function SignIn() {
                                 <label className={labelCls}>
                                     Password <span style={{ color: "#B91C1C" }}>*</span>
                                 </label>
-                                <input required type="password" className={inputCls} value={password} onChange={(e) => setPassword(e.target.value)} />
-                                <button type="button" className="mt-2 text-xs hover:underline" style={{ color: "#4A8A2C" }}>
+                                <input
+                                    required
+                                    type="password"
+                                    className={inputCls}
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                />
+                                <button
+                                    type="button"
+                                    className="text-xs mt-2 hover:underline"
+                                    style={{ color: "#4A8A2C" }}
+                                >
                                     Forgot password?
                                 </button>
                             </div>
 
                             <button
                                 type="submit"
-                                className="w-full rounded-xl py-3 font-medium text-white transition-colors"
+                                className="w-full py-3 rounded-xl font-medium text-white transition-colors"
                                 style={{ backgroundColor: "#14365C" }}
                                 onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#4A8A2C")}
-                                onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#14365C")}
+                                onMouseOut={(e)  => (e.currentTarget.style.backgroundColor = "#14365C")}
                             >
                                 Sign in
                             </button>
                         </form>
 
-                        <div className="pt-2 text-center text-xs" style={{ color: "#6B6862" }}>
+                        <div className="text-center text-xs pt-2" style={{ color: "#6B6862" }}>
                             New here?{" "}
-                            <Link to="/signup" className="font-medium hover:underline" style={{ color: "#4A8A2C" }}>
+                            <Link
+                                to="/signup"
+                                className="font-medium hover:underline"
+                                style={{ color: "#4A8A2C" }}
+                            >
                                 Become a member
                             </Link>
                         </div>
                     </div>
+
                 </div>
             </div>
         </>

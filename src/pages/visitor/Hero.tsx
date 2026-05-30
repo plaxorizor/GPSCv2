@@ -1,6 +1,6 @@
 import React from "react";
 import { ArrowRight, CheckCircle, Sparkles } from "lucide-react";
-import { Logo } from "./Logo";
+import logoSrc from "../../components/ui/Logo.png";
 
 interface HeroProps {
   onCta: (action: string) => void;
@@ -63,7 +63,7 @@ export const Hero: React.FC<HeroProps> = ({ onCta }) => (
             <div className="absolute inset-0 rounded-full border border-gpsc-navy/20"></div>
             <div className="absolute inset-8 rounded-full border border-gpsc-green/20"></div>
             <div className="absolute inset-16 rounded-full bg-gradient-to-br from-gpsc-cream-dark to-transparent flex items-center justify-center">
-              <Logo size={180} />
+             <img src={logoSrc} width={125} height={125} alt="Logo" />
             </div>
             <div className="absolute -left-4 top-12 bg-white rounded-2xl p-4 shadow-lg max-w-[200px] border border-gpsc-cream-dark">
               <div className="flex items-center gap-2 text-xs text-gpsc-green font-semibold mb-1">
