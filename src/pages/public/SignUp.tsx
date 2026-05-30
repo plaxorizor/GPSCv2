@@ -4,7 +4,6 @@ import { registerUser } from "../../firebase/auth";
 import { db } from "../../firebase/config";
 
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { Logo } from "../../components/ui/Logo";
 
 import { RadioGroup, Radio } from "@headlessui/react";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
@@ -19,22 +18,41 @@ const css = `
 `;
 
 const plans = [
-    { name: "Basic" as PackageName,   price: 698,  level: 1, rank: "Sales Consultant",  rate: 0.20, coverage: "Individual",  tagline: "Individual protection, simple start" },
-    { name: "Family" as PackageName,  price: 1698, level: 3, rank: "Team Consultant",    rate: 0.05, coverage: "Family of 4", tagline: "Coverage for the whole household",    popular: true },
-    { name: "Premium" as PackageName, price: 4998, level: 6, rank: "Sales Manager",      rate: 0.03, coverage: "Family of 5", tagline: "Full benefits and leadership rewards" },
+    {
+        name: "Basic" as PackageName,
+        price: 698,
+        level: 1,
+        rank: "Sales Consultant",
+        rate: 0.2,
+        coverage: "Individual",
+        tagline: "Individual protection, simple start",
+    },
+    {
+        name: "Family" as PackageName,
+        price: 1698,
+        level: 3,
+        rank: "Team Consultant",
+        rate: 0.05,
+        coverage: "Family of 4",
+        tagline: "Coverage for the whole household",
+        popular: true,
+    },
+    {
+        name: "Premium" as PackageName,
+        price: 4998,
+        level: 6,
+        rank: "Sales Manager",
+        rate: 0.03,
+        coverage: "Family of 5",
+        tagline: "Full benefits and leadership rewards",
+    },
 ];
 
-const STEPS = [
-    "Package",
-    "Your Info",
-    "Sponsor & Beneficiaries",
-    "Review",
-];
+const STEPS = ["Package", "Your Info", "Sponsor & Beneficiaries", "Review"];
 
 const generateReferralCode = (): string => {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    const segment = (len: number) =>
-        Array.from({ length: len }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+    const segment = (len: number) => Array.from({ length: len }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
     return `${segment(4)}-${segment(4)}-${segment(4)}`;
 };
 
@@ -45,9 +63,9 @@ const labelCls = "text-xs uppercase tracking-wider text-[#6B6862]";
 
 export default function SignUpLayout() {
     const [searchParams] = useSearchParams();
-    const [refValue, setRefValue]     = useState<string>(() => searchParams.get("ref") ?? "");
-    const [step, setStep]             = useState(1);
-    const totalSteps                  = 4;
+    const [refValue, setRefValue] = useState<string>(() => searchParams.get("ref") ?? "");
+    const [step, setStep] = useState(1);
+    const totalSteps = 4;
 
     const navigate = useNavigate();
 
@@ -69,6 +87,79 @@ export default function SignUpLayout() {
     });
     const [error, setError] = useState("");
 
+    const validateStep = (): boolean => {
+        setError("");
+        if (step === 2) {
+            if (!form.firstName.trim()) {
+                setError("First name is required.");
+                return false;
+            }
+            if (!form.lastName.trim()) {
+                setError("Last name is required.");
+                return false;
+            }
+            if (!form.email.trim()) {
+                setError("Email is required.");
+                return false;
+            }
+            if (!form.password) {
+                setError("Password is required.");
+                return false;
+            }
+            if (!form.confirmPassword) {
+                setError("Please confirm your password.");
+                return false;
+            }
+            if (form.password !== form.confirmPassword) {
+                setError("Passwords do not match.");
+                return false;
+            }
+            if (!form.mobile.trim()) {
+                setError("Mobile number is required.");
+                return false;
+            }
+            if (!form.birthDate) {
+                setError("Birth date is required.");
+                return false;
+            }
+            if (!form.civilStatus) {
+                setError("Civil status is required.");
+                return false;
+            }
+            if (!form.city.trim()) {
+                setError("City is required.");
+                return false;
+            }
+            if (!form.province.trim()) {
+                setError("Province is required.");
+                return false;
+            }
+        }
+        if (step === 3) {
+            if (!refValue.trim()) {
+                setError("Referral code is required.");
+                return false;
+            }
+            if (selectedPlan.name !== "Basic") {
+                for (let i = 0; i < form.beneficiaries.length; i++) {
+                    if (!form.beneficiaries[i].name.trim()) {
+                        setError(`Beneficiary ${i + 1} name is required.`);
+                        return false;
+                    }
+                    if (!form.beneficiaries[i].relationship) {
+                        setError(`Beneficiary ${i + 1} relationship is required.`);
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    };
+
+    const handleContinue = () => {
+        if (validateStep()) setStep(step + 1);
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError("");
@@ -78,7 +169,10 @@ export default function SignUpLayout() {
         }
         try {
             const snap = await getDoc(doc(db, "referralCodes", form.referralCode));
-            if (!snap.exists()) { setError("Invalid referral code."); return; }
+            if (!snap.exists()) {
+                setError("Invalid referral code.");
+                return;
+            }
             const referredBy = snap.data().uid;
 
             const { user } = await registerUser(form.email, form.password);
@@ -114,12 +208,11 @@ export default function SignUpLayout() {
             {/* Inject design-token CSS */}
             <style>{css}</style>
 
-            <div className="gpsc-signup-root min-h-screen py-12 px-6" style={{ backgroundColor: "#FAF6EE" }}>
+            <div className="gpsc-signup-root min-h-screen px-6 py-12" style={{ backgroundColor: "#FAF6EE" }}>
                 <div className="mx-auto max-w-2xl">
-
                     {/* ── Header ── */}
                     <div className="mb-10 text-center">
-                        <Logo size={56} />
+                     
                         <h1 className="font-display mt-4 text-4xl" style={{ color: "#14365C" }}>
                             Join in a few minutes
                         </h1>
@@ -129,27 +222,24 @@ export default function SignUpLayout() {
                     </div>
 
                     {/* ── Step progress bar ── */}
-                    <div className="flex items-center gap-2 mb-8">
+                    <div className="mb-8 flex items-center gap-2">
                         {STEPS.map((_label, i) => {
                             const s = i + 1;
-                            const active  = s === step;
-                            const done    = s < step;
+                            const active = s === step;
+                            const done = s < step;
                             return (
-                                <div key={s} className="flex items-center gap-2 flex-1">
+                                <div key={s} className="flex flex-1 items-center gap-2">
                                     <div
-                                        className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-colors"
+                                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold transition-colors"
                                         style={{
                                             backgroundColor: done || active ? "#14365C" : "#E5DDC8",
-                                            color:           done || active ? "#fff"     : "#6B6862",
+                                            color: done || active ? "#fff" : "#6B6862",
                                         }}
                                     >
                                         {done ? "✓" : s}
                                     </div>
                                     {s < STEPS.length && (
-                                        <div
-                                            className="h-px flex-1 transition-colors"
-                                            style={{ backgroundColor: done ? "#14365C" : "#E5DDC8" }}
-                                        />
+                                        <div className="h-px flex-1 transition-colors" style={{ backgroundColor: done ? "#14365C" : "#E5DDC8" }} />
                                     )}
                                 </div>
                             );
@@ -157,22 +247,18 @@ export default function SignUpLayout() {
                     </div>
 
                     {/* ── Card ── */}
-                    <div
-                        className="rounded-3xl p-8"
-                        style={{ backgroundColor: "#fff", border: "1px solid #E5DDC8" }}
-                    >
+                    <div className="rounded-3xl p-8" style={{ backgroundColor: "#fff", border: "1px solid #E5DDC8" }}>
                         {error && (
-                            <div className="mb-4 px-4 py-3 rounded-xl text-sm" style={{ backgroundColor: "#FEE2E2", color: "#B91C1C" }}>
+                            <div className="mb-4 rounded-xl px-4 py-3 text-sm" style={{ backgroundColor: "#FEE2E2", color: "#B91C1C" }}>
                                 {error}
                             </div>
                         )}
 
                         <form onSubmit={handleSubmit} className="space-y-5">
-
                             {/* ════ STEP 1 — Package ════ */}
                             {step === 1 && (
                                 <div>
-                                    <h2 className="font-display text-2xl mb-6" style={{ color: "#14365C" }}>
+                                    <h2 className="font-display mb-6 text-2xl" style={{ color: "#14365C" }}>
                                         Step 1 · Choose your package
                                     </h2>
                                     <RadioGroup
@@ -187,10 +273,8 @@ export default function SignUpLayout() {
                                                 key={plan.name}
                                                 value={plan}
                                                 className={({ checked }) =>
-                                                    `block p-4 rounded-2xl border cursor-pointer transition-all outline-none ${
-                                                        checked
-                                                            ? "border-[#4A8A2C] bg-[#FAF6EE]"
-                                                            : "border-[#E5DDC8] hover:bg-[#FAF6EE]/60"
+                                                    `block cursor-pointer rounded-2xl border p-4 transition-all outline-none ${
+                                                        checked ? "border-[#4A8A2C] bg-[#FAF6EE]" : "border-[#E5DDC8] hover:bg-[#FAF6EE]/60"
                                                     }`
                                                 }
                                             >
@@ -198,19 +282,22 @@ export default function SignUpLayout() {
                                                     <div className="flex items-center justify-between">
                                                         <div className="flex items-center gap-4">
                                                             <div
-                                                                className="w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors"
+                                                                className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors"
                                                                 style={{
                                                                     borderColor: checked ? "#4A8A2C" : "#D1D5DB",
                                                                     backgroundColor: checked ? "#4A8A2C" : "transparent",
                                                                 }}
                                                             >
-                                                                {checked && <div className="w-2 h-2 rounded-full bg-white" />}
+                                                                {checked && <div className="h-2 w-2 rounded-full bg-white" />}
                                                             </div>
                                                             <div>
                                                                 <div className="font-display text-lg" style={{ color: "#14365C" }}>
                                                                     {plan.name} Care
                                                                     {plan.popular && (
-                                                                        <span className="ml-2 text-xs px-2 py-0.5 rounded-full font-sans" style={{ backgroundColor: "#4A8A2C", color: "#fff" }}>
+                                                                        <span
+                                                                            className="ml-2 rounded-full px-2 py-0.5 font-sans text-xs"
+                                                                            style={{ backgroundColor: "#4A8A2C", color: "#fff" }}
+                                                                        >
                                                                             Popular
                                                                         </span>
                                                                     )}
@@ -234,22 +321,28 @@ export default function SignUpLayout() {
                             {/* ════ STEP 2 — Personal info ════ */}
                             {step === 2 && (
                                 <div>
-                                    <h2 className="font-display text-2xl mb-6" style={{ color: "#14365C" }}>
+                                    <h2 className="font-display mb-6 text-2xl" style={{ color: "#14365C" }}>
                                         Step 2 · Your information
                                     </h2>
                                     <div className="space-y-4">
                                         <div className="grid gap-4 sm:grid-cols-2">
                                             <div>
-                                                <label className={labelCls}>First name</label>
+                                                <label className={labelCls}>
+                                                    First name <span style={{ color: "#B91C1C" }}>*</span>
+                                                </label>
                                                 <input
+                                                    required
                                                     placeholder="Juan"
                                                     className={inputCls}
                                                     onChange={(e) => setForm({ ...form, firstName: e.target.value })}
                                                 />
                                             </div>
                                             <div>
-                                                <label className={labelCls}>Last name</label>
+                                                <label className={labelCls}>
+                                                    Last name <span style={{ color: "#B91C1C" }}>*</span>
+                                                </label>
                                                 <input
+                                                    required
                                                     placeholder="Dela Cruz"
                                                     className={inputCls}
                                                     onChange={(e) => setForm({ ...form, lastName: e.target.value })}
@@ -258,8 +351,11 @@ export default function SignUpLayout() {
                                         </div>
 
                                         <div>
-                                            <label className={labelCls}>Email</label>
+                                            <label className={labelCls}>
+                                                Email <span style={{ color: "#B91C1C" }}>*</span>
+                                            </label>
                                             <input
+                                                required
                                                 type="email"
                                                 placeholder="juandelacruz@example.com"
                                                 className={inputCls}
@@ -269,16 +365,22 @@ export default function SignUpLayout() {
 
                                         <div className="grid gap-4 sm:grid-cols-2">
                                             <div>
-                                                <label className={labelCls}>Password</label>
+                                                <label className={labelCls}>
+                                                    Password <span style={{ color: "#B91C1C" }}>*</span>
+                                                </label>
                                                 <input
+                                                    required
                                                     type="password"
                                                     className={inputCls}
                                                     onChange={(e) => setForm({ ...form, password: e.target.value })}
                                                 />
                                             </div>
                                             <div>
-                                                <label className={labelCls}>Confirm password</label>
+                                                <label className={labelCls}>
+                                                    Confirm password <span style={{ color: "#B91C1C" }}>*</span>
+                                                </label>
                                                 <input
+                                                    required
                                                     type="password"
                                                     className={inputCls}
                                                     onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
@@ -287,8 +389,11 @@ export default function SignUpLayout() {
                                         </div>
 
                                         <div>
-                                            <label className={labelCls}>Mobile number</label>
+                                            <label className={labelCls}>
+                                                Mobile number <span style={{ color: "#B91C1C" }}>*</span>
+                                            </label>
                                             <input
+                                                required
                                                 placeholder="09XXXXXXXXX"
                                                 className={inputCls}
                                                 onChange={(e) => setForm({ ...form, mobile: e.target.value })}
@@ -297,16 +402,22 @@ export default function SignUpLayout() {
 
                                         <div className="grid gap-4 sm:grid-cols-2">
                                             <div>
-                                                <label className={labelCls}>Birth date</label>
+                                                <label className={labelCls}>
+                                                    Birth date <span style={{ color: "#B91C1C" }}>*</span>
+                                                </label>
                                                 <input
+                                                    required
                                                     type="date"
                                                     className={inputCls}
                                                     onChange={(e) => setForm({ ...form, birthDate: e.target.value })}
                                                 />
                                             </div>
                                             <div>
-                                                <label className={labelCls}>Civil status</label>
+                                                <label className={labelCls}>
+                                                    Civil status <span style={{ color: "#B91C1C" }}>*</span>
+                                                </label>
                                                 <select
+                                                    required
                                                     className={inputCls}
                                                     onChange={(e) => setForm({ ...form, civilStatus: e.target.value })}
                                                 >
@@ -321,16 +432,22 @@ export default function SignUpLayout() {
 
                                         <div className="grid gap-4 sm:grid-cols-2">
                                             <div>
-                                                <label className={labelCls}>City</label>
+                                                <label className={labelCls}>
+                                                    City <span style={{ color: "#B91C1C" }}>*</span>
+                                                </label>
                                                 <input
+                                                    required
                                                     placeholder="Davao City"
                                                     className={inputCls}
                                                     onChange={(e) => setForm({ ...form, city: e.target.value })}
                                                 />
                                             </div>
                                             <div>
-                                                <label className={labelCls}>Province</label>
+                                                <label className={labelCls}>
+                                                    Province <span style={{ color: "#B91C1C" }}>*</span>
+                                                </label>
                                                 <input
+                                                    required
                                                     placeholder="Davao del Sur"
                                                     className={inputCls}
                                                     onChange={(e) => setForm({ ...form, province: e.target.value })}
@@ -344,13 +461,16 @@ export default function SignUpLayout() {
                             {/* ════ STEP 3 — Sponsor & Beneficiaries ════ */}
                             {step === 3 && (
                                 <div>
-                                    <h2 className="font-display text-2xl mb-6" style={{ color: "#14365C" }}>
+                                    <h2 className="font-display mb-6 text-2xl" style={{ color: "#14365C" }}>
                                         Step 3 · Sponsor &amp; beneficiaries
                                     </h2>
                                     <div className="space-y-5">
                                         <div>
-                                            <label className={labelCls}>Sponsor / referral code</label>
+                                            <label className={labelCls}>
+                                                Sponsor / referral code <span style={{ color: "#B91C1C" }}>*</span>
+                                            </label>
                                             <input
+                                                required
                                                 value={refValue}
                                                 placeholder="e.g. MARIA-ABCD-1234"
                                                 className={inputCls}
@@ -362,10 +482,7 @@ export default function SignUpLayout() {
                                         </div>
 
                                         {selectedPlan.name !== "Basic" && (
-                                            <div
-                                                className="pt-5 mt-1 border-t"
-                                                style={{ borderColor: "#E5DDC8" }}
-                                            >
+                                            <div className="mt-1 border-t pt-5" style={{ borderColor: "#E5DDC8" }}>
                                                 <label className={labelCls}>
                                                     Beneficiaries
                                                     <span className="ml-1 normal-case" style={{ color: "#6B6862" }}>
@@ -384,6 +501,7 @@ export default function SignUpLayout() {
                                                                 Beneficiary {index + 1}
                                                             </p>
                                                             <input
+                                                                required
                                                                 placeholder="Full name (e.g. Maria Dela Cruz)"
                                                                 className={inputCls}
                                                                 value={b.name}
@@ -394,6 +512,7 @@ export default function SignUpLayout() {
                                                                 }}
                                                             />
                                                             <select
+                                                                required
                                                                 className={inputCls}
                                                                 value={b.relationship}
                                                                 onChange={(e) => {
@@ -412,7 +531,7 @@ export default function SignUpLayout() {
                                                     ))}
                                                 </div>
 
-                                                <div className="flex gap-4 mt-3">
+                                                <div className="mt-3 flex gap-4">
                                                     {form.beneficiaries.length < (selectedPlan.name === "Family" ? 2 : 4) && (
                                                         <button
                                                             type="button"
@@ -453,35 +572,37 @@ export default function SignUpLayout() {
                             {/* ════ STEP 4 — Review ════ */}
                             {step === 4 && (
                                 <div>
-                                    <h2 className="font-display text-2xl mb-6" style={{ color: "#14365C" }}>
+                                    <h2 className="font-display mb-6 text-2xl" style={{ color: "#14365C" }}>
                                         Step 4 · Review &amp; register
                                     </h2>
-                                    <div className="space-y-3 mb-6">
+                                    <div className="mb-6 space-y-3">
                                         {[
-                                            { label: "Package",    value: `${selectedPlan.name} Care — ₱${selectedPlan.price.toLocaleString("en-PH")}` },
-                                            { label: "Name",       value: `${form.firstName} ${form.lastName}`.trim() || "—" },
-                                            { label: "Email",      value: form.email   || "—" },
-                                            { label: "Mobile",     value: form.mobile  || "—" },
-                                            { label: "Location",   value: [form.city, form.province].filter(Boolean).join(", ") || "—" },
-                                            { label: "Referral",   value: refValue     || "—" },
+                                            { label: "Package", value: `${selectedPlan.name} Care — ₱${selectedPlan.price.toLocaleString("en-PH")}` },
+                                            { label: "Name", value: `${form.firstName} ${form.lastName}`.trim() || "—" },
+                                            { label: "Email", value: form.email || "—" },
+                                            { label: "Mobile", value: form.mobile || "—" },
+                                            { label: "Location", value: [form.city, form.province].filter(Boolean).join(", ") || "—" },
+                                            { label: "Referral", value: refValue || "—" },
                                         ].map(({ label, value }) => (
                                             <div
                                                 key={label}
-                                                className="flex justify-between px-4 py-3 rounded-xl text-sm"
+                                                className="flex justify-between rounded-xl px-4 py-3 text-sm"
                                                 style={{ backgroundColor: "#FAF6EE" }}
                                             >
                                                 <span style={{ color: "#6B6862" }}>{label}</span>
-                                                <span className="font-medium" style={{ color: "#14365C" }}>{value}</span>
+                                                <span className="font-medium" style={{ color: "#14365C" }}>
+                                                    {value}
+                                                </span>
                                             </div>
                                         ))}
                                     </div>
 
                                     <button
                                         type="submit"
-                                        className="w-full py-3 rounded-xl font-medium text-white transition-colors"
+                                        className="w-full rounded-xl py-3 font-medium text-white transition-colors"
                                         style={{ backgroundColor: "#4A8A2C" }}
                                         onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#5DAB3A")}
-                                        onMouseOut={(e)  => (e.currentTarget.style.backgroundColor = "#4A8A2C")}
+                                        onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#4A8A2C")}
                                     >
                                         Create account
                                     </button>
@@ -493,8 +614,11 @@ export default function SignUpLayout() {
                                 <button
                                     type="button"
                                     disabled={step === 1}
-                                    onClick={() => setStep(step - 1)}
-                                    className="flex items-center gap-2 px-4 py-2 rounded-full text-sm disabled:opacity-30 transition"
+                                    onClick={() => {
+                                        setError("");
+                                        setStep(step - 1);
+                                    }}
+                                    className="flex items-center gap-2 rounded-full px-4 py-2 text-sm transition disabled:opacity-30"
                                     style={{ color: "#6B6862" }}
                                 >
                                     <ChevronLeft size={16} /> Back
@@ -502,11 +626,11 @@ export default function SignUpLayout() {
                                 {step < totalSteps && (
                                     <button
                                         type="button"
-                                        onClick={() => setStep(step + 1)}
-                                        className="flex items-center gap-2 px-6 py-2 rounded-full text-sm font-medium text-white transition-colors"
+                                        onClick={handleContinue}
+                                        className="flex items-center gap-2 rounded-full px-6 py-2 text-sm font-medium text-white transition-colors"
                                         style={{ backgroundColor: "#14365C" }}
                                         onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#4A8A2C")}
-                                        onMouseOut={(e)  => (e.currentTarget.style.backgroundColor = "#14365C")}
+                                        onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#14365C")}
                                     >
                                         Continue <ChevronRight size={16} />
                                     </button>

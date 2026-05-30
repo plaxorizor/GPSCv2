@@ -4,6 +4,17 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 
+// ── Design tokens (mirrors pro.jsx GlobalStyles) ──────────────────
+const css = `
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=DM+Sans:wght@400;500;600;700&display=swap');
+  .gpsc-signin-root { font-family: 'DM Sans', system-ui, sans-serif; }
+  .gpsc-signin-root .font-display { font-family: 'Fraunces', Georgia, serif; }
+`;
+
+const inputCls =
+    "w-full mt-1 px-4 py-3 rounded-xl border border-[#E5DDC8] bg-white text-[#14365C] placeholder-[#6B6862] focus:outline-none focus:ring-2 focus:ring-[#4A8A2C] transition";
+const labelCls = "text-xs uppercase tracking-wider text-[#6B6862]";
+
 export default function SignIn() {
     const navigate = useNavigate();
     const auth = getAuth();
@@ -12,90 +23,90 @@ export default function SignIn() {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
 
-    async function handleLogin(e: React.SubmitEvent) {
+    async function handleLogin(e: React.FormEvent) {
         e.preventDefault();
+        setError("");
         signInWithEmailAndPassword(auth, email, password)
             .then((userCredential) => {
-                // Signed in
                 console.log(userCredential);
                 navigate("/");
-                // ...
             })
-            .catch((error) => {
-                console.log(error);
-                const errorMessage = error.message;
-                setError(errorMessage);
-                // ...
+            .catch((err) => {
+                console.log(err);
+                setError(err.message);
             });
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center relative bg-linear-to-br from-slate-50 to-indigo-50/30">
-            {/* Background pattern - purely visual */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute -top-40 -right-32 w-80 h-80 bg-indigo-100 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-pulse"></div>
-                <div className="absolute -bottom-40 -left-32 w-80 h-80 bg-rose-100 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-pulse delay-1000"></div>
+        <>
+            <style>{css}</style>
+
+            <div className="gpsc-signin-root flex min-h-screen items-center justify-center px-6 py-12" style={{ backgroundColor: "#FAF6EE" }}>
+                <div className="mx-auto w-full max-w-md">
+                    {/* ── Header ── */}
+                    <div className="mb-10 text-center">
+                        <Logo size={56} />
+                        <h1 className="font-display mt-4 text-4xl" style={{ color: "#14365C" }}>
+                            Welcome back
+                        </h1>
+                        <p className="mt-2 text-sm" style={{ color: "#6B6862" }}>
+                            Sign in to your member dashboard
+                        </p>
+                    </div>
+
+                    {/* ── Card ── */}
+                    <div className="space-y-4 rounded-3xl p-8" style={{ backgroundColor: "#fff", border: "1px solid #E5DDC8" }}>
+                        {error && (
+                            <div className="rounded-xl px-4 py-3 text-sm" style={{ backgroundColor: "#FEE2E2", color: "#B91C1C" }}>
+                                {error}
+                            </div>
+                        )}
+
+                        <form onSubmit={handleLogin} className="space-y-4">
+                            <div>
+                                <label className={labelCls}>
+                                    Email <span style={{ color: "#B91C1C" }}>*</span>
+                                </label>
+                                <input
+                                    required
+                                    type="email"
+                                    placeholder="your@email.com"
+                                    className={inputCls}
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                />
+                            </div>
+
+                            <div>
+                                <label className={labelCls}>
+                                    Password <span style={{ color: "#B91C1C" }}>*</span>
+                                </label>
+                                <input required type="password" className={inputCls} value={password} onChange={(e) => setPassword(e.target.value)} />
+                                <button type="button" className="mt-2 text-xs hover:underline" style={{ color: "#4A8A2C" }}>
+                                    Forgot password?
+                                </button>
+                            </div>
+
+                            <button
+                                type="submit"
+                                className="w-full rounded-xl py-3 font-medium text-white transition-colors"
+                                style={{ backgroundColor: "#14365C" }}
+                                onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#4A8A2C")}
+                                onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#14365C")}
+                            >
+                                Sign in
+                            </button>
+                        </form>
+
+                        <div className="pt-2 text-center text-xs" style={{ color: "#6B6862" }}>
+                            New here?{" "}
+                            <Link to="/signup" className="font-medium hover:underline" style={{ color: "#4A8A2C" }}>
+                                Become a member
+                            </Link>
+                        </div>
+                    </div>
+                </div>
             </div>
-
-            <div className="max-w-md w-full mx-auto px-6 py-16 relative z-10">
-                <div className="text-center mb-10 transform transition-all duration-500 hover:scale-105">
-                    <Logo size={128} />
-                </div>
-
-                <div className="relative mb-6" data-twe-input-wrapper-init>
-                    <input
-                        type="text"
-                        className="peer block min-h-auto w-full rounded border-0 bg-transparent px-3 py-[0.32rem] leading-[2.15] outline-none transition-all duration-200 ease-linear focus:placeholder:opacity-100 peer-focus:text-primary data-[twe-input-state-active]:placeholder:opacity-100 motion-reduce:transition-none dark:text-white dark:placeholder:text-neutral-300 dark:autofill:shadow-autofill dark:peer-focus:text-primary [&:not([data-twe-input-placeholder-active])]:placeholder:opacity-0 "
-                    />
-                </div>
-
-                {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
-
-                <form onSubmit={handleLogin} className="bg-white rounded-3xl p-8 border space-y-4">
-                    <div>
-                        <label className="text-xs uppercase tracking-wider">Email</label>
-                        <input
-                            type="email"
-                            placeholder="your@email.com"
-                            className="w-full mt-1 px-4 py-3 rounded-xl border focus:outline-none focus:ring-2"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                        />
-                    </div>
-                    <div>
-                        <label className="text-xs uppercase tracking-wider">Password</label>
-                        <input
-                            type="password"
-                            placeholder=""
-                            className="w-full mt-1 px-4 py-3 rounded-xl border focus:outline-none focus:ring-2"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                        />
-                        <button type="button" className="text-xs mt-2 hover:underline">
-                            Forgot password?
-                        </button>
-                    </div>
-
-                    <button
-                        type="submit"
-                        className="bg-green-50 text-green-700 font-medium rounded-xl w-full py-3 hover:bg-green-100 transition-colors"
-                    >
-                        Log In
-                    </button>
-
-                    <div className="text-center text-xs pt-2">
-                        New here?{" "}
-                        <Link to="/signup" className="hover:underline">
-                            Create an account
-                        </Link>
-                    </div>
-                </form>
-
-                {/* Optional demo hint – purely visual */}
-                <div className="mt-6 p-4 rounded-xl text-xs text-center">
-                    <span className="font-medium">Demo credentials:</span> any email / any password
-                </div>
-            </div>
-        </div>
+        </>
     );
 }
