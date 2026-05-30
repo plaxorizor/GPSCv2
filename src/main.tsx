@@ -8,20 +8,15 @@ import AuthProvider from "./context/AuthProvider.tsx";
 import Home from "./pages/visitor/Home.tsx";
 import SignIn from "./pages/public/SignIn";
 import SignUp from "./pages/public/SignUp.tsx";
-import Dashboard from "./pages/Dashboard.tsx";
 import About from "./pages/visitor/nav/About";
 import Membership from "./pages/visitor/nav/Membership";
-//import Referral from "./pages/visitor/nav/Referral";
 import FAQ from "./pages/visitor/nav/FAQ";
 import Contact from "./pages/visitor/nav/Contact";
 
+import MemberArea from "./pages/member/MemberArea";
 import ReferralTree from "./pages/ReferralTree";
 
-//import GuestRoute from "./components/GuestRoute";
 import ProtectedRoute from "./components/ProtectedRoute";
-//import AdminMembers from "./pages/admin/AdminMembers";
-//import AdminClaims from "./pages/admin/AdminClaims";
-//import AdminCommissions from "./pages/admin/AdminCommissions";
 
 import AdminArea from "./pages/admin/AdminArea";
 
@@ -29,6 +24,7 @@ import { firebaseConfig } from "./firebase/config.ts";
 import { initializeApp } from "firebase/app";
 
 import "./index.css";
+import Dashboard from "./pages/Dashboard.tsx";
 
 initializeApp(firebaseConfig);
 
@@ -53,12 +49,21 @@ createRoot(document.getElementById("root")!).render(
                     <Route path="/contact" element={<Contact />} />
                     <Route path="/about" element={<About />} />
                     <Route path="/membership" element={<Membership />} />
+                    
+                    <Route
+                        path="/dashboard"
+                        element={
+                            <ProtectedRoute>
+                                <Dashboard />
+                            </ProtectedRoute>
+                        }
+                    />
 
                     <Route
                         path="/dashboard/member"
                         element={
                             <ProtectedRoute>
-                                <Dashboard />{" "}
+                                <MemberArea />
                             </ProtectedRoute>
                         }
                     />
