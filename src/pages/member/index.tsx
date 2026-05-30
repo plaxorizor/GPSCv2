@@ -1,6 +1,6 @@
 // member/index.tsx
 import { useState } from "react";
-import { LayoutGrid, Wallet, FileText, Settings, Share2 } from "lucide-react";
+import { LayoutGrid, Wallet, FileText, Settings, Share2, Network } from "lucide-react";
 import { DashboardSidebar } from "./DashboardSidebar";
 import { MemberOverview } from "./Overview";
 import { MemberReferrals } from "./Referrals";
@@ -57,6 +57,7 @@ export default function MemberDashboard({
 
     const totalEarned = commissions.filter((c) => c.status === "paid").reduce((sum, c) => sum + c.amount, 0);
 
+    const activeReferralsCount = directReferrals.filter((r) => r.status === "active").length;
     const activeReferrals = directReferrals.filter((r) => r.status === "active").length;
     const approvedClaimsTotal = claims.filter((c) => c.status === "approved").reduce((sum, c) => sum + c.amount, 0);
 
@@ -85,6 +86,8 @@ export default function MemberDashboard({
         date: c.date,
     }));
 
+    const totalReferralsCount = directReferrals.length;
+    const approvedClaimsCount = claims.filter((c) => c.status === "approved").length;
     const sidebarItems = [
         { id: "overview", label: "Overview", icon: LayoutGrid },
         { id: "referrals", label: "My referrals", icon: Network, badge: totalReferralsCount },
