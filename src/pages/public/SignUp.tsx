@@ -9,7 +9,7 @@ import { Logo } from "../../components/ui/Logo";
 import { RadioGroup, Radio } from "@headlessui/react";
 import { CheckCircleIcon } from "@heroicons/react/24/solid";
 
-import { type PackageName } from "../../pages/member/types";
+import { type PackageName } from "../types";
 
 const plans = [
     { name: "Basic" as PackageName, price: 698, level: 1, rank: "Sales Consultant", rate: 0.2 },

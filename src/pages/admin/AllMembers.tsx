@@ -36,8 +36,8 @@ const AllMembers = () => {
                         </div>
                     </td>
                     <td className="text-gpsc-stone p-4">{m.package}</td>
-                    <td className="text-gpsc-stone p-4">-</td> {/* TODO: add who is their upline */}
-                    <td className="text-gpsc-stone p-4">{m.rank ?? "-"}</td> {/* TODO: add rank to member */}
+                    <td className="text-gpsc-stone p-4">{m.sponsorName}</td> {/* TODO: add who is their upline */}
+                    <td className="text-gpsc-stone p-4">{m.rank}</td> {/* TODO: add rank to member */}
                     <td className="text-gpsc-stone p-4">{m.dateCreated?.toDate?.()?.toLocaleDateString() ?? "—"}</td>
                     <td className="p-4">
                         <span

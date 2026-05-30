@@ -7,7 +7,7 @@ import { MemberReferrals } from "./Referrals";
 import { MemberEarnings } from "./Earnings";
 import { MemberClaims } from "./Claims";
 import { MemberProfile } from "./Profile";
-import type { Member, PackageName, Commission, ReferralNode, EarningsTrendPoint, Claim, Payout, Beneficiary } from "./types";
+import type { Member, PackageName, Commission, ReferralNode, EarningsTrendPoint, Claim, Payout, Beneficiary } from "../types";
 
 interface MemberDashboardProps {
     user: Member;

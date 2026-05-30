@@ -2,7 +2,7 @@ import React from "react";
 import { Wallet, TrendingUp, Users, CheckCircle, Copy, Share2, Clock, Check } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { StatCard } from "./StatCard";
-import { type Member, type EarningsTrendPoint } from "./types";
+import { type Member, type EarningsTrendPoint } from "../types";
 import { formatCurrency, formatDate } from "./utils";
 
 interface Props {

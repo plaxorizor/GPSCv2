@@ -3,8 +3,8 @@ import useMember from "../../hooks/useMember";
 import { useCommissions } from "../../hooks/useCommissions";
 import { useReferralTree } from "../../hooks/useReferralTree";
 import MemberDashboard from "./index";
-import { PACKAGE_INFO } from "./types";
-import type { Member, Commission, ReferralNode, EarningsTrendPoint, Claim, Payout, Beneficiary } from "./types";
+import { PACKAGE_INFO } from "../types";
+import type { Member, Commission, ReferralNode, EarningsTrendPoint, Claim, Payout, Beneficiary } from "../types";
 
 // Rank mapping based on rank number
 const getRankName = (rank: number): string => {

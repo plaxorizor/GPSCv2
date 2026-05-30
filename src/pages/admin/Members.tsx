@@ -1,7 +1,7 @@
 // admin/Members.tsx
 import React, { useState } from "react";
 import { Plus, Search, Download } from "lucide-react";
-import type { User } from "../member/types";
+import type { User } from "../types";
 import { formatDate } from "./utils";
 
 import AllMembers from "./AllMembers";
@@ -26,7 +26,6 @@ const rankNames: Record<string, string> = {
 };
 
 export const Members: React.FC<Props> = ({ onUpdateStatus, onRefresh, onExport, onAddMember }) => {
-    
     const [query, setQuery] = useState("");
     const [packageFilter, setPackageFilter] = useState("all");
     const [statusFilter, setStatusFilter] = useState("all");

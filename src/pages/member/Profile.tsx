@@ -1,7 +1,7 @@
 import React from "react";
 import { Edit, Lock, Shield } from "lucide-react";
-import { PACKAGE_INFO } from "./types"; // ← value import, not type
-import type { Member } from "./types";
+import { PACKAGE_INFO } from "../types"; // ← value import, not type
+import type { Member } from "../types";
 
 export const MemberProfile: React.FC<{ user: Member }> = ({ user }) => {
     const pkgInfo = user.package ? PACKAGE_INFO[user.package] : null; // ← moved inside

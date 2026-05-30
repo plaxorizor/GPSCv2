@@ -4,11 +4,11 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase/config";
 import useAuth from "../context/useAuth";
 
-import type { Member } from "../pages/member/types";
+import type { Member } from "../pages/types";
 
 // Extend the Member type to include uid
 interface MemberWithUid extends Member {
-  uid: string;
+    uid: string;
 }
 
 const useMember = () => {
@@ -18,7 +18,7 @@ const useMember = () => {
 
     useEffect(() => {
         let isMounted = true;
-        
+
         const fetchMember = async () => {
             if (!currentUser) {
                 if (isMounted) {
@@ -27,14 +27,14 @@ const useMember = () => {
                 }
                 return;
             }
-            
+
             try {
                 const snap = await getDoc(doc(db, "members", currentUser.uid));
                 if (isMounted) {
                     if (snap.exists()) {
                         //const memberData = snap.data() as Member;
                         // Add the uid to the member object
-                        setMember({ uid: snap.id, ...snap.data()} as Member);
+                        setMember({ uid: snap.id, ...snap.data() } as Member);
                     } else {
                         setMember(null);
                     }
@@ -48,9 +48,9 @@ const useMember = () => {
                 }
             }
         };
-        
+
         fetchMember();
-        
+
         return () => {
             isMounted = false;
         };

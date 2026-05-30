@@ -1,6 +1,6 @@
 import React from "react";
 import { Copy, Share2, MessageCircle } from "lucide-react";
-import type { User, ReferralNode } from "./types";
+import type { User, ReferralNode } from "../types";
 import { formatDate } from "./utils";
 
 interface Props {

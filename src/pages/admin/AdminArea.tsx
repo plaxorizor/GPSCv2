@@ -3,9 +3,9 @@ import { useState, useEffect, useMemo } from "react";
 import useAuth from "../../context/useAuth";
 import { Navigate } from "react-router-dom";
 import AdminDashboard from "./index";
-import type { Member } from "../member/types";
+import type { Member } from "../types";
 import type { DashboardStats, GrowthDataPoint, PackageMixItem, TopRecruiter, PendingCommission, CommissionRecord } from "./types";
-import type { Claim } from "../member/types";
+import type { Claim } from "../types";
 
 // Mock data fetching functions - replace with your actual API calls
 const fetchDashboardStats = async (): Promise<DashboardStats> => {
@@ -73,10 +73,8 @@ const fetchRecentClaims = async (): Promise<Claim[]> => {
 };
 
 const fetchMembers = async (): Promise<Member[]> => {
-    // Replace with actual API call 
-    return [
-
-    ];
+    // Replace with actual API call
+    return [];
 };
 
 const fetchClaims = async (): Promise<Claim[]> => {
