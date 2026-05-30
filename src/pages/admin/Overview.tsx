@@ -3,14 +3,13 @@ import React from "react";
 import { Users, TrendingUp, FileText, Wallet } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { StatCard } from "./StatCard";
-import type { DashboardStats, GrowthDataPoint, PackageMixItem, TopRecruiter } from "./types";
+import type { GrowthDataPoint, PackageMixItem, TopRecruiter } from "./types";
 import type { Claim } from "../types";
 import { formatCurrency } from "./utils";
 
 import useAdminStats from "../../hooks/useAdminStats";
 
 interface Props {
-    stats: DashboardStats;
     growthData: GrowthDataPoint[];
     packageMix: PackageMixItem[];
     topRecruiters: TopRecruiter[];
@@ -19,11 +18,10 @@ interface Props {
     onRefresh: () => void;
 }
 
-export const Overview: React.FC<Props> = ({ stats, growthData, packageMix, topRecruiters, recentClaims, loading, onRefresh }) => {
-
+export const Overview: React.FC<Props> = ({ growthData, packageMix, topRecruiters, recentClaims, loading, onRefresh }) => {
     const { stats: adminStats, loading: adminStatsLoading } = useAdminStats();
 
-    if (loading || adminStatsLoading) {
+    if (loading || adminStatsLoading || !adminStats) {
         return (
             <div className="space-y-6">
                 <div className="animate-pulse">
@@ -54,18 +52,19 @@ export const Overview: React.FC<Props> = ({ stats, growthData, packageMix, topRe
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <StatCard label="Active members" value={adminStats?.activeMembers} sub="+12 this month" icon={Users} />
-                <StatCard label="Total revenue" value={formatCurrency(stats.totalRevenue)} sub="From memberships" icon={TrendingUp} />
+                <StatCard label="Active members" value={adminStats.activeMembers} icon={Users} />
+
+                <StatCard label="Total revenue" value={formatCurrency(adminStats.totalRevenue)} sub="From memberships" icon={TrendingUp} />
                 <StatCard
                     label="Pending claims"
-                    value={stats.pendingClaims.toString()}
-                    sub={`Avg. ${stats.avgClaimTimeDays} day TAT`}
+                    value={adminStats.pendingClaims}
+                    sub={adminStats.pendingClaims === 0 ? "No pending claims" : ""}
                     icon={FileText}
                 />
                 <StatCard
                     label="Pending payouts"
-                    value={stats.pendingPayouts.toString()}
-                    sub={formatCurrency(stats.totalRevenue * 0.2)}
+                    value={adminStats.pendingPayouts}
+                    sub={adminStats.pendingPayouts === 0 ? "No pending payouts" : ""}
                     icon={Wallet}
                 />
             </div>
@@ -95,6 +94,7 @@ export const Overview: React.FC<Props> = ({ stats, growthData, packageMix, topRe
                 <div className="border-gpsc-cream-dark rounded-2xl border bg-white p-6">
                     <h2 className="font-display text-gpsc-navy mb-1 text-lg">Package mix</h2>
                     <p className="text-gpsc-stone mb-4 text-xs">By active memberships</p>
+
                     {packageMix.length > 0 ? (
                         <>
                             <ResponsiveContainer width="100%" height={160}>
@@ -121,25 +121,54 @@ export const Overview: React.FC<Props> = ({ stats, growthData, packageMix, topRe
                                     />
                                 </PieChart>
                             </ResponsiveContainer>
-                            <div className="mt-2 space-y-2">
-                                {packageMix.map((p, i) => (
-                                    <div key={i} className="flex items-center gap-2 text-sm">
-                                        <div className="h-3 w-3 rounded-full" style={{ backgroundColor: p.color }}></div>
-                                        <span className="text-gpsc-stone">{p.name}</span>
-                                        <span className="text-gpsc-navy ml-auto font-medium">{p.value}</span>
-                                    </div>
-                                ))}
-                            </div>
                         </>
                     ) : (
                         <div className="text-gpsc-stone flex h-60 items-center justify-center">No package data available</div>
                     )}
+
+                    <div className="mt-2 space-y-2">
+                        <div className="flex items-center gap-2 text-sm">
+                            <div className="h-3 w-3 rounded-full bg-indigo-600"></div>
+                            <span className="text-gpsc-stone">Basic Care</span>
+                            <span className="text-gpsc-navy ml-auto font-medium">{adminStats.packageCounts.Basic}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                            <div className="h-3 w-3 rounded-full bg-lime-600"></div>
+                            <span className="text-gpsc-stone">Family Care</span>
+                            <span className="text-gpsc-navy ml-auto font-medium">{adminStats.packageCounts.Family}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                            <div className="h-3 w-3 rounded-full bg-yellow-500"></div>
+                            <span className="text-gpsc-stone">Premium Care</span>
+                            <span className="text-gpsc-navy ml-auto font-medium">{adminStats.packageCounts.Premium}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <div className="grid gap-6 lg:grid-cols-2">
                 <div className="border-gpsc-cream-dark rounded-2xl border bg-white p-6">
                     <h2 className="font-display text-gpsc-navy mb-4 text-lg">Top recruiters this quarter</h2>
+                    
+                    {/* Top recruiters */}
+                    <div className="rounded-2xl border bg-white p-6">
+                        <h3 className="mb-4 font-medium">Top Recruiters</h3>
+                        <div className="space-y-3">
+                            {adminStats.topRecruiters.map((r, i) => (
+                                <div key={r.uid} className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-sm font-bold text-gray-400">#{i + 1}</span>
+                                        <span className="text-sm font-medium">{r.name}</span>
+                                    </div>
+                                    <span className="text-sm text-gray-500">
+                                        {r.referralCount} referral{r.referralCount !== 1 ? "s" : ""}
+                                    </span>
+                                </div>
+                            ))}
+                            {adminStats.topRecruiters.length === 0 && <p className="text-sm text-gray-400">No referrals yet.</p>}
+                        </div>
+                    </div>
+
                     <div className="space-y-3">
                         {topRecruiters.length > 0 ? (
                             topRecruiters.map((recruiter, i) => (

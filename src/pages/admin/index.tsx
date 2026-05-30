@@ -43,7 +43,6 @@ interface AdminDashboardProps {
 
 export default function AdminDashboard({
     adminUser,
-    stats,
     growthData,
     packageMix,
     topRecruiters,
@@ -93,7 +92,6 @@ export default function AdminDashboard({
             <main className="max-w-6xl flex-1 p-6 lg:p-10">
                 {currentSection === "overview" && (
                     <Overview
-                        stats={stats}
                         growthData={growthData}
                         packageMix={packageMix}
                         topRecruiters={topRecruiters}
