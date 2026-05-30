@@ -1,41 +1,62 @@
+// hooks/useMember.ts
 import { useEffect, useState } from "react";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase/config";
 import useAuth from "../context/useAuth";
 
-export interface Member {
-    uid: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    mobile: string;
-    birthDate: Date;
-    civilStatus: "single" | "married" | "divorced" | "widowed";
-    city: string;
-    province: string;
-    package: "basic" | "family" | "premium";
-    status: "pending" | "active" | "inactive";
-    referredBy: string;
-    rank: number;
-    dateCreated: Date;
+import type { Member } from "../pages/member/types";
+
+// Extend the Member type to include uid
+interface MemberWithUid extends Member {
+  uid: string;
 }
 
 const useMember = () => {
     const { currentUser } = useAuth();
-    const [member, setMember] = useState<Member | null>(null);
+    const [member, setMember] = useState<MemberWithUid | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (!currentUser) return;
-        const fetch = async () => {
-            await Promise.resolve();
-            const snap = await getDoc(doc(db, "members", currentUser.uid));
-            if (snap.exists()) setMember(snap.data() as Member);
-            setLoading(false);
+        let isMounted = true;
+        
+        const fetchMember = async () => {
+            if (!currentUser) {
+                if (isMounted) {
+                    setMember(null);
+                    setLoading(false);
+                }
+                return;
+            }
+            
+            try {
+                const snap = await getDoc(doc(db, "members", currentUser.uid));
+                if (isMounted) {
+                    if (snap.exists()) {
+                        //const memberData = snap.data() as Member;
+                        // Add the uid to the member object
+                        setMember({ uid: snap.id, ...snap.data()} as Member);
+                    } else {
+                        setMember(null);
+                    }
+                    setLoading(false);
+                }
+            } catch (error) {
+                console.error("Error fetching member:", error);
+                if (isMounted) {
+                    setMember(null);
+                    setLoading(false);
+                }
+            }
         };
-        fetch();
+        
+        fetchMember();
+        
+        return () => {
+            isMounted = false;
+        };
     }, [currentUser]);
 
     return { member, loading };
 };
+
 export default useMember;

@@ -1,27 +1,40 @@
-import { useState } from "react";
+import { getDoc, setDoc, doc, serverTimestamp } from "firebase/firestore";
+import { useEffect, useState } from "react";
 import { registerUser } from "../../firebase/auth";
 import { db } from "../../firebase/config";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Logo } from "../../components/ui/Logo";
 
-import { useForm } from "react-hook-form";
-
-import { RadioGroup, Radio, Select, Label, Field } from "@headlessui/react";
+import { RadioGroup, Radio } from "@headlessui/react";
 import { CheckCircleIcon } from "@heroicons/react/24/solid";
-import { ChevronDownIcon } from "@heroicons/react/20/solid";
 
-const plans = [
-    { plan: "basic", name: "Basic Care", price: "₱698", levels: "Level 1 only" },
-    { plan: "family", name: "Family Care", price: "₱1,698", levels: "Levels 1-3" },
-    { plan: "premium", name: "Premium Care", price: "₱4,998", levels: "Levels 1-6" },
+import { type Package } from "../../pages/member/types";
+
+const plans: Package[] = [
+    { name: "Basic", price: 698, level: 1, rank: "Sales Consultant", rate: 0.2 },
+    { name: "Family", price: 1698, level: 3, rank: "Team Consultant", rate: 0.05 },
+    { name: "Premium", price: 4998, level: 6, rank: "Sales Manager", rate: 0.03 },
 ];
 
-export default function SignUpLayout() {
-    const navigate = useNavigate();
+const generateReferralCode = (): string => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    const segment = (len: number) => Array.from({ length: len }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+    return `${segment(4)}-${segment(4)}-${segment(4)}`;
+};
 
-    const { register } = useForm();
+export default function SignUpLayout() {
+    const [searchParams] = useSearchParams();
+    const [refValue, setRefValue] = useState<string>("");
+
+    useEffect(() => {
+        const ref = searchParams.get("ref");
+        if (ref) {
+            setRefValue(ref);
+        }
+    }, [searchParams]);
+
+    const navigate = useNavigate();
 
     const [selectedPlan, setSelectedPlan] = useState(plans[0]);
 
@@ -31,26 +44,42 @@ export default function SignUpLayout() {
         lastName: "",
         email: "",
         password: "",
+        confirmPassword: "",
         mobile: "",
         birthDate: "",
         civilStatus: "",
         city: "",
         province: "",
         referralCode: "",
-        beneficiaries: [""],
-        b_Relationship: [""],
+        beneficiaries: [{ name: "", relationship: "" }],
     });
     const [error, setError] = useState("");
 
     const handleSubmit = async (e: React.SubmitEvent) => {
         e.preventDefault();
         setError("");
+        if (form.password !== form.confirmPassword) {
+            setError("Passwords do not match.");
+            return;
+        }
         try {
+            // 1. Resolve referral code to upline UID
+            const snap = await getDoc(doc(db, "referralCodes", form.referralCode));
+            if (!snap.exists()) {
+                setError("Invalid referral code.");
+                return;
+            }
+            const referredBy = snap.data().uid;
+
+            // 2. Register user in Firebase Auth
             const { user } = await registerUser(form.email, form.password);
 
-            // Save member to Firestore (do NOT store raw passwords)
+            const referralCode = generateReferralCode();
+            // 3. Save member to Firestore
+
             await setDoc(doc(db, "members", user.uid), {
-                package: selectedPlan.plan,
+                referralCode: referralCode, // their OWN code to share
+                referredBy: referredBy, // their upline's UID
                 firstName: form.firstName,
                 lastName: form.lastName,
                 email: form.email,
@@ -59,12 +88,18 @@ export default function SignUpLayout() {
                 civilStatus: form.civilStatus,
                 city: form.city,
                 province: form.province,
-                referralCode: form.referralCode,
+                package: selectedPlan.name,
                 beneficiaries: form.beneficiaries,
+                status: "pending",
+                isAdmin: false,
                 dateCreated: serverTimestamp(),
             });
 
-            navigate("/"); // Redirect to home or dashboard
+            await setDoc(doc(db, "referralCodes", referralCode), {
+                uid: user.uid,
+            });
+
+            navigate("/dashboard/member");
         } catch (err) {
             setError(err instanceof Error ? err.message : "An unknown error occurred");
         }
@@ -97,17 +132,25 @@ export default function SignUpLayout() {
                                     >
                                         {plans.map((plan) => (
                                             <Radio
-                                                key={plan.plan}
+                                                key={plan.name}
                                                 value={plan}
                                                 className="group relative flex cursor-pointer rounded-lg bg-white/5 px-5 py-4 text-stone-950 shadow-md transition focus:not-data-focus:outline-none data-checked:bg-white/10 data-focus:outline data-focus:outline-white"
                                             >
                                                 <div className="flex w-full items-center justify-between">
                                                     <div className="text-sm/6">
-                                                        <p className="font-semibold text-stone-950">{plan.name}</p>
+                                                        <p className="font-semibold text-stone-950">
+                                                            {plan.name} {" Care"}
+                                                        </p>
                                                         <div className="flex gap-2 text-stone-700">
-                                                            <div>{plan.price}</div>
+                                                            <div>
+                                                                {"₱"}
+                                                                {plan.price}
+                                                            </div>
                                                             <div aria-hidden="true">&middot;</div>
-                                                            <div>{plan.levels}</div>
+                                                            <div>
+                                                                {"Level "}
+                                                                {plan.level}
+                                                            </div>
                                                         </div>
                                                     </div>
                                                     <CheckCircleIcon className="size-6 fill-stone-950 opacity-0 transition group-data-checked:opacity-100" />
@@ -127,7 +170,6 @@ export default function SignUpLayout() {
                             <div>
                                 <label className="text-xs tracking-wider uppercase">First name</label>
                                 <input
-                                    {...register("firstName")}
                                     placeholder="Juan"
                                     className="mt-1 w-full rounded-xl border px-4 py-3 focus:ring-2 focus:outline-none"
                                     onChange={(e) =>
@@ -141,7 +183,6 @@ export default function SignUpLayout() {
                             <div>
                                 <label className="text-xs tracking-wider uppercase">Last name</label>
                                 <input
-                                    {...register("lastName")}
                                     placeholder="Dela Cruz"
                                     className="mt-1 w-full rounded-xl border px-4 py-3 focus:ring-2 focus:outline-none"
                                     onChange={(e) =>
@@ -157,7 +198,6 @@ export default function SignUpLayout() {
                         <div className="mt-4">
                             <label className="text-xs tracking-wider uppercase">Email</label>
                             <input
-                                {...register("email")}
                                 type="email"
                                 placeholder="juandelacruz@example.com"
                                 className="mt-1 w-full rounded-xl border px-4 py-3 focus:ring-2 focus:outline-none"
@@ -186,6 +226,12 @@ export default function SignUpLayout() {
                                     type="password"
                                     placeholder=""
                                     className="mt-1 w-full rounded-xl border px-4 py-3 focus:ring-2 focus:outline-none"
+                                    onChange={(e) =>
+                                        setForm({
+                                            ...form,
+                                            confirmPassword: e.target.value,
+                                        })
+                                    }
                                 />
                             </div>
                         </div>
@@ -193,7 +239,6 @@ export default function SignUpLayout() {
                         <div className="mt-4">
                             <label className="text-xs tracking-wider uppercase">Mobile number</label>
                             <input
-                                {...register("mobile")}
                                 placeholder="09XXXXXXXXX"
                                 className="mt-1 w-full rounded-xl border px-4 py-3 focus:ring-2 focus:outline-none"
                                 onChange={(e) => setForm({ ...form, mobile: e.target.value })}
@@ -203,7 +248,6 @@ export default function SignUpLayout() {
                         <div className="mt-4">
                             <label className="text-xs tracking-wider uppercase">Birth Date</label>
                             <input
-                                {...register("birthDate")}
                                 type="date"
                                 className="mt-1 w-full rounded-xl border px-4 py-3 focus:ring-2 focus:outline-none"
                                 onChange={(e) => setForm({ ...form, birthDate: e.target.value })}
@@ -240,45 +284,113 @@ export default function SignUpLayout() {
                         </div>
 
                         <div className="mt-4">
+                            <label>Civil Status</label>
+                            <select
+                                className="mt-1 w-full rounded-xl border px-4 py-3 focus:ring-2 focus:outline-none"
+                                onChange={(e) =>
+                                    setForm({
+                                        ...form,
+                                        civilStatus: e.target.value,
+                                    })
+                                }
+                            >
+                                <option value="single">Single</option>
+                                <option value="married">Married</option>
+                                <option value="divorced">Divorced</option>
+                                <option value="widowed">Widowed</option>
+                            </select>
+                        </div>
+
+                        <div className="mt-4">
                             <label>Step 3: Sponsor & Beneficiary</label>
                         </div>
 
                         <div className="mt-4">
                             <label className="text-xs tracking-wider uppercase">Referral Code</label>
                             <input
+                                value={refValue}
                                 placeholder="e.g. MARIA-ABCD-1234"
                                 className="mt-1 w-full rounded-xl border px-4 py-3 focus:ring-2 focus:outline-none"
-                                onChange={(e) =>
+                                onChange={(e) => {
+                                    setRefValue(e.target.value);
                                     setForm({
                                         ...form,
                                         referralCode: e.target.value,
-                                    })
-                                }
+                                    });
+                                }}
                             />
                         </div>
 
-                        <div className="mt-4">
-                            <label className="text-xs tracking-wider uppercase">Beneficiary</label>
-                            <input
-                                placeholder="e.g. Maria Dela Cruz"
-                                className="mt-1 w-full rounded-xl border px-4 py-3 focus:ring-2 focus:outline-none"
-                            />
-                            <div className="relative">
-                                <Field>
-                                    <Label className="block">Relationship</Label>
-                                    <Select name="b_relationship">
-                                        <option value="Parent">Parent</option>
-                                        <option value="Sibling">Sibling</option>
-                                        <option value="Child">Child</option>
-                                        <option value="Spouse">Spouse</option>
-                                    </Select>
-                                    <ChevronDownIcon
-                                        className="group pointer-events-none absolute top-2.5 right-2.5 size-4 fill-white/60"
-                                        aria-hidden="true"
-                                    />
-                                </Field>
+                        {selectedPlan.name !== "Basic" && (
+                            <div className="mt-4 space-y-3">
+                                <label className="text-xs tracking-wider uppercase">Beneficiaries</label>
+
+                                {form.beneficiaries.map((b, index) => (
+                                    <div key={index} className="space-y-2 rounded-xl border p-4">
+                                        <p className="text-xs text-stone-500">Beneficiary {index + 1}</p>
+
+                                        <input
+                                            placeholder="Full name (e.g. Maria Dela Cruz)"
+                                            className="mt-1 w-full rounded-xl border px-4 py-3 focus:ring-2 focus:outline-none"
+                                            value={b.name}
+                                            onChange={(e) => {
+                                                const updated = [...form.beneficiaries];
+                                                updated[index].name = e.target.value;
+                                                setForm({ ...form, beneficiaries: updated });
+                                            }}
+                                        />
+
+                                        <select
+                                            className="mt-1 w-full rounded-xl border px-4 py-3 focus:ring-2 focus:outline-none"
+                                            value={b.relationship}
+                                            onChange={(e) => {
+                                                const updated = [...form.beneficiaries];
+                                                updated[index].relationship = e.target.value;
+                                                setForm({ ...form, beneficiaries: updated });
+                                            }}
+                                        >
+                                            <option value="">Select relationship</option>
+                                            <option value="Parent">Parent</option>
+                                            <option value="Sibling">Sibling</option>
+                                            <option value="Child">Child</option>
+                                            <option value="Spouse">Spouse</option>
+                                        </select>
+                                    </div>
+                                ))}
+
+                                {/* Add beneficiary button — limit based on plan */}
+                                {form.beneficiaries.length < (selectedPlan.name === "Family" ? 2 : 4) && (
+                                    <button
+                                        type="button"
+                                        className="text-sm text-blue-500 hover:underline"
+                                        onClick={() =>
+                                            setForm({
+                                                ...form,
+                                                beneficiaries: [...form.beneficiaries, { name: "", relationship: "" }],
+                                            })
+                                        }
+                                    >
+                                        + Add another beneficiary
+                                    </button>
+                                )}
+
+                                {/* Remove button — only show if more than 1 */}
+                                {form.beneficiaries.length > 1 && (
+                                    <button
+                                        type="button"
+                                        className="text-sm text-red-400 hover:underline"
+                                        onClick={() =>
+                                            setForm({
+                                                ...form,
+                                                beneficiaries: form.beneficiaries.slice(0, -1),
+                                            })
+                                        }
+                                    >
+                                        - Remove last beneficiary
+                                    </button>
+                                )}
                             </div>
-                        </div>
+                        )}
 
                         <div className="mt-6">
                             <button type="submit" className="w-full rounded-xl bg-blue-500 py-3 text-white hover:bg-blue-600">

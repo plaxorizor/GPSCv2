@@ -6,12 +6,11 @@ import { MemberReferrals } from "./Referrals";
 import { MemberEarnings } from "./Earnings";
 import { MemberClaims } from "./Claims";
 import { MemberProfile } from "./Profile";
-import type { User, Package, Rank, Commission, ReferralNode, EarningsTrendPoint, Claim, Payout, Beneficiary } from "./types";
+import type { Member, Package, Commission, ReferralNode, EarningsTrendPoint, Claim, Payout, Beneficiary } from "./types";
 
 interface MemberDashboardProps {
-    user: User;
-    packageData: Package | null;
-    rankData: Rank | null;
+    user: Member;
+    packageData: Package;
     commissions: Commission[];
     directReferrals: ReferralNode[];
     earningsTrend: EarningsTrendPoint[];
@@ -32,24 +31,18 @@ interface MemberDashboardProps {
 export default function MemberDashboard({
     user,
     packageData,
-    rankData,
     commissions,
     directReferrals,
     earningsTrend,
     claims,
     payouts,
-    beneficiaries,
     referralLink,
     onCopyReferralLink,
     onShareReferralLink,
     onRequestPayout,
     onFileClaim,
-    onEditProfile,
-    onChangePassword,
-    onEnable2FA,
     onLogout,
 }: MemberDashboardProps) {
-    
     const [currentSection, setCurrentSection] = useState("overview");
 
     const availableToWithdraw = commissions.filter((c) => c.status === "payable").reduce((s, c) => s + c.amount, 0);
@@ -85,17 +78,17 @@ export default function MemberDashboard({
 
     const sidebarItems = [
         { id: "overview", label: "Overview", icon: LayoutGrid },
-        { id: "referrals", label: "My referrals", icon: Network, badge: totalReferralsCount },
+        { id: "referrals", label: "Referrals", icon: Network, badge: totalReferralsCount },
         { id: "earnings", label: "Earnings", icon: Wallet },
         { id: "claims", label: "Claims", icon: FileText, badge: claims.filter((c) => c.status !== "approved").length },
         { id: "profile", label: "Profile", icon: Settings },
     ];
 
-    const packageName = packageData?.name || "—";
-    const rankName = rankData?.name || "Member";
+    const packageName = packageData?.name;
+    const rankName = packageData?.rank;
 
     return (
-        <div className="flex min-h-screen gpsc-cream">
+        <div className="gpsc-cream flex min-h-screen">
             <DashboardSidebar
                 user={user}
                 rankName={rankName}
@@ -104,7 +97,7 @@ export default function MemberDashboard({
                 items={sidebarItems}
                 onLogout={onLogout}
             />
-            <main className="flex-1 p-6 lg:p-10 max-w-6xl">
+            <main className="max-w-6xl flex-1 p-6 lg:p-10">
                 {currentSection === "overview" && (
                     <MemberOverview
                         user={user}
@@ -145,17 +138,7 @@ export default function MemberDashboard({
                     />
                 )}
                 {currentSection === "claims" && <MemberClaims claims={claims} onFileClaim={onFileClaim} />}
-                {currentSection === "profile" && (
-                    <MemberProfile
-                        user={user}
-                        packageName={packageName}
-                        rankName={rankName}
-                        beneficiaries={beneficiaries}
-                        onEditProfile={onEditProfile}
-                        onChangePassword={onChangePassword}
-                        onEnable2FA={onEnable2FA}
-                    />
-                )}
+                {currentSection === "profile" && <MemberProfile  user={user} />}
             </main>
         </div>
     );

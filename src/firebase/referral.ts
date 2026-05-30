@@ -3,7 +3,8 @@ import { db } from "./config";
 
 export interface TreeNode {
     uid: string;
-    fullName: string;
+    firstName: string;
+    lastName: string;
     package: string | null;
     status: string;
     level: number;
@@ -22,7 +23,8 @@ export const buildReferralTree = async (memberId: string, level: number = 1, max
         const children = await buildReferralTree(doc.id, level + 1, maxLevel);
         nodes.push({
             uid: doc.id,
-            fullName: data.fullName,
+            firstName: data.firstName ?? "",
+            lastName: data.lastName ?? "",
             package: data.package,
             status: data.status,
             level,
