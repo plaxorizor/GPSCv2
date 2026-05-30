@@ -17,7 +17,7 @@ interface AdminStats {
     topRecruiters: TopRecruiter[];
 }
 
-export const useAdminStats = () => {
+export default () => {
     const [stats, setStats] = useState<AdminStats | null>(null);
     const [loading, setLoading] = useState(true);
 

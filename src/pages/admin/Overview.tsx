@@ -7,6 +7,8 @@ import type { DashboardStats, GrowthDataPoint, PackageMixItem, TopRecruiter } fr
 import type { Claim } from "../types";
 import { formatCurrency } from "./utils";
 
+import useAdminStats from "../../hooks/useAdminStats";
+
 interface Props {
     stats: DashboardStats;
     growthData: GrowthDataPoint[];
@@ -18,7 +20,10 @@ interface Props {
 }
 
 export const Overview: React.FC<Props> = ({ stats, growthData, packageMix, topRecruiters, recentClaims, loading, onRefresh }) => {
-    if (loading) {
+
+    const { stats: adminStats, loading: adminStatsLoading } = useAdminStats();
+
+    if (loading || adminStatsLoading) {
         return (
             <div className="space-y-6">
                 <div className="animate-pulse">
@@ -49,7 +54,7 @@ export const Overview: React.FC<Props> = ({ stats, growthData, packageMix, topRe
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <StatCard label="Active members" value={stats.activeMembers.toLocaleString()} sub="+12 this month" icon={Users} />
+                <StatCard label="Active members" value={adminStats?.activeMembers} sub="+12 this month" icon={Users} />
                 <StatCard label="Total revenue" value={formatCurrency(stats.totalRevenue)} sub="From memberships" icon={TrendingUp} />
                 <StatCard
                     label="Pending claims"

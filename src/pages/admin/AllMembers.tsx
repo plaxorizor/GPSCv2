@@ -8,16 +8,16 @@ const AllMembers = () => {
     const onUpdateStatus = (uid: string, status: string) => {
         console.log(uid, status);
     };
-    if (loading) {
+    if (loading)
         return (
-            <div className="space-y-6">
-                <div className="animate-pulse">
-                    <div className="bg-gpsc-cream-dark mb-4 h-8 w-32 rounded"></div>
-                    <div className="bg-gpsc-cream-dark h-96 rounded-2xl"></div>
-                </div>
-            </div>
+            <tbody>
+                <tr>
+                    <td colSpan={6} className="p-4 text-center">
+                        Loading...
+                    </td>
+                </tr>
+            </tbody>
         );
-    }
 
     return (
         <tbody>
