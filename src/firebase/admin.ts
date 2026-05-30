@@ -1,22 +1,12 @@
 // firebase/admin.ts
-import { 
-    collection, 
-    getDocs, 
-    doc, 
-    updateDoc, 
-    addDoc, 
-    serverTimestamp, 
-    query, 
-    where,
-    orderBy,
-    limit as limitQuery
-} from "firebase/firestore";
+import { collection, getDocs, doc, updateDoc, addDoc, serverTimestamp, query, where, orderBy, limit as limitQuery } from "firebase/firestore";
 import { db } from "./config";
 
 // --- MEMBERS ---
 export const getAllMembers = async () => {
-    const snap = await getDocs(collection(db, "members"));
-    return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    const q = query(collection(db, "members"), where("isAdmin", "==", false));
+    const snap = await getDocs(q);
+    return snap.docs.map((d) => ({ uid: d.id, ...d.data() }));
 };
 
 export const updateMemberStatus = async (uid: string, status: "active" | "inactive" | "pending") => {
@@ -72,13 +62,13 @@ export const getDashboardStats = async () => {
         getDocs(query(collection(db, "claims"), where("status", "==", "pending"))),
         getDocs(query(collection(db, "commissions"), where("status", "==", "pending"))),
     ]);
-    
+
     const paidCommissionsSnap = await getDocs(query(collection(db, "commissions"), where("status", "==", "paid")));
     const totalCommissionsPaid = paidCommissionsSnap.docs.reduce((sum, doc) => sum + (doc.data().amount || 0), 0);
-    
+
     return {
         totalMembers: membersSnap.size,
-        activeMembers: membersSnap.docs.filter(d => d.data().status === "active").length,
+        activeMembers: membersSnap.docs.filter((d) => d.data().status === "active").length,
         pendingClaims: claimsSnap.size,
         pendingCommissions: commissionsSnap.size,
         totalRevenue: 0,
@@ -89,59 +79,59 @@ export const getDashboardStats = async () => {
 export const getMembershipGrowth = async (months: number = 6) => {
     const membersSnap = await getDocs(collection(db, "members"));
     const monthlyData: Record<string, number> = {};
-    
+
     const now = new Date();
     const monthsAgo = new Date();
     monthsAgo.setMonth(now.getMonth() - months);
-    
-    membersSnap.docs.forEach(doc => {
+
+    membersSnap.docs.forEach((doc) => {
         const joinedAt = doc.data().joinedAt;
         if (joinedAt) {
             const date = new Date(joinedAt);
             if (date >= monthsAgo) {
-                const monthKey = date.toLocaleString('default', { month: 'short' });
+                const monthKey = date.toLocaleString("default", { month: "short" });
                 monthlyData[monthKey] = (monthlyData[monthKey] || 0) + 1;
             }
         }
     });
-    
-    const monthOrder = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    const monthOrder = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     const currentMonth = now.getMonth();
     const result = [];
-    
+
     for (let i = months - 1; i >= 0; i--) {
         const monthIndex = (currentMonth - i + 12) % 12;
         const monthName = monthOrder[monthIndex];
         result.push({
             month: monthName,
-            members: monthlyData[monthName] || 0
+            members: monthlyData[monthName] || 0,
         });
     }
-    
+
     return result;
 };
 
 export const getPackageDistribution = async () => {
     const membersSnap = await getDocs(collection(db, "members"));
     const distribution: Record<string, number> = {};
-    
-    membersSnap.docs.forEach(doc => {
+
+    membersSnap.docs.forEach((doc) => {
         const pkg = doc.data().package || "basic";
         distribution[pkg] = (distribution[pkg] || 0) + 1;
     });
-    
+
     const colors: Record<string, string> = {
         basic: "#14365C",
         family: "#4A8A2C",
         premium: "#2D5A85",
     };
-    
+
     const names: Record<string, string> = {
         basic: "Basic",
         family: "Family",
         premium: "Premium",
     };
-    
+
     return Object.entries(distribution).map(([name, value]) => ({
         name: names[name] || name.charAt(0).toUpperCase() + name.slice(1),
         value,
@@ -160,8 +150,8 @@ export const getTopRecruiters = async (limitCount: number = 5) => {
     const membersSnap = await getDocs(collection(db, "members"));
     const referralCounts: Record<string, number> = {};
     const memberDetails: Record<string, MemberDetails> = {};
-    
-    membersSnap.docs.forEach(doc => {
+
+    membersSnap.docs.forEach((doc) => {
         const data = doc.data();
         const sponsorId = data.sponsorId;
         if (sponsorId) {
@@ -174,7 +164,7 @@ export const getTopRecruiters = async (limitCount: number = 5) => {
             initials: `${(data.firstName || "")[0]}${(data.lastName || "")[0]}`.toUpperCase(),
         };
     });
-    
+
     const topRecruiters = Object.entries(referralCounts)
         .sort((a, b) => b[1] - a[1])
         .slice(0, limitCount)
@@ -183,35 +173,28 @@ export const getTopRecruiters = async (limitCount: number = 5) => {
             ...memberDetails[id],
             referrals: count,
         }));
-    
+
     return topRecruiters;
 };
 
 export const getRecentClaims = async (limitCount: number = 5) => {
-    const q = query(
-        collection(db, "claims"), 
-        orderBy("submittedAt", "desc"), 
-        limitQuery(limitCount)
-    );
+    const q = query(collection(db, "claims"), orderBy("submittedAt", "desc"), limitQuery(limitCount));
     const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 };
 
 export const getCommissionHistory = async () => {
-    const q = query(
-        collection(db, "commissions"), 
-        where("status", "in", ["paid", "released"])
-    );
+    const q = query(collection(db, "commissions"), where("status", "in", ["paid", "released"]));
     const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 };
 
 export const getAllPayouts = async () => {
     const snapshot = await getDocs(collection(db, "payouts"));
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 };
 
 export const getAllCommissions = async () => {
     const snapshot = await getDocs(collection(db, "commissions"));
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 };

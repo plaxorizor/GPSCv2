@@ -6,6 +6,8 @@ export const PACKAGE_INFO = {
 } as const;
 
 export type PackageName = "Basic" | "Family" | "Premium";
+export type MemberStatus = "pending" | "active" | "inactive";
+export type MemberCivilStatus = "single" | "married" | "divorced" | "widowed";
 
 export interface Member {
     uid: string;
@@ -14,13 +16,13 @@ export interface Member {
     email: string;
     mobile: string;
     birthDate: string; // stored as string from date input
-    civilStatus: "single" | "married" | "divorced" | "widowed";
+    civilStatus: MemberCivilStatus;
     city: string;
     province: string;
-    package: PackageName | null; // ← simple string, not object
-    status: "pending" | "active" | "inactive";
+    package: PackageName; // ← simple string, not object
+    status: MemberStatus;
     referralCode: string;
-    referredBy: string | null;
+    referredBy: string;
     beneficiaries: Beneficiary[];
     isAdmin: boolean;
     dateCreated: any; // Firestore Timestamp
