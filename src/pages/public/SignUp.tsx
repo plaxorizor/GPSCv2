@@ -9,12 +9,12 @@ import { Logo } from "../../components/ui/Logo";
 import { RadioGroup, Radio } from "@headlessui/react";
 import { CheckCircleIcon } from "@heroicons/react/24/solid";
 
-import { type Package } from "../../pages/member/types";
+import { type PackageName } from "../../pages/member/types";
 
-const plans: Package[] = [
-    { name: "Basic", price: 698, level: 1, rank: "Sales Consultant", rate: 0.2 },
-    { name: "Family", price: 1698, level: 3, rank: "Team Consultant", rate: 0.05 },
-    { name: "Premium", price: 4998, level: 6, rank: "Sales Manager", rate: 0.03 },
+const plans = [
+    { name: "Basic" as PackageName, price: 698, level: 1, rank: "Sales Consultant", rate: 0.2 },
+    { name: "Family" as PackageName, price: 1698, level: 3, rank: "Team Consultant", rate: 0.05 },
+    { name: "Premium" as PackageName, price: 4998, level: 6, rank: "Sales Manager", rate: 0.03 },
 ];
 
 const generateReferralCode = (): string => {
