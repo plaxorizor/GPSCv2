@@ -6,10 +6,10 @@ export const ELIGIBILITY_MILESTONES = [
     { label: "Natural/Accidental (₱40,000 tier)", months: 10 },
 ];
 
-export const getEligibilityTimeline = (dateCreated: any) => {
+export const getEligibilityTimeline = (dateCreated: Date | { toDate: () => Date }) => {
     if (!dateCreated) return ELIGIBILITY_MILESTONES.map((m) => ({ ...m, unlocked: false }));
 
-    const joinDate: Date = dateCreated.toDate?.() ?? new Date(dateCreated);
+    const joinDate: Date = typeof dateCreated === "object" && "toDate" in dateCreated ? dateCreated.toDate() : new Date(dateCreated);
     const now = new Date();
     const monthsElapsed = (now.getFullYear() - joinDate.getFullYear()) * 12 + (now.getMonth() - joinDate.getMonth());
 

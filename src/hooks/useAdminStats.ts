@@ -15,6 +15,7 @@ export interface GrowthDataPoint {
 
 interface AdminStats {
     activeMembers: number;
+    pendingAccounts: number;
     totalRevenue: number;
     packageCounts: { Basic: number; Family: number; Premium: number };
     pendingClaims: number;
@@ -40,6 +41,7 @@ export default () => {
             const packageCounts = { Basic: 0, Family: 0, Premium: 0 };
             let totalRevenue = 0;
             let activeMembers = 0;
+            let pendingAccounts = 0;
             const referralCount: Record<string, number> = {};
 
             // Build last 6 months buckets
@@ -57,6 +59,7 @@ export default () => {
                 else if (m.package === "Premium") { packageCounts.Premium++; totalRevenue += 4998; }
 
                 if (m.status === "active") activeMembers++;
+                if (m.status === "pending") pendingAccounts++;
 
                 if (m.referredBy) {
                     referralCount[m.referredBy] = (referralCount[m.referredBy] ?? 0) + 1;
@@ -91,6 +94,7 @@ export default () => {
 
             setStats({
                 activeMembers,
+                pendingAccounts,
                 totalRevenue,
                 packageCounts,
                 pendingClaims: claimsSnap.size,

@@ -1,6 +1,7 @@
 import React from "react";
 import { LogOut } from "lucide-react";
-import type { User } from "../types";
+import type { User } from "./types";
+import logo from '../../components/ui/Logo.png';
 
 interface SidebarItem {
     id: string;
@@ -20,21 +21,13 @@ interface Props {
 
 export const DashboardSidebar: React.FC<Props> = ({ user, rankName, currentSection, onSectionChange, items, onLogout }) => (
     <aside className="border-gpsc-cream-dark hidden min-h-screen w-64 flex-col border-r bg-white lg:flex">
-        <div className="border-gpsc-cream-dark border-b p-6">
-            <div className="flex items-center gap-2">
-                <div className="relative h-8 w-8">
-                    <div className="border-gpsc-navy/30 absolute inset-0 rounded-full border"></div>
-                    <div className="bg-gpsc-green/20 absolute inset-1 rounded-full"></div>
-                    <div className="bg-gpsc-navy absolute inset-2 flex items-center justify-center rounded-full">
-                        <div className="h-2 w-2 rounded-full bg-white"></div>
-                    </div>
-                </div>
+       <div className="flex items-center gap-3">
+               <img src={logo} alt="GPSC Logo" className="h-14 w-14 object-contain rounded-full ml-2" />
                 <div className="leading-tight">
                     <div className="font-display text-gpsc-navy text-base font-semibold tracking-tight">Green Pasture</div>
                     <div className="font-display text-gpsc-green text-xs italic">Shepherd's Care</div>
                 </div>
             </div>
-        </div>
         <div className="border-gpsc-cream-dark border-b p-4">
             <div className="flex items-center gap-3">
                 <div className="bg-gpsc-navy font-display flex h-10 w-10 items-center justify-center rounded-full text-sm text-white">

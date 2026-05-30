@@ -7,53 +7,46 @@ import { MemberReferrals } from "./Referrals";
 import { MemberEarnings } from "./Earnings";
 import { MemberClaims } from "./Claims";
 import { MemberProfile } from "./Profile";
-import type { Member, PackageName, Commission, ReferralNode, EarningsTrendPoint, Claim, Payout, Beneficiary } from "../types";
+import type { Member, Commission, ReferralNode, EarningsTrendPoint, Claim, Payout } from "../types";
+
+import { useMemberStats } from "../../hooks/useMemberStats";
+import { getEligibilityTimeline } from "../../utils/eligibility";
 
 interface MemberDashboardProps {
     user: Member;
-    packageData: PackageName | null;
-    rankData: string | null;
+    rankName: string;
     commissions: Commission[];
     directReferrals: ReferralNode[];
     earningsTrend: EarningsTrendPoint[];
     claims: Claim[];
     payouts: Payout[];
-    beneficiaries: Beneficiary[];
     referralLink: string;
     onCopyReferralLink: () => void;
     onShareReferralLink: (method: "copy" | "messenger" | "whatsapp") => void;
     onRequestPayout: () => void;
     onFileClaim: () => void;
-    onEditProfile: () => void;
-    onChangePassword: () => void;
-    onEnable2FA: () => void;
     onLogout: () => void;
 }
 
 export default function MemberDashboard({
     user,
-    packageData,
-    rankData,
+    rankName,
     commissions,
     directReferrals,
     earningsTrend,
     claims,
     payouts,
-    beneficiaries,
     referralLink,
     onCopyReferralLink,
     onShareReferralLink,
     onRequestPayout,
     onFileClaim,
-    onEditProfile,
-    onChangePassword,
-    onEnable2FA,
     onLogout,
 }: MemberDashboardProps) {
     const [currentSection, setCurrentSection] = useState("overview");
 
     // Calculate dashboard stats
-    const availableToWithdraw = commissions.filter((c) => c.status === "payable").reduce((sum, c) => sum + c.amount, 0);
+    const availableToWithdraw = commissions.filter((c) => c.status === "paid").reduce((sum, c) => sum + c.amount, 0);
     const totalEarned = commissions.filter((c) => c.status === "paid").reduce((sum, c) => sum + c.amount, 0);
     const activeReferralsCount = directReferrals.filter((r) => r.status === "active").length;
     const totalReferralsCount = directReferrals.length;
@@ -62,30 +55,40 @@ export default function MemberDashboard({
     const pendingHold = commissions.filter((c) => c.status === "pending").reduce((sum, c) => sum + c.amount, 0);
     const lifetimePaid = commissions.filter((c) => c.status === "paid").reduce((sum, c) => sum + c.amount, 0);
 
-    const packageName = packageData || "No Package";
-    const rankName = rankData || "Member";
-
     // Eligibility timeline (example - you can make this dynamic based on member's join date)
-    const eligibilityTimeline = [
-        { label: "Accidental death assistance", months: 1, unlocked: true },
-        { label: "Natural death (₱20k tier)", months: 5, unlocked: true },
-        { label: "Hospital cash assistance", months: 6, unlocked: true },
-        { label: "Birthday care gift", months: 8, unlocked: true },
-        { label: "Natural/Accidental ₱40k tier", months: 10, unlocked: false },
-    ];
+    // const eligibilityTimeline = [
+    //     { label: "Accidental death assistance", months: 1, unlocked: true },
+    //     { label: "Natural death (₱20k tier)", months: 5, unlocked: true },
+    //     { label: "Hospital cash assistance", months: 6, unlocked: true },
+    //     { label: "Birthday care gift", months: 8, unlocked: true },
+    //     { label: "Natural/Accidental ₱40k tier", months: 10, unlocked: false },
+    // ];
+    const eligibilityTimeline = getEligibilityTimeline(user.dateCreated);
 
-    const recentCommissions = commissions.slice(0, 5).map((c) => ({
-        id: c.id,
-        fromMemberName: c.fromMemberName,
-        fromMemberInitials: c.fromMemberName
-            .split(" ")
-            .map((n) => n[0])
-            .join(""),
-        level: c.level,
-        amount: c.amount,
-        status: c.status,
-        date: c.date,
-    }));
+    // const recentCommissions = commissions.slice(0, 5).map((c) => ({
+    //     id: c.id,
+    //     fromMemberName: c.fromMemberName,
+    //     fromMemberInitials: c.fromMemberName
+    //         .split(" ")
+    //         .map((n) => n[0])
+    //         .join(""),
+    //     level: c.level,
+    //     amount: c.amount,
+    //     status: c.status,
+    //     date: c.date,
+    // }));
+    // Recent commissions with initials:
+    const { stats, loading } = useMemberStats();
+    if (loading) return <div>Loading...</div>;
+    const recentCommissions = (stats?.recentCommissions ?? []).map((c: any) => {
+        const name = c.fromMember ?? "Unknown";
+        const parts = name.trim().split(" ");
+        return {
+            ...c,
+            fromMemberName: name,
+            fromMemberInitials: `${parts[0]?.[0] ?? ""}${parts[1]?.[0] ?? ""}`.toUpperCase() || "?",
+        };
+    });
 
     const sidebarItems = [
         { id: "overview", label: "Overview", icon: LayoutGrid },
@@ -109,7 +112,6 @@ export default function MemberDashboard({
                 {currentSection === "overview" && (
                     <MemberOverview
                         user={user}
-                        packageName={packageName}
                         rankName={rankName}
                         availableToWithdraw={availableToWithdraw}
                         totalEarned={totalEarned}
@@ -146,17 +148,7 @@ export default function MemberDashboard({
                     />
                 )}
                 {currentSection === "claims" && <MemberClaims claims={claims} onFileClaim={onFileClaim} />}
-                {currentSection === "profile" && (
-                    <MemberProfile
-                        user={user}
-                        packageName={packageName}
-                        rankName={rankName}
-                        beneficiaries={beneficiaries}
-                        onEditProfile={onEditProfile}
-                        onChangePassword={onChangePassword}
-                        onEnable2FA={onEnable2FA}
-                    />
-                )}
+                {currentSection === "profile" && <MemberProfile user={user} />}
             </main>
         </div>
     );

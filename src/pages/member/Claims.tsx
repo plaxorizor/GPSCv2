@@ -1,7 +1,7 @@
 import React from "react";
 import { Plus, FileText } from "lucide-react";
 import type { Claim } from "../types";
-import { formatCurrency, formatDate } from "./utils";
+import { formatCurrency, formatDate } from "../../utils/formatter";
 
 interface Props {
     claims: Claim[];

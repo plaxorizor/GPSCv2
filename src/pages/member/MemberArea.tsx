@@ -4,20 +4,20 @@ import { useCommissions } from "../../hooks/useCommissions";
 import { useReferralTree } from "../../hooks/useReferralTree";
 import MemberDashboard from "./index";
 import { PACKAGE_INFO } from "../types";
-import type { Member, Commission, ReferralNode, EarningsTrendPoint, Claim, Payout, Beneficiary } from "../types";
+import type { Member, Commission, ReferralNode, EarningsTrendPoint, Claim, Payout } from "../types";
 
 // Rank mapping based on rank number
-const getRankName = (rank: number): string => {
-    const ranks: Record<number, string> = {
-        0: "Sales Consultant",
-        1: "Team Consultant",
-        2: "Sales Manager",
-        3: "Provincial Director",
-        4: "Regional Director",
-        5: "National Director",
-    };
-    return ranks[rank] || "Member";
-};
+// const getRankName = (rank: number): string => {
+//     const ranks: Record<number, string> = {
+//         0: "Sales Consultant",
+//         1: "Team Consultant",
+//         2: "Sales Manager",
+//         3: "Provincial Director",
+//         4: "Regional Director",
+//         5: "National Director",
+//     };
+//     return ranks[rank] || "Member";
+// };
 
 export default function MemberArea() {
     const navigate = useNavigate();
@@ -50,9 +50,7 @@ export default function MemberArea() {
     };
 
     // 2. Package display info — look up from PACKAGE_INFO
-    const pkgName = member.package as keyof typeof PACKAGE_INFO | null;
-    const packageName = pkgName ?? "No package";
-    const rankName = pkgName ? PACKAGE_INFO[pkgName].rank : "—";
+    const rankName = user.package ? (PACKAGE_INFO[user.package as keyof typeof PACKAGE_INFO]?.rank ?? "—") : "No Rank";
 
     // 3. Map commissions
     const commissions: Commission[] = rawCommissions.map((c) => ({
@@ -63,7 +61,7 @@ export default function MemberArea() {
         role: rankName,
         amount: c.amount,
         status: c.status === "released" ? "paid" : "pending",
-        date: c.dateCreated?.toDate?.()?.toISOString?.() ?? "",
+        date: c.dateCreated?.toISOString?.() ?? "",
         fromMemberName: c.fromMember ?? "",
         fromMemberCity: "",
     }));
@@ -93,11 +91,10 @@ export default function MemberArea() {
     const earningsTrend: EarningsTrendPoint[] = [];
     const claims: Claim[] = [];
     const payouts: Payout[] = [];
-    const beneficiaries: Beneficiary[] = member.beneficiaries ?? [];
 
     // 7. Handlers
-    const handleCopyReferralLink = () => {
-        navigator.clipboard.writeText(referralLink);
+    const handleCopyReferralLink = async () => {
+        await navigator.clipboard.writeText(referralLink);
         alert("Referral link copied!");
     };
     const handleShareReferralLink = (method: "copy" | "messenger" | "whatsapp") => {
@@ -107,9 +104,6 @@ export default function MemberArea() {
     };
     const handleRequestPayout = () => alert("Request payout – coming soon");
     const handleFileClaim = () => alert("File a claim – coming soon");
-    const handleEditProfile = () => alert("Edit profile – coming soon");
-    const handleChangePassword = () => alert("Change password – coming soon");
-    const handleEnable2FA = () => alert("Enable 2FA – coming soon");
     const handleLogout = async () => {
         const { getAuth, signOut } = await import("firebase/auth");
         await signOut(getAuth());
@@ -119,22 +113,17 @@ export default function MemberArea() {
     return (
         <MemberDashboard
             user={user}
-            packageName={packageName}
             rankName={rankName}
             commissions={commissions}
             directReferrals={directReferrals}
             earningsTrend={earningsTrend}
             claims={claims}
             payouts={payouts}
-            beneficiaries={beneficiaries}
             referralLink={referralLink}
             onCopyReferralLink={handleCopyReferralLink}
             onShareReferralLink={handleShareReferralLink}
             onRequestPayout={handleRequestPayout}
             onFileClaim={handleFileClaim}
-            onEditProfile={handleEditProfile}
-            onChangePassword={handleChangePassword}
-            onEnable2FA={handleEnable2FA}
             onLogout={handleLogout}
         />
     );

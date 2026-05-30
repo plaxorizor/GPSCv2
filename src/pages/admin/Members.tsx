@@ -1,13 +1,29 @@
 // admin/Members.tsx
 import React, { useState } from "react";
 import { Plus, Search, Download } from "lucide-react";
-import type { User } from "../types";
-import { formatDate } from "./utils";
-
+import { PACKAGE_INFO } from "../../pages/types";
 import AllMembers from "./AllMembers";
 
+export interface MemberRow {
+    uid: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    mobile?: string;
+    phone?: string;
+    package: string;
+    sponsorName?: string;
+    referralCode?: string;
+    city?: string;
+    province?: string;
+    civilStatus?: string;
+    birthDate?: string;
+    status: string;
+    dateCreated?: { toDate?: () => Date };
+    beneficiaries?: { name: string; relationship: string }[];
+}
+
 interface Props {
-    members: User[];
     loading: boolean;
     onUpdateStatus: (memberId: string, status: "active" | "inactive") => Promise<void>;
     onRefresh: () => void;
@@ -15,21 +31,11 @@ interface Props {
     onAddMember?: () => void;
 }
 
-const packageNames: Record<string, string> = { basic: "Basic Care", family: "Family Care", premium: "Premium Care" };
-const rankNames: Record<string, string> = {
-    sales_consultant: "Sales Consultant",
-    team_consultant: "Team Consultant",
-    sales_manager: "Sales Manager",
-    provincial_director: "Provincial Director",
-    regional_director: "Regional Director",
-    national_director: "National Director",
-};
-
 export const Members: React.FC<Props> = ({ onUpdateStatus, onRefresh, onExport, onAddMember }) => {
-    const [query, setQuery] = useState("");
-    const [packageFilter, setPackageFilter] = useState("all");
-    const [statusFilter, setStatusFilter] = useState("all");
-    const [selectedMember, setSelectedMember] = useState<User | null>(null);
+    const [query, setQuery]                   = useState("");
+    const [packageFilter, setPackageFilter]   = useState("all");
+    const [statusFilter, setStatusFilter]     = useState("all");
+    const [selectedMember, setSelectedMember] = useState<MemberRow | null>(null);
 
     return (
         <div className="space-y-6">
@@ -58,7 +64,7 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onRefresh, onExport, 
 
             <div className="border-gpsc-cream-dark overflow-hidden rounded-2xl border bg-white">
                 <div className="border-gpsc-cream-dark flex flex-wrap gap-3 border-b p-4">
-                    <div className="relative min-w-[200px] flex-1">
+                    <div className="relative min-w-50 flex-1">
                         <Search size={16} className="text-gpsc-stone absolute top-1/2 left-3 -translate-y-1/2" />
                         <input
                             value={query}
@@ -73,9 +79,9 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onRefresh, onExport, 
                         className="border-gpsc-cream-dark focus:ring-gpsc-green rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:outline-none"
                     >
                         <option value="all">All packages</option>
-                        <option value="basic">Basic Care</option>
-                        <option value="family">Family Care</option>
-                        <option value="premium">Premium Care</option>
+                        <option value="Basic">Basic Care</option>
+                        <option value="Family">Family Care</option>
+                        <option value="Premium">Premium Care</option>
                     </select>
                     <select
                         value={statusFilter}
@@ -85,7 +91,7 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onRefresh, onExport, 
                         <option value="all">All statuses</option>
                         <option value="active">Active</option>
                         <option value="inactive">Inactive</option>
-                        <option value="pending_kyc">Pending KYC</option>
+                        <option value="pending">Pending</option>
                     </select>
                     <button
                         onClick={onRefresh}
@@ -109,63 +115,94 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onRefresh, onExport, 
                             </tr>
                         </thead>
 
-                        <AllMembers />
+                        <AllMembers
+                            query={query}
+                            packageFilter={packageFilter}
+                            statusFilter={statusFilter}
+                            onSelectMember={setSelectedMember}
+                            onUpdateStatus={onUpdateStatus}
+                        />
                     </table>
                 </div>
             </div>
 
-            {/* Member Detail Modal */}
+            {/* ── Member Detail Modal ── */}
             {selectedMember && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setSelectedMember(null)}>
-                    <div className="animate-fade-up mx-4 w-full max-w-lg rounded-2xl bg-white p-6" onClick={(e) => e.stopPropagation()}>
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+                    onClick={() => setSelectedMember(null)}
+                >
+                    <div
+                        className="mx-4 w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl"
+                        onClick={(e) => e.stopPropagation()}
+                    >
                         <div className="mb-4 flex items-center justify-between">
                             <h2 className="font-display text-gpsc-navy text-xl">Member Details</h2>
-                            <button onClick={() => setSelectedMember(null)} className="text-gpsc-stone hover:text-gpsc-navy transition-colors">
+                            <button
+                                onClick={() => setSelectedMember(null)}
+                                className="text-gpsc-stone hover:text-gpsc-navy transition-colors text-lg"
+                            >
                                 ✕
                             </button>
                         </div>
+
+                        {/* Avatar + basic info */}
                         <div className="bg-gpsc-cream mb-6 flex items-center gap-4 rounded-xl p-4">
                             <div className="bg-gpsc-navy font-display flex h-16 w-16 items-center justify-center rounded-full text-2xl text-white">
-                                {selectedMember.initials}
+                                {selectedMember.firstName.charAt(0).toUpperCase()}{selectedMember.lastName.charAt(0).toUpperCase()}
                             </div>
                             <div>
                                 <div className="font-display text-gpsc-navy text-xl">
                                     {selectedMember.firstName} {selectedMember.lastName}
                                 </div>
                                 <div className="text-gpsc-stone text-sm">{selectedMember.email}</div>
-                                <div className="text-gpsc-stone text-sm">{selectedMember.phone}</div>
+                                <div className="text-gpsc-stone text-sm">{selectedMember.mobile ?? selectedMember.phone ?? "—"}</div>
                             </div>
                         </div>
-                        <div className="space-y-3">
-                            <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                    <div className="text-gpsc-stone text-xs">Package</div>
-                                    <div className="text-gpsc-navy">{selectedMember.packageId ? packageNames[selectedMember.packageId] : "—"}</div>
-                                </div>
-                                <div>
-                                    <div className="text-gpsc-stone text-xs">Rank</div>
-                                    <div className="text-gpsc-navy">{rankNames[selectedMember.rankId] || "Member"}</div>
-                                </div>
-                                <div>
-                                    <div className="text-gpsc-stone text-xs">City</div>
-                                    <div className="text-gpsc-navy">{selectedMember.city || "—"}</div>
-                                </div>
-                                <div>
-                                    <div className="text-gpsc-stone text-xs">Province</div>
-                                    <div className="text-gpsc-navy">{selectedMember.province || "—"}</div>
-                                </div>
-                                <div>
-                                    <div className="text-gpsc-stone text-xs">Member since</div>
-                                    <div className="text-gpsc-navy">{formatDate(selectedMember.memberSince)}</div>
-                                </div>
-                                <div>
-                                    <div className="text-gpsc-stone text-xs">Status</div>
-                                    <div className={`${selectedMember.status === "active" ? "text-gpsc-green" : "text-red-500"}`}>
-                                        {selectedMember.status}
+
+                        {/* Detail grid */}
+                        <div className="grid grid-cols-2 gap-4">
+                            {[
+                                { label: "Package",       value: selectedMember.package ? `${selectedMember.package} Care` : "—" },
+                                { label: "Rank",          value: selectedMember.package ? (PACKAGE_INFO[selectedMember.package as keyof typeof PACKAGE_INFO]?.rank ?? "—") : "—" },
+                                { label: "Sponsor",       value: selectedMember.sponsorName ?? "—" },
+                                { label: "Referral code", value: selectedMember.referralCode ?? "—" },
+                                { label: "City",          value: selectedMember.city ?? "—" },
+                                { label: "Province",      value: selectedMember.province ?? "—" },
+                                { label: "Civil status",  value: selectedMember.civilStatus ?? "—" },
+                                { label: "Birth date",    value: selectedMember.birthDate ?? "—" },
+                                { label: "Joined",        value: selectedMember.dateCreated?.toDate?.()?.toLocaleDateString() ?? "—" },
+                                { label: "Status",        value: selectedMember.status ?? "—" },
+                            ].map(({ label, value }) => (
+                                <div key={label}>
+                                    <div className="text-gpsc-stone text-xs mb-0.5">{label}</div>
+                                    <div className={`text-sm font-medium ${
+                                        label === "Status"
+                                            ? value === "active" ? "text-gpsc-green" : "text-red-500"
+                                            : "text-gpsc-navy"
+                                    }`}>
+                                        {value}
                                     </div>
                                 </div>
-                            </div>
+                            ))}
                         </div>
+
+                        {/* Beneficiaries */}
+                        {(selectedMember.beneficiaries?.length ?? 0) > 0 && (
+                            <div className="mt-5">
+                                <div className="text-gpsc-stone text-xs mb-2 uppercase tracking-wider">Beneficiaries</div>
+                                <div className="space-y-2">
+                                    {selectedMember.beneficiaries!.map((b, i) => (
+                                        <div key={i} className="bg-gpsc-cream rounded-lg px-3 py-2 text-sm flex justify-between">
+                                            <span className="text-gpsc-navy font-medium">{b.name}</span>
+                                            <span className="text-gpsc-stone">{b.relationship}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Actions */}
                         <div className="mt-6 flex gap-3">
                             <button
                                 onClick={() => setSelectedMember(null)}
@@ -175,10 +212,14 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onRefresh, onExport, 
                             </button>
                             <button
                                 onClick={() => {
-                                    onUpdateStatus(selectedMember.id, selectedMember.status === "active" ? "inactive" : "active");
+                                    onUpdateStatus(selectedMember.uid, selectedMember.status === "active" ? "inactive" : "active");
                                     setSelectedMember(null);
                                 }}
-                                className="bg-gpsc-navy hover:bg-gpsc-green flex-1 rounded-lg px-4 py-2 font-medium text-white transition-colors"
+                                className={`flex-1 rounded-lg px-4 py-2 font-medium text-white transition-colors ${
+                                    selectedMember.status === "active"
+                                        ? "bg-red-500 hover:bg-red-600"
+                                        : "bg-gpsc-green hover:bg-gpsc-green/80"
+                                }`}
                             >
                                 {selectedMember.status === "active" ? "Deactivate" : "Activate"}
                             </button>

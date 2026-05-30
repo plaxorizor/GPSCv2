@@ -1,10 +1,10 @@
 import React from "react";
 import { Copy, Share2, MessageCircle } from "lucide-react";
-import type { User, ReferralNode } from "../types";
-import { formatDate } from "./utils";
+import type { Member, ReferralNode } from "../types";
+import { formatDate } from "../../utils/formatter";
 
 interface Props {
-    user: User;
+    user: Member;
     referralLink: string;
     onCopyReferralLink: () => void;
     onShareReferralLink: (method: "copy" | "messenger" | "whatsapp") => void;
@@ -81,7 +81,7 @@ export const MemberReferrals: React.FC<Props> = ({ user, referralLink, onCopyRef
             <div className="space-y-2">
                 <div className="bg-gpsc-cream flex items-center gap-3 rounded-xl p-3">
                     <div className="bg-gpsc-navy font-display flex h-10 w-10 items-center justify-center rounded-full text-white">
-                        {user.initials}
+                        {user.firstName.charAt(0).toUpperCase() + user.lastName.charAt(0).toUpperCase()}
                     </div>
                     <div className="flex-1">
                         <div className="text-gpsc-navy font-medium">You ({user.firstName})</div>

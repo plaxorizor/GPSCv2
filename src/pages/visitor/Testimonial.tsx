@@ -9,15 +9,7 @@ export const Testimonial: React.FC = () => (
         "When my husband was admitted last February, GPSC released ₱11,500 in four days. No paperwork chaos, no
         waiting weeks. Now I refer everyone in our barangay — it's how we take care of each other."
       </p>
-      <div className="mt-10 flex items-center justify-center gap-4">
-        <div className="w-12 h-12 rounded-full bg-gpsc-navy text-white flex items-center justify-center font-display text-sm">
-          MD
-        </div>
-        <div className="text-left">
-          <div className="font-display text-lg text-gpsc-navy">Maria Dela Cruz</div>
-          <div className="text-sm text-gpsc-stone">Family Care member · Davao City · Since 2024</div>
-        </div>
-      </div>
+    
     </div>
   </section>
 );

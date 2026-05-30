@@ -2,7 +2,7 @@ import React from "react";
 import { Wallet, Clock, TrendingUp, Download } from "lucide-react";
 import { StatCard } from "./StatCard";
 import type { Commission, Payout } from "../types";
-import { formatCurrency, formatDate } from "./utils";
+import { formatCurrency, formatDate } from "../../utils/formatter";
 
 interface Props {
     availableToWithdraw: number;

@@ -1,6 +1,6 @@
 // admin/Overview.tsx
 import React from "react";
-import { Users, TrendingUp, FileText, Wallet } from "lucide-react";
+import { Users, TrendingUp, FileText, Wallet, UserCheck } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { StatCard } from "./StatCard";
 import type { PackageMixItem, TopRecruiter } from "./types";
@@ -24,7 +24,7 @@ export const Overview: React.FC<Props> = ({ recentClaims, loading, onRefresh }) 
             <div className="space-y-6">
                 <div className="animate-pulse">
                     <div className="bg-gpsc-cream-dark mb-4 h-8 w-48 rounded"></div>
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
                         {[1, 2, 3, 4].map((i) => (
                             <div key={i} className="bg-gpsc-cream-dark h-32 rounded-2xl"></div>
                         ))}
@@ -55,7 +55,7 @@ export const Overview: React.FC<Props> = ({ recentClaims, loading, onRefresh }) 
                 </button>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
                 <StatCard label="Active members" value={adminStats.activeMembers} icon={Users} />
                 <StatCard label="Total revenue" value={formatCurrency(adminStats.totalRevenue)} sub="From memberships" icon={TrendingUp} />
                 <StatCard
@@ -69,6 +69,12 @@ export const Overview: React.FC<Props> = ({ recentClaims, loading, onRefresh }) 
                     value={adminStats.pendingPayouts}
                     sub={adminStats.pendingPayouts === 0 ? "No pending payouts" : ""}
                     icon={Wallet}
+                />
+                <StatCard
+                    label="Pending accounts"
+                    value={adminStats.pendingAccounts}
+                    sub={adminStats.pendingAccounts === 0 ? "No pending accounts" : "Awaiting approval"}
+                    icon={UserCheck}
                 />
             </div>
 
