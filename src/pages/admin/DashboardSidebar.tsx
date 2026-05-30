@@ -2,6 +2,8 @@
 import React from "react";
 import { LogOut } from "lucide-react";
 import type { User } from "../types";
+import logoSrc from "../../components/ui/Logo.png";
+
 
 interface SidebarItem {
     id: string;
@@ -21,17 +23,7 @@ interface Props {
 
 const LogoLockup = () => (
     <div className="flex items-center gap-3">
-        <div className="relative h-8 w-8">
-            <svg width="32" height="32" viewBox="0 0 100 100" fill="none">
-                <circle cx="50" cy="50" r="48" stroke="#14365C" strokeWidth="1.5" fill="none" opacity="0.4" />
-                <path d="M 20 70 Q 30 55, 45 60 T 80 55" stroke="#4A8A2C" strokeWidth="2.5" fill="none" strokeLinecap="round" />
-                <path d="M 25 75 Q 40 65, 55 70 T 82 65" stroke="#14365C" strokeWidth="2" fill="none" strokeLinecap="round" opacity="0.6" />
-                <path d="M 50 25 L 50 38 M 44 31 L 56 31" stroke="#14365C" strokeWidth="2.5" strokeLinecap="round" />
-                <circle cx="68" cy="42" r="6" fill="#4A8A2C" opacity="0.85" />
-                <circle cx="72" cy="38" r="3" fill="#4A8A2C" />
-                <path d="M 30 55 Q 35 48, 32 42 Q 30 38, 33 35" stroke="#14365C" strokeWidth="2" fill="none" strokeLinecap="round" />
-            </svg>
-        </div>
+        <img src={logoSrc} width={40} height={40} alt="Logo" />
         <div className="leading-tight">
             <div className="font-display text-gpsc-navy text-base font-semibold tracking-tight">Green Pasture</div>
             <div className="font-display text-gpsc-green text-xs italic">Shepherd's Care</div>

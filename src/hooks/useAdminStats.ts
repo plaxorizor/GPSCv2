@@ -8,6 +8,11 @@ interface TopRecruiter {
     referralCount: number;
 }
 
+export interface GrowthDataPoint {
+    month: string;
+    members: number;
+}
+
 interface AdminStats {
     activeMembers: number;
     totalRevenue: number;
@@ -15,6 +20,7 @@ interface AdminStats {
     pendingClaims: number;
     pendingPayouts: number;
     topRecruiters: TopRecruiter[];
+    growthData: GrowthDataPoint[];
 }
 
 export default () => {
@@ -31,35 +37,46 @@ export default () => {
 
             const members = membersSnap.docs.map((d) => ({ uid: d.id, ...d.data() }) as any);
 
-            // Package counts
             const packageCounts = { Basic: 0, Family: 0, Premium: 0 };
             let totalRevenue = 0;
             let activeMembers = 0;
-
-            // Referral count per member
             const referralCount: Record<string, number> = {};
 
+            // Build last 6 months buckets
+            const now = new Date();
+            const monthBuckets: Record<string, number> = {};
+            for (let i = 5; i >= 0; i--) {
+                const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                const key = d.toLocaleString("default", { month: "short", year: "2-digit" });
+                monthBuckets[key] = 0;
+            }
+
             for (const m of members) {
-                // Package counts
-                if (m.package === "Basic") packageCounts.Basic++;
-                else if (m.package === "Family") packageCounts.Family++;
-                else if (m.package === "Premium") packageCounts.Premium++;
+                if (m.package === "Basic") { packageCounts.Basic++; totalRevenue += 698; }
+                else if (m.package === "Family") { packageCounts.Family++; totalRevenue += 1698; }
+                else if (m.package === "Premium") { packageCounts.Premium++; totalRevenue += 4998; }
 
-                // Revenue
-                if (m.package === "Basic") totalRevenue += 698;
-                else if (m.package === "Family") totalRevenue += 1698;
-                else if (m.package === "Premium") totalRevenue += 4998;
-
-                // Active members
                 if (m.status === "active") activeMembers++;
 
-                // Count referrals
                 if (m.referredBy) {
                     referralCount[m.referredBy] = (referralCount[m.referredBy] ?? 0) + 1;
                 }
+
+                // Map dateCreated (Firestore Timestamp) into monthly buckets
+                if (m.dateCreated) {
+                    const date: Date = m.dateCreated.toDate ? m.dateCreated.toDate() : new Date(m.dateCreated);
+                    const key = date.toLocaleString("default", { month: "short", year: "2-digit" });
+                    if (key in monthBuckets) {
+                        monthBuckets[key]++;
+                    }
+                }
             }
 
-            // Top 3 recruiters
+            const growthData: GrowthDataPoint[] = Object.entries(monthBuckets).map(([month, count]) => ({
+                month,
+                members: count,
+            }));
+
             const topRecruiters: TopRecruiter[] = Object.entries(referralCount)
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 3)
@@ -79,6 +96,7 @@ export default () => {
                 pendingClaims: claimsSnap.size,
                 pendingPayouts: payoutsSnap.size,
                 topRecruiters,
+                growthData,
             });
             setLoading(false);
         };

@@ -3,22 +3,20 @@ import React from "react";
 import { Users, TrendingUp, FileText, Wallet } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { StatCard } from "./StatCard";
-import type { GrowthDataPoint, PackageMixItem, TopRecruiter } from "./types";
+import type { PackageMixItem, TopRecruiter } from "./types";
 import type { Claim } from "../types";
 import { formatCurrency } from "./utils";
 
 import useAdminStats from "../../hooks/useAdminStats";
 
 interface Props {
-    growthData: GrowthDataPoint[];
-    packageMix: PackageMixItem[];
     topRecruiters: TopRecruiter[];
     recentClaims: Claim[];
     loading: boolean;
     onRefresh: () => void;
 }
 
-export const Overview: React.FC<Props> = ({ growthData, packageMix, topRecruiters, recentClaims, loading, onRefresh }) => {
+export const Overview: React.FC<Props> = ({ recentClaims, loading, onRefresh }) => {
     const { stats: adminStats, loading: adminStatsLoading } = useAdminStats();
 
     if (loading || adminStatsLoading || !adminStats) {
@@ -36,8 +34,14 @@ export const Overview: React.FC<Props> = ({ growthData, packageMix, topRecruiter
         );
     }
 
-    // Filter claims that are still pending (not approved, rejected, or released)
     const pendingClaims = recentClaims.filter((c) => c.status === "submitted" || c.status === "under_review");
+
+    // Package mix derived from adminStats — pie + legend always in sync
+    const syncedPackageMix: PackageMixItem[] = [
+        { name: "Basic",   value: adminStats.packageCounts.Basic,   color: "#4F46E5" },
+        { name: "Family",  value: adminStats.packageCounts.Family,  color: "#65A30D" },
+        { name: "Premium", value: adminStats.packageCounts.Premium, color: "#EAB308" },
+    ].filter((p) => p.value > 0);
 
     return (
         <div className="space-y-6">
@@ -53,7 +57,6 @@ export const Overview: React.FC<Props> = ({ growthData, packageMix, topRecruiter
 
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <StatCard label="Active members" value={adminStats.activeMembers} icon={Users} />
-
                 <StatCard label="Total revenue" value={formatCurrency(adminStats.totalRevenue)} sub="From memberships" icon={TrendingUp} />
                 <StatCard
                     label="Pending claims"
@@ -70,14 +73,15 @@ export const Overview: React.FC<Props> = ({ growthData, packageMix, topRecruiter
             </div>
 
             <div className="grid gap-6 lg:grid-cols-3">
+                {/* ── Membership Growth — from adminStats.growthData ── */}
                 <div className="border-gpsc-cream-dark rounded-2xl border bg-white p-6 lg:col-span-2">
                     <h2 className="font-display text-gpsc-navy mb-1 text-lg">Membership growth</h2>
-                    <p className="text-gpsc-stone mb-6 text-xs">New members per month</p>
-                    {growthData.length > 0 ? (
+                    <p className="text-gpsc-stone mb-6 text-xs">New members per month (last 6 months)</p>
+                    {adminStats.growthData.length > 0 ? (
                         <ResponsiveContainer width="100%" height={240}>
-                            <BarChart data={growthData}>
+                            <BarChart data={adminStats.growthData}>
                                 <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#6B6862" }} axisLine={false} tickLine={false} />
-                                <YAxis tick={{ fontSize: 11, fill: "#6B6862" }} axisLine={false} tickLine={false} />
+                                <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: "#6B6862" }} axisLine={false} tickLine={false} />
                                 <CartesianGrid strokeDasharray="3 3" stroke="#E5DDC8" />
                                 <Tooltip
                                     contentStyle={{ borderRadius: 12, border: "1px solid #E5DDC8" }}
@@ -91,110 +95,73 @@ export const Overview: React.FC<Props> = ({ growthData, packageMix, topRecruiter
                     )}
                 </div>
 
+                {/* ── Package Mix — synced from adminStats ── */}
                 <div className="border-gpsc-cream-dark rounded-2xl border bg-white p-6">
                     <h2 className="font-display text-gpsc-navy mb-1 text-lg">Package mix</h2>
                     <p className="text-gpsc-stone mb-4 text-xs">By active memberships</p>
 
-                    {packageMix.length > 0 ? (
-                        <>
-                            <ResponsiveContainer width="100%" height={160}>
-                                <PieChart>
-                                    <Pie
-                                        data={packageMix}
-                                        dataKey="value"
-                                        nameKey="name"
-                                        innerRadius={40}
-                                        outerRadius={70}
-                                        label={({ name, percent }) => {
-                                            const percentage = percent ? (percent * 100).toFixed(0) : 0;
-                                            return `${name}: ${percentage}%`;
-                                        }}
-                                        labelLine={false}
-                                    >
-                                        {packageMix.map((entry, i) => (
-                                            <Cell key={i} fill={entry.color} />
-                                        ))}
-                                    </Pie>
-                                    <Tooltip
-                                        contentStyle={{ borderRadius: 12, border: "1px solid #E5DDC8" }}
-                                        formatter={(value) => [value, "Members"]}
-                                    />
-                                </PieChart>
-                            </ResponsiveContainer>
-                        </>
+                    {syncedPackageMix.length > 0 ? (
+                        <ResponsiveContainer width="100%" height={160}>
+                            <PieChart>
+                                <Pie data={syncedPackageMix} dataKey="value" nameKey="name" innerRadius={40} outerRadius={70} labelLine={false}>
+                                    {syncedPackageMix.map((entry, i) => (
+                                        <Cell key={i} fill={entry.color} />
+                                    ))}
+                                </Pie>
+                                <Tooltip
+                                    contentStyle={{ borderRadius: 12, border: "1px solid #E5DDC8" }}
+                                    formatter={(value, name) => [value, `${name} Care`]}
+                                />
+                            </PieChart>
+                        </ResponsiveContainer>
                     ) : (
-                        <div className="text-gpsc-stone flex h-60 items-center justify-center">No package data available</div>
+                        <div className="text-gpsc-stone flex h-40 items-center justify-center">No package data available</div>
                     )}
 
                     <div className="mt-2 space-y-2">
-                        <div className="flex items-center gap-2 text-sm">
-                            <div className="h-3 w-3 rounded-full bg-indigo-600"></div>
-                            <span className="text-gpsc-stone">Basic Care</span>
-                            <span className="text-gpsc-navy ml-auto font-medium">{adminStats.packageCounts.Basic}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm">
-                            <div className="h-3 w-3 rounded-full bg-lime-600"></div>
-                            <span className="text-gpsc-stone">Family Care</span>
-                            <span className="text-gpsc-navy ml-auto font-medium">{adminStats.packageCounts.Family}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm">
-                            <div className="h-3 w-3 rounded-full bg-yellow-500"></div>
-                            <span className="text-gpsc-stone">Premium Care</span>
-                            <span className="text-gpsc-navy ml-auto font-medium">{adminStats.packageCounts.Premium}</span>
-                        </div>
+                        {[
+                            { label: "Basic Care",   color: "#4F46E5", count: adminStats.packageCounts.Basic   },
+                            { label: "Family Care",  color: "#65A30D", count: adminStats.packageCounts.Family  },
+                            { label: "Premium Care", color: "#EAB308", count: adminStats.packageCounts.Premium },
+                        ].map(({ label, color, count }) => (
+                            <div key={label} className="flex items-center gap-2 text-sm">
+                                <div className="h-3 w-3 rounded-full" style={{ backgroundColor: color }} />
+                                <span className="text-gpsc-stone">{label}</span>
+                                <span className="text-gpsc-navy ml-auto font-medium">{count}</span>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>
 
             <div className="grid gap-6 lg:grid-cols-2">
+                {/* ── Top Recruiters — from adminStats.topRecruiters ── */}
                 <div className="border-gpsc-cream-dark rounded-2xl border bg-white p-6">
                     <h2 className="font-display text-gpsc-navy mb-4 text-lg">Top recruiters this quarter</h2>
-                    
-                    {/* Top recruiters */}
-                    <div className="rounded-2xl border bg-white p-6">
-                        <h3 className="mb-4 font-medium">Top Recruiters</h3>
-                        <div className="space-y-3">
-                            {adminStats.topRecruiters.map((r, i) => (
-                                <div key={r.uid} className="flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <span className="text-sm font-bold text-gray-400">#{i + 1}</span>
-                                        <span className="text-sm font-medium">{r.name}</span>
-                                    </div>
-                                    <span className="text-sm text-gray-500">
-                                        {r.referralCount} referral{r.referralCount !== 1 ? "s" : ""}
-                                    </span>
-                                </div>
-                            ))}
-                            {adminStats.topRecruiters.length === 0 && <p className="text-sm text-gray-400">No referrals yet.</p>}
-                        </div>
-                    </div>
-
                     <div className="space-y-3">
-                        {topRecruiters.length > 0 ? (
-                            topRecruiters.map((recruiter, i) => (
-                                <div key={recruiter.id} className="flex items-center gap-3">
+                        {adminStats.topRecruiters.length > 0 ? (
+                            adminStats.topRecruiters.map((r, i) => (
+                                <div key={r.uid} className="flex items-center gap-3">
                                     <div className="font-display text-gpsc-stone w-6 text-xs">#{i + 1}</div>
                                     <div className="bg-gpsc-navy font-display flex h-10 w-10 items-center justify-center rounded-full text-xs text-white">
-                                        {recruiter.initials}
+                                        {r.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()}
                                     </div>
                                     <div className="flex-1">
-                                        <div className="text-gpsc-navy text-sm">
-                                            {recruiter.firstName} {recruiter.lastName}
-                                        </div>
-                                        <div className="text-gpsc-stone text-xs">{recruiter.city}</div>
+                                        <div className="text-gpsc-navy text-sm">{r.name}</div>
                                     </div>
                                     <div className="text-right">
-                                        <div className="font-display text-gpsc-navy text-lg">{recruiter.referrals}</div>
-                                        <div className="text-gpsc-stone text-xs">referrals</div>
+                                        <div className="font-display text-gpsc-navy text-lg">{r.referralCount}</div>
+                                        <div className="text-gpsc-stone text-xs">referral{r.referralCount !== 1 ? "s" : ""}</div>
                                     </div>
                                 </div>
                             ))
                         ) : (
-                            <div className="text-gpsc-stone py-8 text-center">No recruiter data available</div>
+                            <div className="text-gpsc-stone py-8 text-center">No referral data yet</div>
                         )}
                     </div>
                 </div>
 
+                {/* ── Claims Queue ── */}
                 <div className="border-gpsc-cream-dark rounded-2xl border bg-white p-6">
                     <h2 className="font-display text-gpsc-navy mb-4 text-lg">Claims queue</h2>
                     <div className="space-y-3">
@@ -204,9 +171,7 @@ export const Overview: React.FC<Props> = ({ growthData, packageMix, topRecruiter
                                     key={claim.id}
                                     className="border-gpsc-cream-dark hover:bg-gpsc-cream/40 flex items-center gap-3 rounded-xl border p-3 transition-colors"
                                 >
-                                    <div
-                                        className={`h-12 w-2 rounded-full ${claim.status === "under_review" ? "bg-amber-400" : "bg-gpsc-navy"}`}
-                                    ></div>
+                                    <div className={`h-12 w-2 rounded-full ${claim.status === "under_review" ? "bg-amber-400" : "bg-gpsc-navy"}`} />
                                     <div className="flex-1">
                                         <div className="text-gpsc-navy text-sm">{claim.benefit}</div>
                                         <div className="text-gpsc-stone text-xs">Claimant ID: {claim.userId.slice(0, 8)}</div>

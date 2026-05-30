@@ -1,4 +1,4 @@
-import type { ReferralNode } from "../pages/member/types";
+import type { ReferralNode } from "../pages/types";
 
 const NODE_COLORS: Record<string, string> = {
     Basic: "#6366f1",
