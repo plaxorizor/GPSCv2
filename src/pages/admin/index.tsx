@@ -7,9 +7,9 @@ import { Overview } from "./Overview";
 import { Members } from "./Members";
 import { Claims } from "./Claims";
 import { Commissions } from "./Commissions";
-import type { Member } from "../types";
-import type { DashboardStats, PendingCommission, CommissionRecord } from "../types";
-import type { Claim } from "../types";
+import type { Member } from "../../utils/types";
+import type { DashboardStats, PendingCommission, CommissionRecord } from "../../utils/types";
+import type { Claim } from "../../utils/types";
 
 interface AdminDashboardProps {
     adminUser: Member;

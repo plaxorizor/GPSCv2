@@ -1,6 +1,6 @@
 import { useAllMembers } from "../../hooks/useAllMembers";
 import { Eye, CheckCircle, XCircle } from "lucide-react";
-import { PACKAGE_INFO } from "../../pages/types";
+import { PACKAGE_INFO } from "../../utils/types";
 import type { MemberRow } from "./Members";
 
 interface Props {
@@ -18,7 +18,9 @@ const AllMembers = ({ query, packageFilter, statusFilter, onSelectMember, onUpda
         return (
             <tbody>
                 <tr>
-                    <td colSpan={7} className="p-8 text-center text-gpsc-stone">Loading members...</td>
+                    <td colSpan={7} className="text-gpsc-stone p-8 text-center">
+                        Loading members...
+                    </td>
                 </tr>
             </tbody>
         );
@@ -32,13 +34,9 @@ const AllMembers = ({ query, packageFilter, statusFilter, onSelectMember, onUpda
             m.email?.toLowerCase().includes(q) ||
             m.city?.toLowerCase().includes(q);
 
-        const matchesPackage =
-            packageFilter === "all" ||
-            m.package?.toLowerCase() === packageFilter.toLowerCase();
+        const matchesPackage = packageFilter === "all" || m.package?.toLowerCase() === packageFilter.toLowerCase();
 
-        const matchesStatus =
-            statusFilter === "all" ||
-            m.status?.toLowerCase() === statusFilter.toLowerCase();
+        const matchesStatus = statusFilter === "all" || m.status?.toLowerCase() === statusFilter.toLowerCase();
 
         return matchesQuery && matchesPackage && matchesStatus;
     });
@@ -47,7 +45,9 @@ const AllMembers = ({ query, packageFilter, statusFilter, onSelectMember, onUpda
         return (
             <tbody>
                 <tr>
-                    <td colSpan={7} className="p-8 text-center text-gpsc-stone">No members match your filters.</td>
+                    <td colSpan={7} className="text-gpsc-stone p-8 text-center">
+                        No members match your filters.
+                    </td>
                 </tr>
             </tbody>
         );
@@ -62,10 +62,7 @@ const AllMembers = ({ query, packageFilter, statusFilter, onSelectMember, onUpda
                                 {m.firstName.charAt(0).toUpperCase() + m.lastName.charAt(0).toUpperCase()}
                             </div>
                             <div>
-                                <button
-                                    className="text-gpsc-navy font-medium hover:underline text-left"
-                                    onClick={() => onSelectMember(m)}
-                                >
+                                <button className="text-gpsc-navy text-left font-medium hover:underline" onClick={() => onSelectMember(m)}>
                                     {m.firstName} {m.lastName}
                                 </button>
                                 <div className="text-gpsc-stone text-xs">{m.email}</div>
@@ -74,16 +71,18 @@ const AllMembers = ({ query, packageFilter, statusFilter, onSelectMember, onUpda
                     </td>
                     <td className="text-gpsc-stone p-4">{m.package ?? "—"}</td>
                     <td className="text-gpsc-stone p-4">{m.sponsorName ?? "—"}</td>
-                    <td className="text-gpsc-stone p-4">
-                        {m.package ? (PACKAGE_INFO[m.package as keyof typeof PACKAGE_INFO]?.rank ?? "—") : "—"}
-                    </td>
+                    <td className="text-gpsc-stone p-4">{m.package ? (PACKAGE_INFO[m.package as keyof typeof PACKAGE_INFO]?.rank ?? "—") : "—"}</td>
                     <td className="text-gpsc-stone p-4">{m.dateCreated?.toDate?.()?.toLocaleDateString() ?? "—"}</td>
                     <td className="p-4">
-                        <span className={`rounded-full px-2 py-1 text-xs ${
-                            m.status === "active"  ? "bg-gpsc-green/10 text-gpsc-green" :
-                            m.status === "pending" ? "bg-amber-100 text-amber-700" :
-                                                     "bg-red-100 text-red-700"
-                        }`}>
+                        <span
+                            className={`rounded-full px-2 py-1 text-xs ${
+                                m.status === "active"
+                                    ? "bg-gpsc-green/10 text-gpsc-green"
+                                    : m.status === "pending"
+                                      ? "bg-amber-100 text-amber-700"
+                                      : "bg-red-100 text-red-700"
+                            }`}
+                        >
                             {m.status}
                         </span>
                     </td>

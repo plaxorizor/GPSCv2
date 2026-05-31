@@ -1,7 +1,7 @@
 import React from "react";
 import { Wallet, Clock, TrendingUp, Download } from "lucide-react";
 import { StatCard } from "./StatCard";
-import type { Commission, Payout } from "../types";
+import type { Commission, Payout } from "../../utils/types";
 import { formatCurrency, formatDate } from "../../utils/formatter";
 
 interface Props {

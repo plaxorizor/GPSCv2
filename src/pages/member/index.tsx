@@ -8,7 +8,7 @@ import { MemberReferrals } from "./Referrals";
 import { MemberEarnings } from "./Earnings";
 import { MemberClaims } from "./Claims";
 import { MemberProfile } from "./Profile";
-import type { Member, Commission, ReferralNode, EarningsTrendPoint, Claim, Payout } from "../types";
+import type { Member, Commission, ReferralNode, EarningsTrendPoint, Claim, Payout } from "../../utils/types";
 
 import { useMemberStats } from "../../hooks/useMemberStats";
 import { getEligibilityTimeline } from "../../utils/eligibility";
@@ -101,11 +101,12 @@ export default function MemberDashboard({
                 referralsBadge={totalReferralsCount}
             />
 
-            <main className="max-w-6xl flex-1 p-6 pb-24 lg:p-10 lg:pb-10">
+            <main className="max-w-6xl flex-1 p-6 pb-24 lg:ml-64 lg:p-10 lg:pb-10">
                 {currentSection === "overview" && (
                     <MemberOverview
                         user={user}
                         rankName={rankName}
+                        packageName={user.package}
                         availableToWithdraw={availableToWithdraw}
                         totalEarned={totalEarned}
                         activeReferralsCount={activeReferralsCount}

@@ -1,7 +1,7 @@
 // admin/Members.tsx
 import React, { useState } from "react";
 import { Plus, Search, Download } from "lucide-react";
-import { PACKAGE_INFO } from "../../pages/types";
+import { PACKAGE_INFO } from "../../utils/types";
 import AllMembers from "./AllMembers";
 
 export interface MemberRow {

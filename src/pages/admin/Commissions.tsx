@@ -1,7 +1,7 @@
 // admin/Commissions.tsx
 import React, { useState } from "react";
 import { Send, Clock, CheckCircle, Download } from "lucide-react";
-import type { PendingCommission, CommissionRecord } from "../types";
+import type { PendingCommission, CommissionRecord } from "../../utils/types";
 import { formatCurrency, formatDate } from "./utils";
 
 interface Props {

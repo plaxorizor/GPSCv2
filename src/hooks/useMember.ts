@@ -4,7 +4,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase/config";
 import useAuth from "../context/useAuth";
 
-import type { Member } from "../pages/types";
+import type { Member } from "../utils/types";
 
 // Extend the Member type to include uid
 interface MemberWithUid extends Member {

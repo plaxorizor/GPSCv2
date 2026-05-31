@@ -1,7 +1,7 @@
 // admin/Claims.tsx
 import React, { useState } from "react";
 import { Download, Eye, CheckCircle, XCircle, Clock, FileText } from "lucide-react";
-import type { Claim } from "../types";
+import type { Claim } from "../../utils/types";
 import { formatCurrency, formatDate } from "./utils";
 
 interface Props {

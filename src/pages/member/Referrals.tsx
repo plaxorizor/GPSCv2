@@ -1,6 +1,6 @@
 import React from "react";
 import { Copy, Share2, MessageCircle } from "lucide-react";
-import type { Member, ReferralNode } from "../types";
+import type { Member, ReferralNode } from "../../utils/types";
 import { formatDate } from "../../utils/formatter";
 
 interface Props {
@@ -93,9 +93,37 @@ export const MemberReferrals: React.FC<Props> = ({ user, referralLink, onCopyRef
 
         <div>
             <div className="text-gpsc-stone text-xs tracking-wider uppercase">Your network</div>
-            <h1 className="font-display text-gpsc-navy text-3xl">My referrals</h1>
+            <h1 className="font-display text-gpsc-navy text-3xl">My Referrals</h1>
         </div>
 
+        <div className="border-gpsc-cream-dark rounded-2xl border bg-white p-6">
+            {/* Root node — You */}
+            <div className="relative">
+                <div className="bg-gpsc-cream flex items-center gap-3 rounded-xl p-3">
+                    <div className="bg-gpsc-navy font-display flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white">
+                        {user.firstName.charAt(0).toUpperCase() + user.lastName.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="flex-1">
+                        <div className="text-gpsc-navy font-medium">
+                            {user.firstName} {user.lastName}
+                        </div>
+                        <div className="text-gpsc-stone text-xs">Root · Level 1</div>
+                    </div>
+                </div>
+
+                {referralTree.length > 0 && (
+                    <div className="tree-children">
+                        {referralTree.map((node) => (
+                            <ReferralNodeView key={node.id} node={node} />
+                        ))}
+                    </div>
+                )}
+
+                {referralTree.length === 0 && (
+                    <div className="text-gpsc-stone py-8 text-center">No referrals yet. Share your link to start building your network.</div>
+                )}
+            </div>
+        </div>
         <div className="bg-gpsc-navy rounded-2xl p-6 text-white">
             <div className="grid items-center gap-6 sm:grid-cols-2">
                 <div>
@@ -122,36 +150,6 @@ export const MemberReferrals: React.FC<Props> = ({ user, referralLink, onCopyRef
                         <Share2 size={14} /> WhatsApp
                     </button>
                 </div>
-            </div>
-        </div>
-
-        <div className="border-gpsc-cream-dark rounded-2xl border bg-white p-6">
-            <h2 className="font-display text-gpsc-navy mb-4 text-lg">Network tree</h2>
-
-            {/* Root node — You */}
-            <div className="relative">
-                <div className="bg-gpsc-cream flex items-center gap-3 rounded-xl p-3">
-                    <div className="bg-gpsc-navy font-display flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white">
-                        {user.initials}
-                    </div>
-                    <div className="flex-1">
-                        <div className="text-gpsc-navy font-medium">You ({user.firstName})</div>
-                        <div className="text-gpsc-stone text-xs">Root · Level 0</div>
-                    </div>
-                    <div className="text-gpsc-stone shrink-0 text-sm">Level 0</div>
-                </div>
-
-                {referralTree.length > 0 && (
-                    <div className="tree-children">
-                        {referralTree.map((node) => (
-                            <ReferralNodeView key={node.id} node={node} />
-                        ))}
-                    </div>
-                )}
-
-                {referralTree.length === 0 && (
-                    <div className="text-gpsc-stone py-8 text-center">No referrals yet. Share your link to start building your network.</div>
-                )}
             </div>
         </div>
     </div>

@@ -1,6 +1,6 @@
 import React from "react";
 import { LogOut } from "lucide-react";
-import type { Member } from "../types";
+import type { Member } from "../../utils/types";
 import logo from "../../components/ui/Logo.png";
 
 interface SidebarItem {
@@ -20,7 +20,7 @@ interface Props {
 }
 
 export const DashboardSidebar: React.FC<Props> = ({ user, rankName, currentSection, onSectionChange, items, onLogout }) => (
-    <aside className="border-gpsc-cream-dark hidden min-h-screen w-64 flex-col border-r bg-white lg:flex">
+    <aside className="border-gpsc-cream-dark fixed top-0 left-0 z-30 hidden h-screen w-64 flex-col overflow-y-auto border-r bg-white lg:flex">
         <div className="flex items-center gap-3">
             <img src={logo} alt="GPSC Logo" className="ml-2 h-14 w-14 rounded-full object-contain" />
             <div className="leading-tight">

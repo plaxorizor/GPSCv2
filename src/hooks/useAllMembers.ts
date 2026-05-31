@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { getAllMembers } from "../firebase/admin";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase/config";
-import type { Member } from "../pages/types";
+import type { Member } from "../utils/types";
 
 export interface MemberWithSponsor extends Member {
     sponsorName: string;

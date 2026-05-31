@@ -1,13 +1,13 @@
 import React from "react";
 import { Wallet, TrendingUp, Users, CheckCircle, Copy, Share2, Clock, Check } from "lucide-react";
-import { QRCode } from "react-qr-code";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { StatCard } from "./StatCard";
-import { type Member, type EarningsTrendPoint } from "../types";
+import { type Member, type EarningsTrendPoint } from "../../utils/types";
 import { formatCurrency, formatDate } from "../../utils/formatter";
 
 interface Props {
     user: Member;
+    packageName: string;
     rankName: string;
     availableToWithdraw: number;
     totalEarned: number;
@@ -34,6 +34,7 @@ interface Props {
 
 export const MemberOverview: React.FC<Props> = ({
     user,
+    packageName,
     rankName,
     availableToWithdraw,
     totalEarned,
@@ -50,6 +51,7 @@ export const MemberOverview: React.FC<Props> = ({
     recentCommissions,
 }) => {
     // Static QR placeholder (no random)
+    const qrPlaceholder = Array.from({ length: 49 }).map((_, i) => i % 2 === 0);
 
     // YAxis tick formatter
     const yAxisTickFormatter = (value: number) => `₱${value}`;
@@ -64,13 +66,12 @@ export const MemberOverview: React.FC<Props> = ({
     return (
         <div className="space-y-6">
             <div>
+                <div className="text-gpsc-stone text-xs tracking-wider uppercase">Welcome back</div>
                 <h1 className="font-display text-gpsc-navy text-3xl">
                     {user.firstName} {user.lastName}
                 </h1>
                 <div className="text-gpsc-stone mt-1 text-sm">
-                    {rankName} · {user.package} Care
-                    <br />
-                    Member since {user.dateCreated?.toDate?.()?.toLocaleDateString() ?? "—"}
+                    {rankName} · {packageName} member since {user.dateCreated?.toDate?.()?.toLocaleDateString() ?? "—"}
                 </div>
             </div>
 
@@ -132,8 +133,13 @@ export const MemberOverview: React.FC<Props> = ({
                         </button>
                     </div>
                     <div className="border-t border-white/10 pt-6">
-                        <div className="mx-auto flex items-center justify-center rounded-xl bg-white p-3" style={{ width: 128, height: 128 }}>
-                            <QRCode value={referralLink} size={104} fgColor="#14365C" bgColor="#ffffff" />
+                        <div className="mb-2 text-xs tracking-wider text-white/60 uppercase">QR code</div>
+                        <div className="mx-auto flex h-32 w-32 items-center justify-center rounded-xl bg-white p-3">
+                            <div className="grid grid-cols-7 gap-0.5">
+                                {qrPlaceholder.map((isDark, i) => (
+                                    <div key={i} className={`h-2 w-2 ${isDark ? "bg-gpsc-navy" : ""}`}></div>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -186,8 +192,6 @@ export const MemberOverview: React.FC<Props> = ({
                     ))}
                 </div>
             </div>
-
-            
         </div>
     );
 };

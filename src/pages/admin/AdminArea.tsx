@@ -3,8 +3,8 @@ import { useState, useEffect, useMemo } from "react";
 import useAuth from "../../context/useAuth";
 import { Navigate } from "react-router-dom";
 import AdminDashboard from "./index";
-import type { Member, Claim } from "../types";
-import type { DashboardStats, GrowthDataPoint, PackageMixItem, TopRecruiter, PendingCommission, CommissionRecord } from "../types";
+import type { Member, Claim } from "../../utils/types";
+import type { DashboardStats, GrowthDataPoint, PackageMixItem, TopRecruiter, PendingCommission, CommissionRecord } from "../../utils/types";
 
 // Mock data fetching functions - replace with your actual API calls
 const fetchDashboardStats = async (): Promise<DashboardStats> => {

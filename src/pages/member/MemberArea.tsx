@@ -3,8 +3,8 @@ import useMember from "../../hooks/useMember";
 import { useCommissions } from "../../hooks/useCommissions";
 import { useReferralTree } from "../../hooks/useReferralTree";
 import MemberDashboard from "./index";
-import { PACKAGE_INFO } from "../types";
-import type { Member, Commission, ReferralNode, EarningsTrendPoint, Claim, Payout } from "../types";
+import { PACKAGE_INFO } from "../../utils/types";
+import type { Member, Commission, ReferralNode, EarningsTrendPoint, Claim, Payout } from "../../utils/types";
 
 // Rank mapping based on rank number
 // const getRankName = (rank: number): string => {
@@ -27,8 +27,7 @@ export default function MemberArea() {
 
     const isLoading = memberLoading || commLoading || treeLoading;
     if (isLoading) return <div className="flex min-h-screen items-center justify-center">Loading your dashboard...</div>;
-    
-    
+
     if (!member) return <Navigate to="/" />;
 
     // 1. User object — matches Member interface exactly

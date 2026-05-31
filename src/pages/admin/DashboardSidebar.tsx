@@ -1,7 +1,7 @@
 // admin/DashboardSidebar.tsx
 import React from "react";
 import { LogOut } from "lucide-react";
-import type { Member } from "../types";
+import type { Member } from "../../utils/types";
 import logoSrc from "../../components/ui/Logo.png";
 
 interface SidebarItem {

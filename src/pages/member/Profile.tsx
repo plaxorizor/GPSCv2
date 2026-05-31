@@ -1,7 +1,7 @@
 import React from "react";
 import { Edit, Lock, Shield, LogOut } from "lucide-react";
-import { PACKAGE_INFO } from "../types";
-import type { Member } from "../types";
+import { PACKAGE_INFO } from "../../utils/types";
+import type { Member } from "../../utils/types";
 
 interface Props {
     user: Member;
@@ -77,9 +77,7 @@ export const MemberProfile: React.FC<Props> = ({ user, onChangePassword, onEnabl
                                     </button>
                                 </div>
                             ))}
-                            {user.beneficiaries.length === 0 && (
-                                <div className="text-gpsc-stone py-4 text-center">No beneficiaries added yet</div>
-                            )}
+                            {user.beneficiaries.length === 0 && <div className="text-gpsc-stone py-4 text-center">No beneficiaries added yet</div>}
                         </div>
                     </div>
                 </div>
