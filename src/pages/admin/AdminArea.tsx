@@ -5,7 +5,7 @@ import { Navigate } from "react-router-dom";
 import AdminDashboard from "./index";
 import type { Member, Claim } from "../types";
 import type { DashboardStats, GrowthDataPoint, PackageMixItem, TopRecruiter, PendingCommission, CommissionRecord } from "./types";
-import { useAdmin } from "../../hooks/useAdmin";
+
 
 // Mock data fetching functions - replace with your actual API calls
 const fetchDashboardStats = async (): Promise<DashboardStats> => {
@@ -99,8 +99,6 @@ export default function AdminArea() {
     const [claims, setClaims] = useState<Claim[]>([]);
     const [pendingCommissions, setPendingCommissions] = useState<PendingCommission[]>([]);
     const [commissionHistory, setCommissionHistory] = useState<CommissionRecord[]>([]);
-
-    const { isAdmin } = useAdmin();
 
     // Compute admin user using useMemo instead of useEffect
     const adminUser = useMemo(() => {
@@ -216,10 +214,6 @@ export default function AdminArea() {
     // Check if user exists
     if (!currentUser) {
         return <Navigate to="/" />;
-    }
-
-    if (!isAdmin) {
-        return <Navigate to="/dashboard/member" />;
     }
 
     // Loading state for data

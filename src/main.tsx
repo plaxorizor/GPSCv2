@@ -14,11 +14,7 @@ import Referral from "./pages/visitor/nav/Referral";
 import FAQ from "./pages/visitor/nav/FAQ";
 import Contact from "./pages/visitor/nav/Contact";
 
-import MemberArea from "./pages/member/MemberArea";
-
 import ProtectedRoute from "./components/ProtectedRoute";
-
-import AdminArea from "./pages/admin/AdminArea";
 
 import { firebaseConfig } from "./firebase/config.ts";
 import { initializeApp } from "firebase/app";
@@ -48,24 +44,6 @@ createRoot(document.getElementById("root")!).render(
                         element={
                             <ProtectedRoute>
                                 <Dashboard />
-                            </ProtectedRoute>
-                        }
-                    />
-
-                    <Route
-                        path="/dashboard/member"
-                        element={
-                            <ProtectedRoute>
-                                <MemberArea />
-                            </ProtectedRoute>
-                        }
-                    />
-
-                    <Route
-                        path="/dashboard/admin"
-                        element={
-                            <ProtectedRoute>
-                                <AdminArea />
                             </ProtectedRoute>
                         }
                     />
