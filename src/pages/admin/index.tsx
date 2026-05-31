@@ -1,19 +1,19 @@
 // admin/index.tsx
 import { useState } from "react";
-import { LayoutGrid, Users, FileText, DollarSign, Database } from "lucide-react";
+import { LayoutGrid, Users, FileText, DollarSign } from "lucide-react";
 import { DashboardSidebar } from "./DashboardSidebar";
+import { MobileBottomNav } from "./MobileBottomNav";
 import { Overview } from "./Overview";
 import { Members } from "./Members";
 import { Claims } from "./Claims";
 import { Commissions } from "./Commissions";
 import type { Member } from "../types";
-import type { DashboardStats, PendingCommission, CommissionRecord } from "./types";
+import type { DashboardStats, PendingCommission, CommissionRecord } from "../types";
 import type { Claim } from "../types";
 
 interface AdminDashboardProps {
     adminUser: Member;
     stats: DashboardStats;
-    // recentClaims: Claim[];
     claims: Claim[];
     pendingCommissions: PendingCommission[];
     commissionHistory: CommissionRecord[];
@@ -37,7 +37,6 @@ interface AdminDashboardProps {
 
 export default function AdminDashboard({
     adminUser,
-    //recentClaims,
     claims,
     pendingCommissions,
     commissionHistory,
@@ -63,7 +62,6 @@ export default function AdminDashboard({
         { id: "members", label: "Members", icon: Users, badge: null },
         { id: "claims", label: "Claims", icon: FileText, badge: pendingClaimsCount },
         { id: "commissions", label: "Commissions", icon: DollarSign, badge: pendingCommissionsCount },
-        { id: "database", label: "Database", icon: Database, badge: null },
     ];
 
     const rankName = "Administrator";
@@ -78,14 +76,19 @@ export default function AdminDashboard({
                 items={sidebarItems}
                 onLogout={onLogout}
             />
-            <main className="max-w-6xl flex-1 p-6 lg:p-10">
+
+            <MobileBottomNav
+                current={currentSection}
+                onChange={setCurrentSection}
+                claimsBadge={pendingClaimsCount}
+                commissionsBadge={pendingCommissionsCount}
+                onLogout={onLogout}
+            />
+
+            <main className="max-w-6xl flex-1 p-6 pb-24 lg:p-10 lg:pb-10">
                 {currentSection === "overview" && <Overview loading={loading.stats || false} onRefresh={onRefreshStats} />}
                 {currentSection === "members" && (
-                    <Members
-                        loading={loading.members || false}
-                        onUpdateStatus={onUpdateMemberStatus}
-                        onExport={onExportMembers}
-                    />
+                    <Members loading={loading.members || false} onUpdateStatus={onUpdateMemberStatus} onExport={onExportMembers} />
                 )}
                 {currentSection === "claims" && (
                     <Claims
@@ -108,16 +111,15 @@ export default function AdminDashboard({
                 )}
             </main>
 
-            {/* Add global animation styles */}
             <style>{`
-        @keyframes fade-up {
-          from { opacity: 0; transform: translateY(12px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-up {
-          animation: fade-up 0.3s ease-out forwards;
-        }
-      `}</style>
+                @keyframes fade-up {
+                    from { opacity: 0; transform: translateY(12px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                .animate-fade-up {
+                    animation: fade-up 0.3s ease-out forwards;
+                }
+            `}</style>
         </div>
     );
 }

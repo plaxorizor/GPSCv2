@@ -3,7 +3,7 @@ import React from "react";
 import { Users, TrendingUp, FileText, Wallet, UserCheck } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { StatCard } from "./StatCard";
-import type { PackageMixItem } from "./types";
+import type { PackageMixItem } from "../types";
 import { formatCurrency } from "./utils";
 
 import useAdminStats from "../../hooks/useAdminStats";

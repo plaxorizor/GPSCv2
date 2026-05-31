@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { LayoutGrid, Wallet, FileText, Settings, Network } from "lucide-react";
 import { DashboardSidebar } from "./DashboardSidebar";
+import { MobileBottomNav } from "./MobileBottomNav";
 import { MemberOverview } from "./Overview";
 import { MemberReferrals } from "./Referrals";
 import { MemberEarnings } from "./Earnings";
@@ -56,31 +57,12 @@ export default function MemberDashboard({
     const lifetimePaid = commissions.filter((c) => c.status === "paid").reduce((sum, c) => sum + c.amount, 0);
 
     // Eligibility timeline (example - you can make this dynamic based on member's join date)
-    // const eligibilityTimeline = [
-    //     { label: "Accidental death assistance", months: 1, unlocked: true },
-    //     { label: "Natural death (₱20k tier)", months: 5, unlocked: true },
-    //     { label: "Hospital cash assistance", months: 6, unlocked: true },
-    //     { label: "Birthday care gift", months: 8, unlocked: true },
-    //     { label: "Natural/Accidental ₱40k tier", months: 10, unlocked: false },
-    // ];
     const eligibilityTimeline = getEligibilityTimeline(user.dateCreated);
 
-    // const recentCommissions = commissions.slice(0, 5).map((c) => ({
-    //     id: c.id,
-    //     fromMemberName: c.fromMemberName,
-    //     fromMemberInitials: c.fromMemberName
-    //         .split(" ")
-    //         .map((n) => n[0])
-    //         .join(""),
-    //     level: c.level,
-    //     amount: c.amount,
-    //     status: c.status,
-    //     date: c.date,
-    // }));
     // Recent commissions with initials:
     const { stats, loading } = useMemberStats();
     if (loading) return <div>Loading...</div>;
-    const recentCommissions = (stats?.recentCommissions ?? []).map((c: any) => {
+    const recentCommissions = (stats?.recentCommissions ?? []).map((c) => {
         const name = c.fromMember ?? "Unknown";
         const parts = name.trim().split(" ");
         return {
@@ -89,6 +71,9 @@ export default function MemberDashboard({
             fromMemberInitials: `${parts[0]?.[0] ?? ""}${parts[1]?.[0] ?? ""}`.toUpperCase() || "?",
         };
     });
+
+    // Pending claims count if there's any - TODO: make this dynamic based on claims
+    const pendingClaimsCount = claims.filter((c) => c.status !== "approved").length;
 
     const sidebarItems = [
         { id: "overview", label: "Overview", icon: LayoutGrid },
@@ -108,7 +93,15 @@ export default function MemberDashboard({
                 items={sidebarItems}
                 onLogout={onLogout}
             />
-            <main className="max-w-6xl flex-1 p-6 lg:p-10">
+
+            <MobileBottomNav
+                current={currentSection}
+                onChange={setCurrentSection}
+                claimsBadge={pendingClaimsCount}
+                referralsBadge={totalReferralsCount}
+            />
+
+            <main className="max-w-6xl flex-1 p-6 pb-24 lg:p-10 lg:pb-10">
                 {currentSection === "overview" && (
                     <MemberOverview
                         user={user}
@@ -148,7 +141,7 @@ export default function MemberDashboard({
                     />
                 )}
                 {currentSection === "claims" && <MemberClaims claims={claims} onFileClaim={onFileClaim} />}
-                {currentSection === "profile" && <MemberProfile user={user} />}
+                {currentSection === "profile" && <MemberProfile onLogout={onLogout} user={user} />}
             </main>
         </div>
     );

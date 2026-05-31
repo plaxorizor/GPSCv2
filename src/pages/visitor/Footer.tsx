@@ -53,7 +53,7 @@ export const Footer: React.FC = () => (
                         </li>
                         <li>
                             <Link to="/about" className="transition-colors hover:text-white">
-                                Officers & board · Press
+                                Officers & Board
                             </Link>
                         </li>
                         <li>

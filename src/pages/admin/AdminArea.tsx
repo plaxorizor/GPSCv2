@@ -4,8 +4,7 @@ import useAuth from "../../context/useAuth";
 import { Navigate } from "react-router-dom";
 import AdminDashboard from "./index";
 import type { Member, Claim } from "../types";
-import type { DashboardStats, GrowthDataPoint, PackageMixItem, TopRecruiter, PendingCommission, CommissionRecord } from "./types";
-
+import type { DashboardStats, GrowthDataPoint, PackageMixItem, TopRecruiter, PendingCommission, CommissionRecord } from "../types";
 
 // Mock data fetching functions - replace with your actual API calls
 const fetchDashboardStats = async (): Promise<DashboardStats> => {
@@ -199,7 +198,7 @@ export default function AdminArea() {
     const handleLogout = async () => {
         const { getAuth, signOut } = await import("firebase/auth");
         await signOut(getAuth());
-        window.location.href = "/signin";
+        return <Navigate to="/" />;
     };
 
     // Check auth loading

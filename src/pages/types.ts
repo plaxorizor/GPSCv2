@@ -88,3 +88,138 @@ export interface EarningsTrendPoint {
     month: string;
     amount: number;
 }
+
+export type ClaimStatus = "submitted" | "under_review" | "approved" | "rejected" | "released";
+
+export interface DashboardStats {
+    activeMembers: number;
+    totalRevenue: number;
+    totalCommissions: number;
+    pendingClaims: number;
+    pendingPayouts: number;
+    avgClaimTimeDays: number;
+    memberSatisfaction: string;
+}
+
+export interface GrowthDataPoint {
+    month: string;
+    members: number;
+}
+
+export interface PackageMixItem {
+    name: string;
+    value: number;
+    color: string;
+}
+
+export interface TopRecruiter {
+    id: string;
+    firstName: string;
+    lastName: string;
+    initials: string;
+    city: string;
+    referrals: number;
+}
+
+export interface CommissionRecord {
+    id: string;
+    membershipId: string;
+    recipientId: string;
+    recipientName: string;
+    fromMemberName: string;
+    fromMemberCity: string;
+    level: number;
+    role: string;
+    amount: number;
+    status: "paid" | "payable" | "pending";
+    date: string;
+}
+
+export interface PendingCommission {
+    id: string;
+    membershipId: string;
+    recipientId: string;
+    recipientName: string;
+    fromMemberName: string;
+    level: number;
+    amount: number;
+    date: string;
+}
+
+export interface Benefit {
+    label: string;
+    amount: string;
+    eligibility: string;
+}
+
+export interface Package {
+    id: string;
+    name: string;
+    price: number;
+    tagline: string;
+    coverage: string;
+    color: string;
+    popular?: boolean;
+    benefits: Benefit[];
+    commission: number;
+}
+
+export const packages: Package[] = [
+    {
+        id: "basic",
+        name: "Basic Care",
+        price: 698,
+        tagline: "Individual protection, simple start",
+        coverage: "Individual",
+        color: "navy",
+        benefits: [
+            { label: "Accidental death", amount: "₱10,000 cash", eligibility: "1 month" },
+            { label: "Natural death", amount: "₱20,000 + ₱5,000 groceries", eligibility: "5 months" },
+            { label: "Natural/Accidental death", amount: "₱40,000 + ₱10,000 groceries + tribute", eligibility: "10 months" },
+            { label: "Hospital cash", amount: "₱5,000 + ₱1,500/day max 7 days", eligibility: "6 months" },
+            { label: "Senior recognition", amount: "₱5,000 (age 60–90) / ₱25,000 (age 100)", eligibility: "6 months" },
+            { label: "Agent commission", amount: "1st level rank", eligibility: "Active" },
+        ],
+        commission: 224,
+    },
+    {
+        id: "family",
+        name: "Family Care",
+        price: 1698,
+        tagline: "Coverage for the whole household",
+        coverage: "Family of 4",
+        color: "green",
+        popular: true,
+        benefits: [
+            { label: "Accidental death", amount: "₱10,000 cash", eligibility: "1 month" },
+            { label: "Natural death", amount: "₱20,000 + ₱5,000 groceries", eligibility: "5 months" },
+            { label: "Natural/Accidental death", amount: "₱40,000 + ₱10,000 groceries + tribute", eligibility: "10 months" },
+            { label: "Hospital cash", amount: "₱5,000 + ₱1,500/day max 7 days", eligibility: "6 months" },
+            { label: "Senior recognition", amount: "₱5,000 (age 60–90) / ₱25,000 (age 100)", eligibility: "6 months" },
+            { label: "Calamity assistance", amount: "₱5,000 (fire or flood)", eligibility: "8 months" },
+            { label: "Leadership bonus", amount: "Up to 3rd level rank", eligibility: "Active" },
+        ],
+        commission: 544,
+    },
+    {
+        id: "premium",
+        name: "Premium Care",
+        price: 4998,
+        tagline: "Full benefits and leadership rewards",
+        coverage: "Family of 5",
+        color: "navy",
+        benefits: [
+            { label: "Accidental death", amount: "₱20,000 – ₱80,000", eligibility: "1–10 months" },
+            { label: "Natural death", amount: "₱40,000 + ₱10,000 groceries", eligibility: "5 months" },
+            { label: "Hospital cash", amount: "₱10,000 + ₱3,000/day", eligibility: "6 months" },
+            { label: "Senior recognition", amount: "₱20,000 – ₱50,000", eligibility: "6 months" },
+            { label: "Birthday care", amount: "₱5,000 + cake + tarpaulin", eligibility: "8 months" },
+            { label: "Maternity assistance", amount: "₱10,000 – ₱20,000", eligibility: "8 months" },
+            { label: "Calamity assistance", amount: "₱10,000", eligibility: "8 months" },
+            { label: "Leadership bonus", amount: "Up to 6th rank", eligibility: "Active" },
+        ],
+        commission: 1600,
+    },
+];
+
+export const peso = (n: number): string => "₱" + n.toLocaleString("en-PH");

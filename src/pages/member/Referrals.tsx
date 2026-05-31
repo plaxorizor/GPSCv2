@@ -11,43 +11,91 @@ interface Props {
     referralTree: ReferralNode[];
 }
 
-const ReferralNodeView: React.FC<{ node: ReferralNode; depth?: number }> = ({ node, depth = 0 }) => (
-    <div style={{ marginLeft: depth === 0 ? 0 : 12 }} className="mt-2">
+const treeStyles = `
+/* Wrapper around all children — draws the vertical trunk */
+.tree-children {
+    position: relative;
+    margin-left: 24px;
+}
+
+.tree-children::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 28px;
+    width: 1.5px;
+    background-color: #d6cfc0;
+    border-radius: 1px;
+}
+
+/* Each individual child node row */
+.tree-item {
+    position: relative;
+    margin-top: 8px;
+    padding-left: 20px;
+}
+
+/* Horizontal elbow — connects trunk to card */
+.tree-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 28px;
+    width: 18px;
+    height: 1.5px;
+    background-color: #d6cfc0;
+    border-radius: 1px;
+}
+`;
+
+const ReferralNodeView: React.FC<{ node: ReferralNode }> = ({ node }) => (
+    <div className="tree-item">
         <div className="border-gpsc-cream-dark flex items-center gap-3 rounded-xl border bg-white p-3">
-            <div className="bg-gpsc-green font-display flex h-10 w-10 items-center justify-center rounded-full text-sm text-white">
+            <div className="bg-gpsc-green font-display flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm text-white">
                 {node.initials}
             </div>
-            <div className="flex-1">
-                <div className="text-gpsc-navy font-medium">
+            <div className="min-w-0 flex-1">
+                <div className="text-gpsc-navy truncate font-medium">
                     {node.firstName} {node.lastName}
                 </div>
-                <div className="text-gpsc-stone text-xs">
+                <div className="text-gpsc-stone truncate text-xs">
                     {node.packageName} · {node.city} · {formatDate(node.memberSince)}
                 </div>
             </div>
-            <div className="text-right">
+            <div className="shrink-0 text-right">
                 <div
-                    className={`inline-block rounded-full px-2 py-1 text-xs ${node.status === "active" ? "bg-gpsc-green/10 text-gpsc-green" : "bg-amber-100 text-amber-700"}`}
+                    className={`inline-block rounded-full px-2 py-1 text-xs ${
+                        node.status === "active" ? "bg-gpsc-green/10 text-gpsc-green" : "bg-amber-100 text-amber-700"
+                    }`}
                 >
                     {node.status}
                 </div>
                 <div className="text-gpsc-stone mt-1 text-xs">
-                    Level {node.level} · {node.commissionRate}%
+                    L{node.level} · {node.commissionRate}%
                 </div>
             </div>
         </div>
-        {node.downline.map((child) => (
-            <ReferralNodeView key={child.id} node={child} depth={depth + 1} />
-        ))}
+
+        {node.downline.length > 0 && (
+            <div className="tree-children">
+                {node.downline.map((child) => (
+                    <ReferralNodeView key={child.id} node={child} />
+                ))}
+            </div>
+        )}
     </div>
 );
 
 export const MemberReferrals: React.FC<Props> = ({ user, referralLink, onCopyReferralLink, onShareReferralLink, referralTree }) => (
     <div className="space-y-6">
+        <style>{treeStyles}</style>
+
         <div>
             <div className="text-gpsc-stone text-xs tracking-wider uppercase">Your network</div>
             <h1 className="font-display text-gpsc-navy text-3xl">My referrals</h1>
         </div>
+
         <div className="bg-gpsc-navy rounded-2xl p-6 text-white">
             <div className="grid items-center gap-6 sm:grid-cols-2">
                 <div>
@@ -76,22 +124,31 @@ export const MemberReferrals: React.FC<Props> = ({ user, referralLink, onCopyRef
                 </div>
             </div>
         </div>
+
         <div className="border-gpsc-cream-dark rounded-2xl border bg-white p-6">
             <h2 className="font-display text-gpsc-navy mb-4 text-lg">Network tree</h2>
-            <div className="space-y-2">
+
+            {/* Root node — You */}
+            <div className="relative">
                 <div className="bg-gpsc-cream flex items-center gap-3 rounded-xl p-3">
-                    <div className="bg-gpsc-navy font-display flex h-10 w-10 items-center justify-center rounded-full text-white">
-                        {user.firstName.charAt(0).toUpperCase() + user.lastName.charAt(0).toUpperCase()}
+                    <div className="bg-gpsc-navy font-display flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white">
+                        {user.initials}
                     </div>
                     <div className="flex-1">
                         <div className="text-gpsc-navy font-medium">You ({user.firstName})</div>
-                        <div className="text-gpsc-stone text-xs">Member</div>
+                        <div className="text-gpsc-stone text-xs">Root · Level 0</div>
                     </div>
-                    <div className="text-gpsc-stone text-sm">Level 0</div>
+                    <div className="text-gpsc-stone shrink-0 text-sm">Level 0</div>
                 </div>
-                {referralTree.map((node) => (
-                    <ReferralNodeView key={node.id} node={node} />
-                ))}
+
+                {referralTree.length > 0 && (
+                    <div className="tree-children">
+                        {referralTree.map((node) => (
+                            <ReferralNodeView key={node.id} node={node} />
+                        ))}
+                    </div>
+                )}
+
                 {referralTree.length === 0 && (
                     <div className="text-gpsc-stone py-8 text-center">No referrals yet. Share your link to start building your network.</div>
                 )}
