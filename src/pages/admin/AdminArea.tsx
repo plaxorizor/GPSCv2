@@ -2,7 +2,7 @@
 import { useState, useEffect, useMemo } from "react";
 import useAuth from "../../context/useAuth";
 import { Navigate } from "react-router-dom";
-import AdminDashboard from "./index";
+import AdminDashboard from "./AdminDashboard";
 import type { Member, Claim } from "../../utils/types";
 import type { DashboardStats, GrowthDataPoint, PackageMixItem, TopRecruiter, PendingCommission, CommissionRecord } from "../../utils/types";
 

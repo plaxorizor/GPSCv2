@@ -5,7 +5,7 @@ import useMemberStats from "../../hooks/useMemberStats";
 
 import { useCommissions } from "../../hooks/useCommissions";
 import { useReferralTree } from "../../hooks/useReferralTree";
-import MemberDashboard from "./index";
+import MemberDashboard from "./MemberDashboard";
 import { PACKAGE_INFO } from "../../utils/types";
 import type { Member, Commission, ReferralNode, EarningsTrendPoint, Claim, Payout } from "../../utils/types";
 

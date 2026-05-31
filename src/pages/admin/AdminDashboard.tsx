@@ -86,7 +86,7 @@ export default function AdminDashboard({
             />
 
             {/* Added padding-left to account for fixed sidebar width (w-64 = 16rem = 256px) */}
-            <main className="max-w-6xl flex-1 p-6 pb-24 lg:p-10 lg:pb-10 lg:pl-[272px]">
+            <main className="max-w-6xl flex-1 p-6 pb-24 lg:p-10 lg:pb-10 lg:pl-68">
                 {currentSection === "overview" && <Overview loading={loading.stats || false} onRefresh={onRefreshStats} />}
                 {currentSection === "members" && (
                     <Members loading={loading.members || false} onUpdateStatus={onUpdateMemberStatus} onExport={onExportMembers} />

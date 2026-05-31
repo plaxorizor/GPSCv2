@@ -1,6 +1,6 @@
 // admin/Overview.tsx
 import React from "react";
-import { Users, TrendingUp, FileText, Wallet, UserCheck } from "lucide-react";
+import { Users, TrendingUp, FileText, Wallet, UserCheck, RefreshCw } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { StatCard } from "./StatCard";
 import type { PackageMixItem } from "../../utils/types";
@@ -44,11 +44,10 @@ export const Overview: React.FC<Props> = ({ loading, onRefresh }) => {
         <div className="space-y-6">
             <div className="flex items-end justify-between">
                 <div>
-                    <div className="text-gpsc-stone text-xs tracking-wider uppercase">Administrator overview</div>
-                    <h1 className="font-display text-gpsc-navy text-3xl">Operations dashboard</h1>
+                    <h1 className="font-display text-gpsc-navy text-3xl">Operations Dashboard</h1>
                 </div>
                 <button onClick={onRefresh} className="text-gpsc-green flex items-center gap-1 text-xs transition-colors hover:underline">
-                    <TrendingUp size={12} /> Refresh
+                    <RefreshCw size={16} /> Refresh
                 </button>
             </div>
 
