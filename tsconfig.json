@@ -4,5 +4,9 @@
     "compilerOptions": {
         "strict": true,
         "useUnknownInCatchVariables": false
-    }
+    },
+    "exclude": [
+        "node_modules",
+        "functions" // ← add this
+    ]
 }

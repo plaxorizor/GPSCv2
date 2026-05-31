@@ -1,13 +1,14 @@
 import React from "react";
 import { MapPin, Phone, Mail, MessageCircle } from "lucide-react";
-
 import { GlobalStyles } from "../GlobalStyles";
+import PublicNav from "../PublicNav";
 import { Footer } from "../Footer";
 
 const Contact: React.FC = () => {
     return (
         <div className="font-body text-gpsc-ink min-h-screen antialiased">
             <GlobalStyles />
+            <PublicNav />
             <main className="mx-auto max-w-4xl px-6 py-20">
                 <h1 className="font-display text-gpsc-navy mb-8 text-4xl">Get in Touch</h1>
                 <div className="grid gap-12 md:grid-cols-2">

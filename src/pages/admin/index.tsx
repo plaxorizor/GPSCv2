@@ -13,7 +13,7 @@ import type { Claim } from "../types";
 interface AdminDashboardProps {
     adminUser: Member;
     stats: DashboardStats;
-    recentClaims: Claim[];
+    // recentClaims: Claim[];
     claims: Claim[];
     pendingCommissions: PendingCommission[];
     commissionHistory: CommissionRecord[];
@@ -24,7 +24,6 @@ interface AdminDashboardProps {
         commissions?: boolean;
     };
     onRefreshStats: () => void;
-    onRefreshMembers: () => void;
     onRefreshClaims: () => void;
     onRefreshCommissions: () => void;
     onUpdateMemberStatus: (memberId: string, status: "active" | "inactive") => Promise<void>;
@@ -38,13 +37,12 @@ interface AdminDashboardProps {
 
 export default function AdminDashboard({
     adminUser,
-    recentClaims,
+    //recentClaims,
     claims,
     pendingCommissions,
     commissionHistory,
     loading,
     onRefreshStats,
-    onRefreshMembers,
     onRefreshClaims,
     onRefreshCommissions,
     onUpdateMemberStatus,
@@ -86,7 +84,6 @@ export default function AdminDashboard({
                     <Members
                         loading={loading.members || false}
                         onUpdateStatus={onUpdateMemberStatus}
-                        onRefresh={onRefreshMembers}
                         onExport={onExportMembers}
                     />
                 )}

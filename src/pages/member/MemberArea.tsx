@@ -27,6 +27,8 @@ export default function MemberArea() {
 
     const isLoading = memberLoading || commLoading || treeLoading;
     if (isLoading) return <div className="flex min-h-screen items-center justify-center">Loading your dashboard...</div>;
+    
+    
     if (!member) return <Navigate to="/" />;
 
     // 1. User object — matches Member interface exactly

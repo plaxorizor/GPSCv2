@@ -26,15 +26,14 @@ export interface MemberRow {
 interface Props {
     loading: boolean;
     onUpdateStatus: (memberId: string, status: "active" | "inactive") => Promise<void>;
-    onRefresh: () => void;
     onExport: () => void;
     onAddMember?: () => void;
 }
 
-export const Members: React.FC<Props> = ({ onUpdateStatus, onRefresh, onExport, onAddMember }) => {
-    const [query, setQuery]                   = useState("");
-    const [packageFilter, setPackageFilter]   = useState("all");
-    const [statusFilter, setStatusFilter]     = useState("all");
+export const Members: React.FC<Props> = ({ onUpdateStatus, onExport, onAddMember }) => {
+    const [query, setQuery] = useState("");
+    const [packageFilter, setPackageFilter] = useState("all");
+    const [statusFilter, setStatusFilter] = useState("all");
     const [selectedMember, setSelectedMember] = useState<MemberRow | null>(null);
 
     return (
@@ -93,10 +92,7 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onRefresh, onExport, 
                         <option value="inactive">Inactive</option>
                         <option value="pending">Pending</option>
                     </select>
-                    <button
-                        onClick={onRefresh}
-                        className="border-gpsc-cream-dark hover:bg-gpsc-cream/60 rounded-lg border px-3 py-2 text-sm transition-colors"
-                    >
+                    <button className="border-gpsc-cream-dark hover:bg-gpsc-cream/60 rounded-lg border px-3 py-2 text-sm transition-colors">
                         Refresh
                     </button>
                 </div>
@@ -128,19 +124,13 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onRefresh, onExport, 
 
             {/* ── Member Detail Modal ── */}
             {selectedMember && (
-                <div
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-                    onClick={() => setSelectedMember(null)}
-                >
-                    <div
-                        className="mx-4 w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl"
-                        onClick={(e) => e.stopPropagation()}
-                    >
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setSelectedMember(null)}>
+                    <div className="mx-4 w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
                         <div className="mb-4 flex items-center justify-between">
                             <h2 className="font-display text-gpsc-navy text-xl">Member Details</h2>
                             <button
                                 onClick={() => setSelectedMember(null)}
-                                className="text-gpsc-stone hover:text-gpsc-navy transition-colors text-lg"
+                                className="text-gpsc-stone hover:text-gpsc-navy text-lg transition-colors"
                             >
                                 ✕
                             </button>
@@ -149,7 +139,8 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onRefresh, onExport, 
                         {/* Avatar + basic info */}
                         <div className="bg-gpsc-cream mb-6 flex items-center gap-4 rounded-xl p-4">
                             <div className="bg-gpsc-navy font-display flex h-16 w-16 items-center justify-center rounded-full text-2xl text-white">
-                                {selectedMember.firstName.charAt(0).toUpperCase()}{selectedMember.lastName.charAt(0).toUpperCase()}
+                                {selectedMember.firstName.charAt(0).toUpperCase()}
+                                {selectedMember.lastName.charAt(0).toUpperCase()}
                             </div>
                             <div>
                                 <div className="font-display text-gpsc-navy text-xl">
@@ -163,24 +154,29 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onRefresh, onExport, 
                         {/* Detail grid */}
                         <div className="grid grid-cols-2 gap-4">
                             {[
-                                { label: "Package",       value: selectedMember.package ? `${selectedMember.package} Care` : "—" },
-                                { label: "Rank",          value: selectedMember.package ? (PACKAGE_INFO[selectedMember.package as keyof typeof PACKAGE_INFO]?.rank ?? "—") : "—" },
-                                { label: "Sponsor",       value: selectedMember.sponsorName ?? "—" },
+                                { label: "Package", value: selectedMember.package ? `${selectedMember.package} Care` : "—" },
+                                {
+                                    label: "Rank",
+                                    value: selectedMember.package
+                                        ? (PACKAGE_INFO[selectedMember.package as keyof typeof PACKAGE_INFO]?.rank ?? "—")
+                                        : "—",
+                                },
+                                { label: "Sponsor", value: selectedMember.sponsorName ?? "—" },
                                 { label: "Referral code", value: selectedMember.referralCode ?? "—" },
-                                { label: "City",          value: selectedMember.city ?? "—" },
-                                { label: "Province",      value: selectedMember.province ?? "—" },
-                                { label: "Civil status",  value: selectedMember.civilStatus ?? "—" },
-                                { label: "Birth date",    value: selectedMember.birthDate ?? "—" },
-                                { label: "Joined",        value: selectedMember.dateCreated?.toDate?.()?.toLocaleDateString() ?? "—" },
-                                { label: "Status",        value: selectedMember.status ?? "—" },
+                                { label: "City", value: selectedMember.city ?? "—" },
+                                { label: "Province", value: selectedMember.province ?? "—" },
+                                { label: "Civil status", value: selectedMember.civilStatus ?? "—" },
+                                { label: "Birth date", value: selectedMember.birthDate ?? "—" },
+                                { label: "Joined", value: selectedMember.dateCreated?.toDate?.()?.toLocaleDateString() ?? "—" },
+                                { label: "Status", value: selectedMember.status ?? "—" },
                             ].map(({ label, value }) => (
                                 <div key={label}>
-                                    <div className="text-gpsc-stone text-xs mb-0.5">{label}</div>
-                                    <div className={`text-sm font-medium ${
-                                        label === "Status"
-                                            ? value === "active" ? "text-gpsc-green" : "text-red-500"
-                                            : "text-gpsc-navy"
-                                    }`}>
+                                    <div className="text-gpsc-stone mb-0.5 text-xs">{label}</div>
+                                    <div
+                                        className={`text-sm font-medium ${
+                                            label === "Status" ? (value === "active" ? "text-gpsc-green" : "text-red-500") : "text-gpsc-navy"
+                                        }`}
+                                    >
                                         {value}
                                     </div>
                                 </div>
@@ -190,10 +186,10 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onRefresh, onExport, 
                         {/* Beneficiaries */}
                         {(selectedMember.beneficiaries?.length ?? 0) > 0 && (
                             <div className="mt-5">
-                                <div className="text-gpsc-stone text-xs mb-2 uppercase tracking-wider">Beneficiaries</div>
+                                <div className="text-gpsc-stone mb-2 text-xs tracking-wider uppercase">Beneficiaries</div>
                                 <div className="space-y-2">
                                     {selectedMember.beneficiaries!.map((b, i) => (
-                                        <div key={i} className="bg-gpsc-cream rounded-lg px-3 py-2 text-sm flex justify-between">
+                                        <div key={i} className="bg-gpsc-cream flex justify-between rounded-lg px-3 py-2 text-sm">
                                             <span className="text-gpsc-navy font-medium">{b.name}</span>
                                             <span className="text-gpsc-stone">{b.relationship}</span>
                                         </div>
@@ -216,9 +212,7 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onRefresh, onExport, 
                                     setSelectedMember(null);
                                 }}
                                 className={`flex-1 rounded-lg px-4 py-2 font-medium text-white transition-colors ${
-                                    selectedMember.status === "active"
-                                        ? "bg-red-500 hover:bg-red-600"
-                                        : "bg-gpsc-green hover:bg-gpsc-green/80"
+                                    selectedMember.status === "active" ? "bg-red-500 hover:bg-red-600" : "bg-gpsc-green hover:bg-gpsc-green/80"
                                 }`}
                             >
                                 {selectedMember.status === "active" ? "Deactivate" : "Activate"}

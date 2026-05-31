@@ -10,11 +10,11 @@ import SignIn from "./pages/public/SignIn";
 import SignUp from "./pages/public/SignUp.tsx";
 import About from "./pages/visitor/nav/About";
 import Membership from "./pages/visitor/nav/Membership";
+import Referral from "./pages/visitor/nav/Referral";
 import FAQ from "./pages/visitor/nav/FAQ";
 import Contact from "./pages/visitor/nav/Contact";
 
 import MemberArea from "./pages/member/MemberArea";
-import ReferralTree from "./pages/ReferralTree";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -37,14 +37,7 @@ createRoot(document.getElementById("root")!).render(
 
                     <Route path="/signin" element={<SignIn />} />
                     <Route path="/signup" element={<SignUp />} />
-                    <Route
-                        path="/referral"
-                        element={
-                            <ProtectedRoute>
-                                <ReferralTree />
-                            </ProtectedRoute>
-                        }
-                    />
+                          <Route path="/referral" element={<Referral />} />
                     <Route path="/faq" element={<FAQ />} />
                     <Route path="/contact" element={<Contact />} />
                     <Route path="/about" element={<About />} />
@@ -69,7 +62,7 @@ createRoot(document.getElementById("root")!).render(
                     />
 
                     <Route
-                        path="/dashboard/admin/*"
+                        path="/dashboard/admin"
                         element={
                             <ProtectedRoute>
                                 <AdminArea />

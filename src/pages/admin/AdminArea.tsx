@@ -5,6 +5,7 @@ import { Navigate } from "react-router-dom";
 import AdminDashboard from "./index";
 import type { Member, Claim } from "../types";
 import type { DashboardStats, GrowthDataPoint, PackageMixItem, TopRecruiter, PendingCommission, CommissionRecord } from "./types";
+import { useAdmin } from "../../hooks/useAdmin";
 
 // Mock data fetching functions - replace with your actual API calls
 const fetchDashboardStats = async (): Promise<DashboardStats> => {
@@ -92,23 +93,25 @@ const fetchCommissionHistory = async (): Promise<CommissionRecord[]> => {
 };
 
 export default function AdminArea() {
-    const { currentUser: user, loading: authLoading } = useAuth();
+    const { currentUser, loading: authLoading } = useAuth();
     const [isLoading, setIsLoading] = useState(true);
     const [stats, setStats] = useState<DashboardStats | null>(null);
     const [claims, setClaims] = useState<Claim[]>([]);
     const [pendingCommissions, setPendingCommissions] = useState<PendingCommission[]>([]);
     const [commissionHistory, setCommissionHistory] = useState<CommissionRecord[]>([]);
 
+    const { isAdmin } = useAdmin();
+
     // Compute admin user using useMemo instead of useEffect
     const adminUser = useMemo(() => {
-        if (!user) return null;
+        if (!currentUser) return null;
 
         return {
-            uid: user.uid,
-            firstName: user.displayName?.split(" ")[0] || "Admin",
-            lastName: user.displayName?.split(" ")[1] || "",
-            email: user.email || "",
-            mobile: user.phoneNumber || "",
+            uid: currentUser.uid,
+            firstName: currentUser.displayName?.split(" ")[0] || "Admin",
+            lastName: currentUser.displayName?.split(" ")[1] || "",
+            email: currentUser.email || "",
+            mobile: currentUser.phoneNumber || "",
             birthDate: new Date().toISOString(),
             civilStatus: "single" as const,
             city: "",
@@ -120,18 +123,16 @@ export default function AdminArea() {
             beneficiaries: [],
             isAdmin: true,
             dateCreated: new Date(),
-            initials: (user.displayName?.[0] || "A").toUpperCase(),
+            initials: (currentUser.displayName?.[0] || "A").toUpperCase(),
         };
-    }, [user]);
+    }, [currentUser]);
 
     // Fetch all data
     useEffect(() => {
         const fetchAllData = async () => {
             setIsLoading(true);
             try {
-                const [
-                    statsData,
-                ] = await Promise.all([
+                const [statsData] = await Promise.all([
                     fetchDashboardStats(),
                     fetchGrowthData(),
                     fetchPackageMix(),
@@ -143,7 +144,6 @@ export default function AdminArea() {
                     fetchCommissionHistory(),
                 ]);
                 setStats(statsData);
-                
             } catch (error) {
                 console.error("Failed to fetch admin data:", error);
             } finally {
@@ -160,11 +160,6 @@ export default function AdminArea() {
         setStats(data);
     };
 
-    const handleRefreshMembers = async () => {
-        const data = await fetchMembers();
-        setMembers(data);
-    };
-
     const handleRefreshClaims = async () => {
         const data = await fetchClaims();
         setClaims(data);
@@ -178,7 +173,6 @@ export default function AdminArea() {
 
     const handleUpdateMemberStatus = async (memberId: string, status: "active" | "inactive") => {
         console.log(`Update member ${memberId} to ${status}`);
-        await handleRefreshMembers();
     };
 
     const handleUpdateClaimStatus = async (claimId: string, status: "approved" | "rejected" | "released") => {
@@ -220,27 +214,16 @@ export default function AdminArea() {
     }
 
     // Check if user exists
-    if (!user) {
-        return <Navigate to="/signin" />;
+    if (!currentUser) {
+        return <Navigate to="/" />;
     }
-
-    // TODO: Check if user is admin from your database
-    const isAdmin = true;
 
     if (!isAdmin) {
         return <Navigate to="/dashboard/member" />;
     }
 
     // Loading state for data
-    if (isLoading || !stats) {
-        return (
-            <div className="bg-gpsc-cream flex min-h-screen items-center justify-center">
-                <div className="border-gpsc-green h-12 w-12 animate-spin rounded-full border-b-2"></div>
-            </div>
-        );
-    }
-
-    if (!adminUser) {
+    if (isLoading || !stats || !adminUser) {
         return (
             <div className="bg-gpsc-cream flex min-h-screen items-center justify-center">
                 <div className="border-gpsc-green h-12 w-12 animate-spin rounded-full border-b-2"></div>
@@ -262,7 +245,6 @@ export default function AdminArea() {
                 commissions: isLoading,
             }}
             onRefreshStats={handleRefreshStats}
-            onRefreshMembers={handleRefreshMembers}
             onRefreshClaims={handleRefreshClaims}
             onRefreshCommissions={handleRefreshCommissions}
             onUpdateMemberStatus={handleUpdateMemberStatus}

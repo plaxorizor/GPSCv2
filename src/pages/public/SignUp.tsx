@@ -4,6 +4,7 @@ import { registerUser } from "../../firebase/auth";
 import { db } from "../../firebase/config";
 
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import logo from "../../components/ui/Logo.png";
 
 import { RadioGroup, Radio } from "@headlessui/react";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
@@ -149,7 +150,14 @@ export default function SignUpLayout() {
 
                     {/* ── Header ── */}
                     <div className="mb-10 text-center">
-               
+                        <button
+                            type="button"
+                            onClick={() => navigate("/")}
+                            className="inline-flex flex-col items-center cursor-pointer"
+                        >
+                            <img src={logo} alt="GPSC Logo" className="h-20 w-20 object-contain rounded-full" />
+                          
+                        </button>
                         <h1 className="font-display mt-4 text-4xl" style={{ color: "#14365C" }}>
                             Join in a few minutes
                         </h1>

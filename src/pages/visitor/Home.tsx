@@ -8,26 +8,23 @@ import { HowItWorks } from "./HowItWorks";
 import { Packages } from "./Packages";
 import { Testimonial } from "./Testimonial";
 import { TrustStrip } from "./TrustStrip";
-import { Navigate } from "react-router";
+import { Navigate, useNavigate } from "react-router-dom";
 import useAuth from "../../context/useAuth";
 
 export default function Home(): React.ReactElement {
-    // If there's a logged in user, redirect to dashboard
     const { currentUser: user } = useAuth();
     if (user) return <Navigate to="/dashboard" />;
 
-    const handleCta = (action: string) => {
-        alert(`${action} (demo mode)`);
-    };
+    const navigate = useNavigate();
 
     return (
         <div className="min-h-screen font-body text-gpsc-ink antialiased">
             <GlobalStyles />
             <PublicNav />
-            <Hero onCta={handleCta} />
+            <Hero />
             <Pillars />
             <HowItWorks />
-            <Packages onChoosePackage={handleCta} />
+            <Packages onChoosePackage={() => navigate("/signup")} />
             <Testimonial />
             <TrustStrip />
             <Footer />

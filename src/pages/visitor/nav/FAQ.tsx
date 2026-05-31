@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { ChevronRight } from "lucide-react";
 import { GlobalStyles } from "../GlobalStyles";
+import PublicNav from "../PublicNav";
 import { Footer } from "../Footer";
 
 const FAQ: React.FC = () => {
@@ -30,6 +31,7 @@ const FAQ: React.FC = () => {
     return (
         <div className="font-body text-gpsc-ink min-h-screen antialiased">
             <GlobalStyles />
+            <PublicNav />
             <main className="mx-auto max-w-3xl px-6 py-20">
                 <h1 className="font-display text-gpsc-navy mb-8 text-4xl">Frequently Asked Questions</h1>
                 <div className="space-y-3">

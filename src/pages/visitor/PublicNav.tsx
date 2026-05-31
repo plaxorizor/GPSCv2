@@ -1,4 +1,3 @@
-// components/PublicNav.tsx
 import React, { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -7,6 +6,7 @@ import logoSrc from "../../components/ui/Logo.png";
 export default function PublicNav(): React.ReactElement {
     const navigate = useNavigate();
     const [mobileOpen, setMobileOpen] = useState(false);
+    const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
     const items = [
         { id: "home", label: "Home", path: "/" },
@@ -28,8 +28,12 @@ export default function PublicNav(): React.ReactElement {
                 <div className="flex items-center justify-between h-16">
                     <button
                         onClick={() => handleNavClick("/")}
-                        className="flex items-center cursor-pointer">
-                        <img src={logoSrc} width={40} height={40} alt="Logo" />
+                        className="flex items-center gap-3 cursor-pointer">
+                        <img src={logoSrc} width={40} height={40} alt="Logo" className="rounded-full object-contain" />
+                        <div className="leading-tight">
+                            <div className="font-display text-base font-semibold tracking-tight text-gpsc-navy">Green Pasture</div>
+                            <div className="font-display text-xs italic text-gpsc-green">Shepherd's Care</div>
+                        </div>
                     </button>
 
                     <nav className="hidden lg:flex items-center gap-8">
@@ -37,9 +41,24 @@ export default function PublicNav(): React.ReactElement {
                             <button
                                 key={it.id}
                                 onClick={() => handleNavClick(it.path)}
-                                className="text-sm tracking-tight transition-colors text-gpsc-stone hover:text-gpsc-navy cursor-pointer"
+                                onMouseEnter={() => setHoveredItem(it.id)}
+                                onMouseLeave={() => setHoveredItem(null)}
+                                className="text-sm tracking-tight cursor-pointer relative pb-1"
+                                style={{ color: hoveredItem === it.id ? "#14365C" : "#6B6862" }}
                             >
                                 {it.label}
+                                <span
+                                    style={{
+                                        display: "block",
+                                        position: "absolute",
+                                        bottom: 0,
+                                        left: 0,
+                                        height: "2px",
+                                        backgroundColor: "#5DAB3A",
+                                        width: hoveredItem === it.id ? "100%" : "0%",
+                                        transition: "width 0.3s ease",
+                                    }}
+                                />
                             </button>
                         ))}
                     </nav>

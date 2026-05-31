@@ -1,11 +1,13 @@
 import React from "react";
 import { GlobalStyles } from "../GlobalStyles";
+import PublicNav from "../PublicNav";
 import { Footer } from "../Footer";
 
 const About: React.FC = () => {
     return (
         <div className="font-body text-gpsc-ink min-h-screen antialiased">
             <GlobalStyles />
+            <PublicNav />
 
             {/* Hero */}
             <section className="gpsc-cream mx-auto max-w-4xl px-6 py-20 lg:px-8">
