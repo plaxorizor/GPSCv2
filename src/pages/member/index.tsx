@@ -21,9 +21,7 @@ interface MemberDashboardProps {
     earningsTrend: EarningsTrendPoint[];
     claims: Claim[];
     payouts: Payout[];
-    referralLink: string;
-    onCopyReferralLink: () => void;
-    onShareReferralLink: (method: "copy" | "messenger" | "whatsapp") => void;
+    //referralLink: string;
     onRequestPayout: () => void;
     onFileClaim: () => void;
     onLogout: () => void;
@@ -37,9 +35,7 @@ export default function MemberDashboard({
     earningsTrend,
     claims,
     payouts,
-    referralLink,
-    onCopyReferralLink,
-    onShareReferralLink,
+    //referralLink,
     onRequestPayout,
     onFileClaim,
     onLogout,
@@ -114,9 +110,7 @@ export default function MemberDashboard({
                         approvedClaimsCount={approvedClaimsCount}
                         approvedClaimsTotal={approvedClaimsTotal}
                         earningsTrend={earningsTrend}
-                        referralLink={referralLink}
-                        onCopyReferralLink={onCopyReferralLink}
-                        onShareReferralLink={onShareReferralLink}
+                        //referralLink={referralLink}
                         onRequestPayout={onRequestPayout}
                         eligibilityTimeline={eligibilityTimeline}
                         recentCommissions={recentCommissions}
@@ -125,9 +119,7 @@ export default function MemberDashboard({
                 {currentSection === "referrals" && (
                     <MemberReferrals
                         user={user}
-                        referralLink={referralLink}
-                        onCopyReferralLink={onCopyReferralLink}
-                        onShareReferralLink={onShareReferralLink}
+                        //referralLink={referralLink}
                         referralTree={directReferrals}
                     />
                 )}

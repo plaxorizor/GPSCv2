@@ -1,10 +1,12 @@
 import React from "react";
-import { Wallet, TrendingUp, Users, CheckCircle, Copy, Share2, Clock, Check } from "lucide-react";
+import { Wallet, TrendingUp, Users, CheckCircle, Clock, Check } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { StatCard } from "./StatCard";
 import { type Member, type EarningsTrendPoint } from "../../utils/types";
 import { formatCurrency, formatDate } from "../../utils/formatter";
-import { QRCode } from "react-qr-code";
+
+// import ReferralCard
+import ReferralCard from "./ReferralCard";
 
 interface Props {
     user: Member;
@@ -17,9 +19,7 @@ interface Props {
     approvedClaimsCount: number;
     approvedClaimsTotal: number;
     earningsTrend: EarningsTrendPoint[];
-    referralLink: string;
-    onCopyReferralLink: () => void;
-    onShareReferralLink: (method: "copy" | "messenger" | "whatsapp") => void;
+    //referralLink: string;
     onRequestPayout: () => void;
     eligibilityTimeline: Array<{ label: string; months: number; unlocked: boolean }>;
     recentCommissions: Array<{
@@ -44,15 +44,13 @@ export const MemberOverview: React.FC<Props> = ({
     approvedClaimsCount,
     approvedClaimsTotal,
     earningsTrend,
-    referralLink,
-    onCopyReferralLink,
-    onShareReferralLink,
+    //referralLink,
     onRequestPayout,
     eligibilityTimeline,
     recentCommissions,
 }) => {
     // Static QR placeholder (no random)
-    const qrPlaceholder = Array.from({ length: 49 }).map((_, i) => i % 2 === 0);
+    //const qrPlaceholder = Array.from({ length: 49 }).map((_, i) => i % 2 === 0);
 
     // YAxis tick formatter
     const yAxisTickFormatter = (value: number) => `₱${value}`;
@@ -116,34 +114,7 @@ export const MemberOverview: React.FC<Props> = ({
                     </ResponsiveContainer>
                 </div>
 
-                <div className="bg-gpsc-navy rounded-2xl p-6 text-white">
-                    <div className="mb-4 text-xs tracking-wider text-white/60 uppercase">Your referral link</div>
-                    <div className="mb-4 rounded-xl bg-white/10 px-4 py-3 font-mono text-sm break-all">{referralLink}</div>
-                    <div className="mb-6 flex gap-2">
-                        <button
-                            onClick={onCopyReferralLink}
-                            className="text-gpsc-navy flex flex-1 items-center justify-center gap-2 rounded-lg bg-white py-2 text-sm font-medium"
-                        >
-                            <Copy size={14} /> Copy
-                        </button>
-                        <button
-                            onClick={() => onShareReferralLink("messenger")}
-                            className="bg-gpsc-green flex flex-1 items-center justify-center gap-2 rounded-lg py-2 text-sm font-medium"
-                        >
-                            <Share2 size={14} /> Share
-                        </button>
-                    </div>
-                    <div className="border-t border-white/10 pt-6">
-                        <div className="mb-2 text-xs tracking-wider text-white/60 uppercase">QR code</div>
-                        <div className="mx-auto flex h-32 w-32 items-center justify-center rounded-xl bg-white p-3">
-                            <div className="grid grid-cols-7 gap-0.5">
-                                {qrPlaceholder.map((isDark, i) => (
-                                    <div key={i} className={`h-2 w-2 ${isDark ? "bg-gpsc-navy" : ""}`}></div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <ReferralCard member={user} />
             </div>
 
             <div className="border-gpsc-cream-dark rounded-2xl border bg-white p-6">

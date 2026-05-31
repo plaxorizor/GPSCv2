@@ -31,7 +31,7 @@ const LogoLockup = () => (
 );
 
 export const DashboardSidebar: React.FC<Props> = ({ user, rankName, currentSection, onSectionChange, items, onLogout }) => (
-    <aside className="border-gpsc-cream-dark hidden min-h-screen w-64 flex-col border-r bg-white lg:flex">
+    <aside className="border-gpsc-cream-dark fixed top-0 left-0 z-40 hidden h-screen w-64 flex-col border-r bg-white lg:flex">
         <div className="border-gpsc-cream-dark border-b p-6">
             <LogoLockup />
         </div>
@@ -48,7 +48,7 @@ export const DashboardSidebar: React.FC<Props> = ({ user, rankName, currentSecti
                 </div>
             </div>
         </div>
-        <nav className="flex-1 space-y-1 p-3">
+        <nav className="flex-1 overflow-y-auto space-y-1 p-3">
             {items.map((item) => (
                 <button
                     key={item.id}

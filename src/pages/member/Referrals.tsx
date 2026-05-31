@@ -1,13 +1,11 @@
 import React from "react";
-import { Copy, Share2, MessageCircle } from "lucide-react";
 import type { Member, ReferralNode } from "../../utils/types";
 import { formatDate } from "../../utils/formatter";
+import ReferralCard from "./ReferralCard";
 
 interface Props {
     user: Member;
-    referralLink: string;
-    onCopyReferralLink: () => void;
-    onShareReferralLink: (method: "copy" | "messenger" | "whatsapp") => void;
+    //referralLink: string;
     referralTree: ReferralNode[];
 }
 
@@ -87,7 +85,7 @@ const ReferralNodeView: React.FC<{ node: ReferralNode }> = ({ node }) => (
     </div>
 );
 
-export const MemberReferrals: React.FC<Props> = ({ user, referralLink, onCopyReferralLink, onShareReferralLink, referralTree }) => (
+export const MemberReferrals: React.FC<Props> = ({ user, referralTree }) => (
     <div className="space-y-6">
         <style>{treeStyles}</style>
 
@@ -126,33 +124,6 @@ export const MemberReferrals: React.FC<Props> = ({ user, referralLink, onCopyRef
         </div>
 
         {/* Referral Link & QR */}
-        <div className="bg-gpsc-navy rounded-2xl p-6 text-white">
-            <div className="grid items-center gap-6 sm:grid-cols-2">
-                <div>
-                    <div className="mb-2 text-xs tracking-wider text-white/60 uppercase">Your unique referral link</div>
-                    <div className="rounded-xl bg-white/10 px-4 py-3 font-mono text-sm break-all">{referralLink}</div>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                    <button
-                        onClick={onCopyReferralLink}
-                        className="text-gpsc-navy flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-medium"
-                    >
-                        <Copy size={14} /> Copy
-                    </button>
-                    <button
-                        onClick={() => onShareReferralLink("messenger")}
-                        className="bg-gpsc-green flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white"
-                    >
-                        <MessageCircle size={14} /> Messenger
-                    </button>
-                    <button
-                        onClick={() => onShareReferralLink("whatsapp")}
-                        className="bg-gpsc-green flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white"
-                    >
-                        <Share2 size={14} /> WhatsApp
-                    </button>
-                </div>
-            </div>
-        </div>
+        <ReferralCard member={user} />
     </div>
 );

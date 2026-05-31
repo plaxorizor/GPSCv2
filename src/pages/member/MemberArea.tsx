@@ -77,7 +77,7 @@ export default function MemberArea() {
             initials: `${node.firstName[0] ?? ""}${node.lastName[0] ?? ""}`.toUpperCase() || "?",
             packageName: node.package ?? "",
             city: node.city,
-            memberSince: node.dateCreated,
+            memberSince: "",
             status: node.status ?? "active",
             level: depth,
             commissionRate: commissionRates[depth] ?? 0,
@@ -87,7 +87,7 @@ export default function MemberArea() {
     const directReferrals: ReferralNode[] = mapTreeToReferralNodes(tree);
 
     // 5. Referral link
-    const referralLink = `${window.location.origin}/signup?ref=${member.referralCode}`;
+    // const referralLink = `${window.location.origin}/signup?ref=${member.referralCode}`;
 
     // 6. Typed arrays — claims/payouts/earningsTrend fetched later
     const earningsTrend: EarningsTrendPoint[] = [];
@@ -95,15 +95,7 @@ export default function MemberArea() {
     const payouts: Payout[] = [];
 
     // 7. Handlers
-    const handleCopyReferralLink = async () => {
-        await navigator.clipboard.writeText(referralLink);
-        alert("Referral link copied!");
-    };
-    const handleShareReferralLink = (method: "copy" | "messenger" | "whatsapp") => {
-        if (method === "copy") handleCopyReferralLink();
-        else if (method === "whatsapp") window.open(`https://wa.me/?text=${encodeURIComponent(`Join me on GPSC! ${referralLink}`)}`, "_blank");
-        else alert(`Sharing via ${method} – coming soon`);
-    };
+    
     const handleRequestPayout = () => alert("Request payout – coming soon");
     const handleFileClaim = () => alert("File a claim – coming soon");
     const handleLogout = async () => {
@@ -121,9 +113,7 @@ export default function MemberArea() {
             earningsTrend={earningsTrend}
             claims={claims}
             payouts={payouts}
-            referralLink={referralLink}
-            onCopyReferralLink={handleCopyReferralLink}
-            onShareReferralLink={handleShareReferralLink}
+            //referralLink={referralLink}
             onRequestPayout={handleRequestPayout}
             onFileClaim={handleFileClaim}
             onLogout={handleLogout}
