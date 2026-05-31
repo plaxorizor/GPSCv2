@@ -1,5 +1,8 @@
 import { Navigate, useNavigate } from "react-router-dom";
+
 import useMember from "../../hooks/useMember";
+import useMemberStats from "../../hooks/useMemberStats";
+
 import { useCommissions } from "../../hooks/useCommissions";
 import { useReferralTree } from "../../hooks/useReferralTree";
 import MemberDashboard from "./index";
@@ -22,11 +25,20 @@ import type { Member, Commission, ReferralNode, EarningsTrendPoint, Claim, Payou
 export default function MemberArea() {
     const navigate = useNavigate();
     const { member, loading: memberLoading } = useMember();
+    const { stats: memberStats, loading: statsLoading } = useMemberStats();
+
     const { commissions: rawCommissions, loading: commLoading } = useCommissions();
     const { tree, loading: treeLoading } = useReferralTree();
 
-    const isLoading = memberLoading || commLoading || treeLoading;
-    if (isLoading) return <div className="flex min-h-screen items-center justify-center">Loading your dashboard...</div>;
+    const isLoading = memberLoading || commLoading || treeLoading || statsLoading;
+    if (isLoading) {
+        return (
+            // Loading spinner
+            <div className="flex h-screen items-center justify-center">
+                <div className="border-gpsc-navy h-12 w-12 animate-spin rounded-full border-b-2"></div>
+            </div>
+        );
+    }
 
     if (!member) return <Navigate to="/" />;
 
@@ -61,7 +73,7 @@ export default function MemberArea() {
         level: c.level,
         role: rankName,
         amount: c.amount,
-        status: c.status === "released" ? "paid" : "pending",
+        status: c.status === "Released" ? "Paid" : "Pending",
         date: c.dateCreated?.toISOString?.() ?? "",
         fromMemberName: c.fromMember ?? "",
         fromMemberCity: "",
@@ -95,7 +107,7 @@ export default function MemberArea() {
     const payouts: Payout[] = [];
 
     // 7. Handlers
-    
+
     const handleRequestPayout = () => alert("Request payout – coming soon");
     const handleFileClaim = () => alert("File a claim – coming soon");
     const handleLogout = async () => {
@@ -106,7 +118,8 @@ export default function MemberArea() {
 
     return (
         <MemberDashboard
-            user={user}
+            member={user}
+            memberStats={memberStats}
             rankName={rankName}
             commissions={commissions}
             directReferrals={directReferrals}

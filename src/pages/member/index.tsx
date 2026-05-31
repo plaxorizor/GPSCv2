@@ -8,13 +8,13 @@ import { MemberReferrals } from "./Referrals";
 import { MemberEarnings } from "./Earnings";
 import { MemberClaims } from "./Claims";
 import { MemberProfile } from "./Profile";
-import type { Member, Commission, ReferralNode, EarningsTrendPoint, Claim, Payout } from "../../utils/types";
+import type { Member, Commission, ReferralNode, EarningsTrendPoint, Claim, Payout, MemberStats } from "../../utils/types";
 
-import { useMemberStats } from "../../hooks/useMemberStats";
 import { getEligibilityTimeline } from "../../utils/eligibility";
 
 interface MemberDashboardProps {
-    user: Member;
+    member: Member;
+    memberStats: MemberStats | null;
     rankName: string;
     commissions: Commission[];
     directReferrals: ReferralNode[];
@@ -28,7 +28,8 @@ interface MemberDashboardProps {
 }
 
 export default function MemberDashboard({
-    user,
+    member,
+    memberStats,
     rankName,
     commissions,
     directReferrals,
@@ -42,23 +43,22 @@ export default function MemberDashboard({
 }: MemberDashboardProps) {
     const [currentSection, setCurrentSection] = useState("overview");
 
+
     // Calculate dashboard stats
-    const availableToWithdraw = commissions.filter((c) => c.status === "paid").reduce((sum, c) => sum + c.amount, 0);
-    const totalEarned = commissions.filter((c) => c.status === "paid").reduce((sum, c) => sum + c.amount, 0);
+    const availableToWithdraw = commissions.filter((c) => c.status === "Paid").reduce((sum, c) => sum + c.amount, 0);
+    const totalEarned = commissions.filter((c) => c.status === "Paid").reduce((sum, c) => sum + c.amount, 0);
     const activeReferralsCount = directReferrals.filter((r) => r.status === "active").length;
     const totalReferralsCount = directReferrals.length;
-    const approvedClaimsCount = claims.filter((c) => c.status === "approved").length;
-    const approvedClaimsTotal = claims.filter((c) => c.status === "approved").reduce((sum, c) => sum + c.amount, 0);
-    const pendingHold = commissions.filter((c) => c.status === "pending").reduce((sum, c) => sum + c.amount, 0);
-    const lifetimePaid = commissions.filter((c) => c.status === "paid").reduce((sum, c) => sum + c.amount, 0);
+    const approvedClaimsCount = claims.filter((c) => c.status === "Approved").length;
+    const approvedClaimsTotal = claims.filter((c) => c.status === "Approved").reduce((sum, c) => sum + c.amount, 0);
+    const pendingHold = commissions.filter((c) => c.status === "Pending").reduce((sum, c) => sum + c.amount, 0);
+    const lifetimePaid = commissions.filter((c) => c.status === "Paid").reduce((sum, c) => sum + c.amount, 0);
 
     // Eligibility timeline (example - you can make this dynamic based on member's join date)
-    const eligibilityTimeline = getEligibilityTimeline(user.dateCreated);
+    const eligibilityTimeline = getEligibilityTimeline(member.dateCreated);
 
     // Recent commissions with initials:
-    const { stats, loading } = useMemberStats();
-    if (loading) return <div>Loading...</div>;
-    const recentCommissions = (stats?.recentCommissions ?? []).map((c) => {
+    const recentCommissions = (memberStats?.recentCommissions ?? []).map((c) => {
         const name = c.fromMember ?? "Unknown";
         const parts = name.trim().split(" ");
         return {
@@ -69,20 +69,24 @@ export default function MemberDashboard({
     });
 
     // Pending claims count if there's any - TODO: make this dynamic based on claims
-    const pendingClaimsCount = claims.filter((c) => c.status !== "approved").length;
+    const pendingClaimsCount = claims.filter((c) => c.status !== "Approved").length;
 
     const sidebarItems = [
         { id: "overview", label: "Overview", icon: LayoutGrid },
         { id: "referrals", label: "My Referrals", icon: Network, badge: totalReferralsCount },
         { id: "earnings", label: "Earnings", icon: Wallet },
-        { id: "claims", label: "Claims", icon: FileText, badge: claims.filter((c) => c.status !== "approved").length },
+        { id: "claims", label: "Claims", icon: FileText, badge: claims.filter((c) => c.status !== "Approved").length },
         { id: "profile", label: "Profile", icon: Settings },
     ];
+
+    if (member.package === "Family" || member.package === "Premium") {
+        sidebarItems.push({ id: "payouts", label: "Beneficiaries", icon: Wallet });
+    }
 
     return (
         <div className="gpsc-cream flex min-h-screen">
             <DashboardSidebar
-                user={user}
+                user={member}
                 rankName={rankName}
                 currentSection={currentSection}
                 onSectionChange={setCurrentSection}
@@ -100,9 +104,9 @@ export default function MemberDashboard({
             <main className="max-w-6xl flex-1 p-6 pb-24 lg:ml-64 lg:p-10 lg:pb-10">
                 {currentSection === "overview" && (
                     <MemberOverview
-                        user={user}
+                        member={member}
                         rankName={rankName}
-                        packageName={user.package}
+                        packageName={member.package}
                         availableToWithdraw={availableToWithdraw}
                         totalEarned={totalEarned}
                         activeReferralsCount={activeReferralsCount}
@@ -118,7 +122,7 @@ export default function MemberDashboard({
                 )}
                 {currentSection === "referrals" && (
                     <MemberReferrals
-                        user={user}
+                        user={member}
                         //referralLink={referralLink}
                         referralTree={directReferrals}
                     />
@@ -134,7 +138,13 @@ export default function MemberDashboard({
                     />
                 )}
                 {currentSection === "claims" && <MemberClaims claims={claims} onFileClaim={onFileClaim} />}
-                {currentSection === "profile" && <MemberProfile onLogout={onLogout} user={user} />}
+                {currentSection === "payouts" && (
+                    <div className="border-gpsc-navy rounded-xl border bg-white p-6 shadow-sm">
+                        <h2 className="text-gpsc-navy text-2xl font-semibold">Beneficiaries</h2>
+                        <p className="mt-2 text-sm text-gray-600">Manage your beneficiaries and payout instructions here.</p>
+                    </div>
+                )}
+                {currentSection === "profile" && <MemberProfile onLogout={onLogout} user={member} />}
             </main>
         </div>
     );

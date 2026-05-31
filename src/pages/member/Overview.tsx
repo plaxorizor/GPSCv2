@@ -9,7 +9,7 @@ import { formatCurrency, formatDate } from "../../utils/formatter";
 import ReferralCard from "./ReferralCard";
 
 interface Props {
-    user: Member;
+    member: Member;
     packageName: string;
     rankName: string;
     availableToWithdraw: number;
@@ -34,7 +34,7 @@ interface Props {
 }
 
 export const MemberOverview: React.FC<Props> = ({
-    user,
+    member,
     packageName,
     rankName,
     availableToWithdraw,
@@ -66,12 +66,12 @@ export const MemberOverview: React.FC<Props> = ({
         <div className="space-y-6">
             <div>
                 <h1 className="font-display text-gpsc-navy text-3xl">
-                    {user.firstName} {user.lastName}
+                    {member.firstName} {member.lastName}
                 </h1>
                 <div className="text-gpsc-stone mt-1 text-sm">
                     {rankName} · {packageName} Care
                 </div>
-                <div className="text-gpsc-stone mt-1 text-sm">Member since: {user.dateCreated?.toDate?.()?.toLocaleDateString()}</div>
+                <div className="text-gpsc-stone mt-1 text-sm">Member since: {member.dateCreated?.toDate?.()?.toLocaleDateString()}</div>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -114,7 +114,7 @@ export const MemberOverview: React.FC<Props> = ({
                     </ResponsiveContainer>
                 </div>
 
-                <ReferralCard member={user} />
+                <ReferralCard member={member} />
             </div>
 
             <div className="border-gpsc-cream-dark rounded-2xl border bg-white p-6">

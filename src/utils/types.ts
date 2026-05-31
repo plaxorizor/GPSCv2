@@ -6,8 +6,8 @@ export const PACKAGE_INFO = {
 } as const;
 
 export type PackageName = "Basic" | "Family" | "Premium";
-export type MemberStatus = "pending" | "active" | "inactive";
-export type MemberCivilStatus = "single" | "married" | "divorced" | "widowed";
+export type MemberStatus = "Pending" | "Active" | "Inactive";
+export type MemberCivilStatus = "Single" | "Married" | "Divorced" | "Widowed";
 
 export interface Member {
     uid: string;
@@ -28,6 +28,18 @@ export interface Member {
     dateCreated: any; // Firestore Timestamp
 }
 
+export interface MemberStats {
+    availableToWithdraw: number;
+    totalEarned: number;
+    totalReferrals: number;
+    activeReferrals: number;
+    approvedClaimsCount: number;
+    approvedClaimsTotal: number;
+    recentCommissions: any[];
+}
+
+export type CommissionStatus = "Pending" | "Paid";
+
 export interface Commission {
     id: string;
     membershipId: string;
@@ -35,17 +47,19 @@ export interface Commission {
     level: number;
     role: string;
     amount: number;
-    status: "paid" | "pending"; // ← removed "payable", maps from "released" → "paid"
+    status: CommissionStatus;
     date: string;
     fromMemberName: string;
     fromMemberCity: string;
 }
 
+export type ClaimStatus = "Approved" | "Under Review" | "Submitted" | "Rejected" | "Released";
+
 export interface Claim {
     id: string;
     userId: string;
     benefit: string;
-    status: "approved" | "under_review" | "submitted";
+    status: ClaimStatus;
     amount: number;
     submitted: string;
     decided: string | null;
@@ -88,8 +102,6 @@ export interface EarningsTrendPoint {
     month: string;
     amount: number;
 }
-
-export type ClaimStatus = "submitted" | "under_review" | "approved" | "rejected" | "released";
 
 export interface DashboardStats {
     activeMembers: number;

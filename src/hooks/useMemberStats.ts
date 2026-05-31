@@ -2,18 +2,9 @@ import { useEffect, useState } from "react";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../firebase/config";
 import useAuth from "../context/useAuth";
+import type { MemberStats } from "../utils/types";
 
-interface MemberStats {
-    availableToWithdraw: number;
-    totalEarned: number;
-    totalReferrals: number;
-    activeReferrals: number;
-    approvedClaimsCount: number;
-    approvedClaimsTotal: number;
-    recentCommissions: any[];
-}
-
-export const useMemberStats = () => {
+const useMemberStats = () => {
     const { currentUser } = useAuth();
     const [stats, setStats] = useState<MemberStats | null>(null);
     const [loading, setLoading] = useState(true);
@@ -57,3 +48,4 @@ export const useMemberStats = () => {
 
     return { stats, loading };
 };
+export default useMemberStats;

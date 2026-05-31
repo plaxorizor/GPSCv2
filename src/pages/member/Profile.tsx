@@ -20,41 +20,40 @@ export const MemberProfile: React.FC<Props> = ({ user, onChangePassword, onEnabl
     return (
         <div className="space-y-6">
             <div>
-                <div className="text-gpsc-stone text-xs tracking-wider uppercase">Account</div>
                 <h1 className="font-display text-gpsc-navy text-3xl">Profile</h1>
             </div>
             <div className="grid gap-6 lg:grid-cols-3">
                 <div className="space-y-6 lg:col-span-2">
                     <div className="border-gpsc-cream-dark rounded-2xl border bg-white p-6">
-                        <h2 className="font-display text-gpsc-navy mb-4 text-lg">Personal information</h2>
+                        <h2 className="font-display text-gpsc-navy mb-4 text-lg">Personal Information</h2>
                         <div className="grid gap-4 text-sm sm:grid-cols-2">
                             <div>
-                                <div className="text-gpsc-stone mb-1 text-xs tracking-wider uppercase">First name</div>
+                                <div className="text-gpsc-stone mb-1 text-xs tracking-wider uppercase">First name:</div>
                                 <div className="text-gpsc-navy">{user.firstName}</div>
                             </div>
                             <div>
-                                <div className="text-gpsc-stone mb-1 text-xs tracking-wider uppercase">Last name</div>
+                                <div className="text-gpsc-stone mb-1 text-xs tracking-wider uppercase">Last name:</div>
                                 <div className="text-gpsc-navy">{user.lastName}</div>
                             </div>
                             <div>
-                                <div className="text-gpsc-stone mb-1 text-xs tracking-wider uppercase">Email</div>
+                                <div className="text-gpsc-stone mb-1 text-xs tracking-wider uppercase">Email:</div>
                                 <div className="text-gpsc-navy">{user.email}</div>
                             </div>
                             <div>
-                                <div className="text-gpsc-stone mb-1 text-xs tracking-wider uppercase">Phone</div>
+                                <div className="text-gpsc-stone mb-1 text-xs tracking-wider uppercase">Mobile:</div>
                                 <div className="text-gpsc-navy">{user.mobile}</div>
                             </div>
                             <div>
-                                <div className="text-gpsc-stone mb-1 text-xs tracking-wider uppercase">City</div>
+                                <div className="text-gpsc-stone mb-1 text-xs tracking-wider uppercase">City:</div>
                                 <div className="text-gpsc-navy">{user.city}</div>
                             </div>
                             <div>
-                                <div className="text-gpsc-stone mb-1 text-xs tracking-wider uppercase">Province</div>
+                                <div className="text-gpsc-stone mb-1 text-xs tracking-wider uppercase">Province:</div>
                                 <div className="text-gpsc-navy">{user.province}</div>
                             </div>
                         </div>
                         <button className="text-gpsc-green mt-6 flex items-center gap-1 text-sm hover:underline">
-                            <Edit size={12} /> Edit details
+                            <Edit size={12} /> Edit Details
                         </button>
                     </div>
                     <div className="border-gpsc-cream-dark rounded-2xl border bg-white p-6">
@@ -92,11 +91,11 @@ export const MemberProfile: React.FC<Props> = ({ user, onChangePassword, onEnabl
                             </div>
                             <div className="flex justify-between">
                                 <span className="text-gpsc-stone">Member since</span>
-                                <span className="text-gpsc-navy">{user.dateCreated?.toDate?.()?.toLocaleDateString() ?? "—"}</span>
+                                <span className="text-gpsc-navy">{user.dateCreated?.toDate?.()?.toLocaleDateString()}</span>
                             </div>
                             <div className="flex justify-between">
                                 <span className="text-gpsc-stone">Status</span>
-                                <span className="text-gpsc-green font-medium">{user.status}</span>
+                                <span className="text-gpsc-stone">{user.status}</span>
                             </div>
                             <div className="flex justify-between">
                                 <span className="text-gpsc-stone">Rank</span>

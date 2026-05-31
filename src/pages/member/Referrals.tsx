@@ -1,6 +1,5 @@
 import React from "react";
 import type { Member, ReferralNode } from "../../utils/types";
-import { formatDate } from "../../utils/formatter";
 import ReferralCard from "./ReferralCard";
 
 interface Props {
@@ -58,7 +57,7 @@ const ReferralNodeView: React.FC<{ node: ReferralNode }> = ({ node }) => (
                     {node.firstName} {node.lastName}
                 </div>
                 <div className="text-gpsc-stone truncate text-xs">
-                    {node.packageName} Care · {node.city} · {formatDate(node.memberSince)}
+                    {node.packageName} Care · {node.city}
                 </div>
             </div>
             <div className="shrink-0 text-right">
@@ -90,7 +89,6 @@ export const MemberReferrals: React.FC<Props> = ({ user, referralTree }) => (
         <style>{treeStyles}</style>
 
         <div>
-            <div className="text-gpsc-stone text-xs tracking-wider uppercase">Your network</div>
             <h1 className="font-display text-gpsc-navy text-3xl">My Referrals</h1>
         </div>
 
@@ -105,7 +103,7 @@ export const MemberReferrals: React.FC<Props> = ({ user, referralTree }) => (
                         <div className="text-gpsc-navy font-medium">
                             {user.firstName} {user.lastName}
                         </div>
-                        <div className="text-gpsc-stone text-xs">Root · Level 1</div>
+                        <div className="text-gpsc-stone text-xs">Root</div>
                     </div>
                 </div>
 

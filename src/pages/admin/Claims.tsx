@@ -7,7 +7,7 @@ import { formatCurrency, formatDate } from "./utils";
 interface Props {
     claims: Claim[];
     loading: boolean;
-    onUpdateStatus: (claimId: string, status: "approved" | "rejected" | "released") => Promise<void>;
+    onUpdateStatus: (claimId: string, status: "Approved" | "Rejected" | "Released") => Promise<void>;
     onReviewClaim?: (claimId: string) => Promise<void>;
     onRefresh: () => void;
     onExport: () => void;
@@ -94,7 +94,7 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                         </button>
                     </div>
                     <div className="text-gpsc-stone bg-gpsc-cream rounded-full px-3 py-1 text-xs">
-                        {claims.filter((c) => c.status === "submitted" || c.status === "under_review").length} pending
+                        {claims.filter((c) => c.status === "Submitted" || c.status === "Under Review").length} pending
                     </div>
                 </div>
 
@@ -134,7 +134,7 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                                             >
                                                 <Eye size={16} />
                                             </button>
-                                            {claim.status === "submitted" && (
+                                            {claim.status === "Submitted" && (
                                                 <button
                                                     onClick={() => handleStartReview(claim.id)}
                                                     className="rounded p-1 text-amber-600 transition-colors hover:bg-amber-50"
@@ -143,17 +143,17 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                                                     <Clock size={16} />
                                                 </button>
                                             )}
-                                            {claim.status === "under_review" && (
+                                            {claim.status === "Under Review" && (
                                                 <>
                                                     <button
-                                                        onClick={() => onUpdateStatus(claim.id, "approved")}
+                                                        onClick={() => onUpdateStatus(claim.id, "Approved")}
                                                         className="text-gpsc-green hover:bg-gpsc-green/10 rounded p-1 transition-colors"
                                                         title="Approve"
                                                     >
                                                         <CheckCircle size={16} />
                                                     </button>
                                                     <button
-                                                        onClick={() => onUpdateStatus(claim.id, "rejected")}
+                                                        onClick={() => onUpdateStatus(claim.id, "Rejected")}
                                                         className="rounded p-1 text-red-500 transition-colors hover:bg-red-50"
                                                         title="Reject"
                                                     >
@@ -161,9 +161,9 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                                                     </button>
                                                 </>
                                             )}
-                                            {claim.status === "approved" && (
+                                            {claim.status === "Approved" && (
                                                 <button
-                                                    onClick={() => onUpdateStatus(claim.id, "released")}
+                                                    onClick={() => onUpdateStatus(claim.id, "Rejected")}
                                                     className="bg-gpsc-green hover:bg-gpsc-green-light rounded px-2 py-1 text-xs text-white transition-colors"
                                                 >
                                                     Release
@@ -246,7 +246,7 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                             >
                                 Close
                             </button>
-                            {selectedClaim.status === "submitted" && (
+                            {selectedClaim.status === "Submitted" && (
                                 <button
                                     onClick={() => {
                                         handleStartReview(selectedClaim.id);
@@ -257,11 +257,11 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                                     Start Review
                                 </button>
                             )}
-                            {selectedClaim.status === "under_review" && (
+                            {selectedClaim.status === "Under Review" && (
                                 <div className="flex flex-1 gap-2">
                                     <button
                                         onClick={() => {
-                                            onUpdateStatus(selectedClaim.id, "rejected");
+                                            onUpdateStatus(selectedClaim.id, "Rejected");
                                             setSelectedClaim(null);
                                         }}
                                         className="flex-1 rounded-lg border border-red-500 px-4 py-2 font-medium text-red-500 transition-colors hover:bg-red-50"
@@ -270,7 +270,7 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                                     </button>
                                     <button
                                         onClick={() => {
-                                            onUpdateStatus(selectedClaim.id, "approved");
+                                            onUpdateStatus(selectedClaim.id, "Approved");
                                             setSelectedClaim(null);
                                         }}
                                         className="bg-gpsc-green hover:bg-gpsc-green-light flex-1 rounded-lg px-4 py-2 font-medium text-white transition-colors"
@@ -279,10 +279,10 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                                     </button>
                                 </div>
                             )}
-                            {selectedClaim.status === "approved" && (
+                            {selectedClaim.status === "Approved" && (
                                 <button
                                     onClick={() => {
-                                        onUpdateStatus(selectedClaim.id, "released");
+                                        onUpdateStatus(selectedClaim.id, "Released");
                                         setSelectedClaim(null);
                                     }}
                                     className="bg-gpsc-navy hover:bg-gpsc-green flex-1 rounded-lg px-4 py-2 font-medium text-white transition-colors"

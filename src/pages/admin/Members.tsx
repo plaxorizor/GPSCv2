@@ -25,7 +25,7 @@ export interface MemberRow {
 
 interface Props {
     loading: boolean;
-    onUpdateStatus: (memberId: string, status: "active" | "inactive") => Promise<void>;
+    onUpdateStatus: (memberId: string, status: "Active" | "Inactive") => Promise<void>;
     onExport: () => void;
     onAddMember?: () => void;
 }
@@ -208,7 +208,7 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport, onAddMember
                             </button>
                             <button
                                 onClick={() => {
-                                    onUpdateStatus(selectedMember.uid, selectedMember.status === "active" ? "inactive" : "active");
+                                    onUpdateStatus(selectedMember.uid, selectedMember.status === "Active" ? "Inactive" : "Active");
                                     setSelectedMember(null);
                                 }}
                                 className={`flex-1 rounded-lg px-4 py-2 font-medium text-white transition-colors ${

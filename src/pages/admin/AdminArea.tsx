@@ -52,7 +52,7 @@ const fetchRecentClaims = async (): Promise<Claim[]> => {
             id: "cl1",
             userId: "u1",
             benefit: "Hospital cash assistance",
-            status: "submitted",
+            status: "Submitted",
             amount: 11500,
             submitted: "2025-05-20",
             decided: null,
@@ -62,7 +62,7 @@ const fetchRecentClaims = async (): Promise<Claim[]> => {
             id: "cl2",
             userId: "u3",
             benefit: "Calamity assistance",
-            status: "under_review",
+            status: "Under Review",
             amount: 5000,
             submitted: "2025-05-18",
             decided: null,
@@ -110,11 +110,11 @@ export default function AdminArea() {
             email: currentUser.email || "",
             mobile: currentUser.phoneNumber || "",
             birthDate: new Date().toISOString(),
-            civilStatus: "single" as const,
+            civilStatus: "Single" as const,
             city: "",
             province: "",
             package: "Basic" as const,
-            status: "active" as const,
+            status: "Active" as const,
             referralCode: "",
             referredBy: "",
             beneficiaries: [],
@@ -168,11 +168,11 @@ export default function AdminArea() {
         setCommissionHistory(history);
     };
 
-    const handleUpdateMemberStatus = async (memberId: string, status: "active" | "inactive") => {
+    const handleUpdateMemberStatus = async (memberId: string, status: "Active" | "Inactive") => {
         console.log(`Update member ${memberId} to ${status}`);
     };
 
-    const handleUpdateClaimStatus = async (claimId: string, status: "approved" | "rejected" | "released") => {
+    const handleUpdateClaimStatus = async (claimId: string, status: "Approved" | "Rejected" | "Released") => {
         console.log(`Update claim ${claimId} to ${status}`);
         await handleRefreshClaims();
     };

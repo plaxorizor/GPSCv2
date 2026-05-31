@@ -16,7 +16,6 @@ interface Props {
 export const MemberEarnings: React.FC<Props> = ({ availableToWithdraw, pendingHold, lifetimePaid, commissions, payouts, onRequestPayout }) => (
     <div className="space-y-6">
         <div>
-            <div className="text-gpsc-stone text-xs tracking-wider uppercase">Money in, money out</div>
             <h1 className="font-display text-gpsc-navy text-3xl">Earnings</h1>
         </div>
         <div className="grid gap-4 sm:grid-cols-3">
@@ -27,7 +26,7 @@ export const MemberEarnings: React.FC<Props> = ({ availableToWithdraw, pendingHo
         <div className="border-gpsc-cream-dark overflow-hidden rounded-2xl border bg-white">
             <div className="border-gpsc-cream-dark flex flex-wrap items-center justify-between gap-4 border-b p-6">
                 <div>
-                    <h2 className="font-display text-gpsc-navy text-lg">Commission ledger</h2>
+                    <h2 className="font-display text-gpsc-navy text-lg">Commissions</h2>
                     <p className="text-gpsc-stone text-xs">Every commission earned, by source</p>
                 </div>
                 <div className="flex gap-2">
@@ -44,7 +43,7 @@ export const MemberEarnings: React.FC<Props> = ({ availableToWithdraw, pendingHo
                     <thead className="bg-gpsc-cream/50 text-gpsc-stone text-xs tracking-wider uppercase">
                         <tr>
                             <th className="p-4 text-left">Date</th>
-                            <th className="p-4 text-left">From member</th>
+                            <th className="p-4 text-left">From Member</th>
                             <th className="p-4 text-left">Level</th>
                             <th className="p-4 text-right">Amount</th>
                             <th className="p-4 text-right">Status</th>
@@ -62,7 +61,7 @@ export const MemberEarnings: React.FC<Props> = ({ availableToWithdraw, pendingHo
                                 <td className="text-gpsc-navy p-4 text-right font-medium">+{formatCurrency(c.amount)}</td>
                                 <td className="p-4 text-right">
                                     <span
-                                        className={`rounded-full px-2 py-1 text-xs ${c.status === "paid" ? "bg-gpsc-green/10 text-gpsc-green" : c.status === "pending" ? "bg-gpsc-navy/10 text-gpsc-navy" : "bg-amber-100 text-amber-700"}`}
+                                        className={`rounded-full px-2 py-1 text-xs ${c.status === "Paid" ? "bg-gpsc-green/10 text-gpsc-green" : c.status === "Pending" ? "bg-gpsc-navy/10 text-gpsc-navy" : "bg-amber-100 text-amber-700"}`}
                                     >
                                         {c.status}
                                     </span>

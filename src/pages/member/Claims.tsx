@@ -12,7 +12,6 @@ export const MemberClaims: React.FC<Props> = ({ claims, onFileClaim }) => (
     <div className="space-y-6">
         <div className="flex items-end justify-between">
             <div>
-                <div className="text-gpsc-stone text-xs tracking-wider uppercase">Your benefits</div>
                 <h1 className="font-display text-gpsc-navy text-3xl">Claims</h1>
             </div>
             <button onClick={onFileClaim} className="bg-gpsc-navy flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium text-white">
@@ -40,7 +39,7 @@ export const MemberClaims: React.FC<Props> = ({ claims, onFileClaim }) => (
                         <div className="text-right">
                             <div className="font-display text-gpsc-navy text-2xl">{formatCurrency(c.amount)}</div>
                             <span
-                                className={`mt-1 inline-block rounded-full px-3 py-1 text-xs ${c.status === "approved" ? "bg-gpsc-green/10 text-gpsc-green" : c.status === "under_review" ? "bg-gpsc-navy/10 text-gpsc-navy" : "bg-amber-100 text-amber-700"}`}
+                                className={`mt-1 inline-block rounded-full px-3 py-1 text-xs ${c.status === "Approved" ? "bg-gpsc-green/10 text-gpsc-green" : c.status === "Under Review" ? "bg-gpsc-navy/10 text-gpsc-navy" : "bg-amber-100 text-amber-700"}`}
                             >
                                 {c.status.replace("_", " ")}
                             </span>

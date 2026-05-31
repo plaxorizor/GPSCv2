@@ -26,8 +26,8 @@ interface AdminDashboardProps {
     onRefreshStats: () => void;
     onRefreshClaims: () => void;
     onRefreshCommissions: () => void;
-    onUpdateMemberStatus: (memberId: string, status: "active" | "inactive") => Promise<void>;
-    onUpdateClaimStatus: (claimId: string, status: "approved" | "rejected" | "released") => Promise<void>;
+    onUpdateMemberStatus: (memberId: string, status: "Active" | "Inactive") => Promise<void>;
+    onUpdateClaimStatus: (claimId: string, status: "Approved" | "Rejected" | "Released") => Promise<void>;
     onReviewClaim: (claimId: string) => Promise<void>;
     onReleaseCommission: (commissionId: string, earnedBy: string, amount: number, reference: string) => Promise<void>;
     onExportMembers: () => void;
@@ -54,7 +54,7 @@ export default function AdminDashboard({
 }: AdminDashboardProps) {
     const [currentSection, setCurrentSection] = useState("overview");
 
-    const pendingClaimsCount = claims.filter((c) => c.status === "submitted" || c.status === "under_review").length;
+    const pendingClaimsCount = claims.filter((c) => c.status === "Submitted" || c.status === "Under Review").length;
     const pendingCommissionsCount = pendingCommissions.length;
 
     const sidebarItems = [

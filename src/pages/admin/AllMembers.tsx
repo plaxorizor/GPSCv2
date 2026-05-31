@@ -8,7 +8,7 @@ interface Props {
     packageFilter: string;
     statusFilter: string;
     onSelectMember: (member: MemberRow) => void;
-    onUpdateStatus: (uid: string, status: "active" | "inactive") => Promise<void>;
+    onUpdateStatus: (uid: string, status: "Active" | "Inactive") => Promise<void>;
 }
 
 const AllMembers = ({ query, packageFilter, statusFilter, onSelectMember, onUpdateStatus }: Props) => {
@@ -96,7 +96,7 @@ const AllMembers = ({ query, packageFilter, statusFilter, onSelectMember, onUpda
                                 <Eye size={16} />
                             </button>
                             <button
-                                onClick={() => onUpdateStatus(m.uid, m.status === "active" ? "inactive" : "active")}
+                                onClick={() => onUpdateStatus(m.uid, m.status === "Active" ? "Inactive" : "Active")}
                                 className={`rounded p-1 transition-colors ${m.status === "active" ? "text-red-500 hover:bg-red-50" : "text-gpsc-green hover:bg-gpsc-green/10"}`}
                                 title={m.status === "active" ? "Deactivate" : "Activate"}
                             >
