@@ -24,7 +24,7 @@ export const activateMember = async (uid: string) => {
 
     // 1. Activate member + assign referral code
     await updateDoc(doc(db, "members", uid), {
-        status: "Active",
+        status: "active",
         referralCode,
         activatedAt: serverTimestamp(),
     });

@@ -141,7 +141,7 @@ export default function SignUpLayout() {
                 setError("Referral code is required.");
                 return false;
             }
-            if (selectedPlan.name !== "Basic") {
+            if (selectedPlan.name !== "basic") {
                 for (let i = 0; i < form.beneficiaries.length; i++) {
                     if (!form.beneficiaries[i].name.trim()) {
                         setError(`Beneficiary ${i + 1} name is required.`);
@@ -430,7 +430,7 @@ export default function SignUpLayout() {
                                                     className={inputCls}
                                                     onChange={(e) => setForm((prev) => ({ ...prev, civilStatus: e.target.value }))}
                                                 >
-                                                    <option value="">Select status</option>
+                                                    <option value="">Select Status</option>
                                                     <option value="single">Single</option>
                                                     <option value="married">Married</option>
                                                     <option value="divorced">Divorced</option>
@@ -492,12 +492,12 @@ export default function SignUpLayout() {
                                             />
                                         </div>
 
-                                        {selectedPlan.name !== "Basic" && (
+                                        {selectedPlan.name !== "basic" && (
                                             <div className="mt-1 border-t pt-5" style={{ borderColor: "#E5DDC8" }}>
                                                 <label className={labelCls}>
                                                     Beneficiaries
                                                     <span className="ml-1 normal-case" style={{ color: "#6B6862" }}>
-                                                        (up to {selectedPlan.name === "Family" ? 2 : 4})
+                                                        (up to {selectedPlan.name === "family" ? 2 : 4})
                                                     </span>
                                                 </label>
 
@@ -551,7 +551,7 @@ export default function SignUpLayout() {
                                                 </div>
 
                                                 <div className="mt-3 flex gap-4">
-                                                    {form.beneficiaries.length < (selectedPlan.name === "Family" ? 2 : 4) && (
+                                                    {form.beneficiaries.length < (selectedPlan.name === "family" ? 2 : 4) && (
                                                         <button
                                                             type="button"
                                                             className="flex items-center gap-1 text-sm font-medium hover:underline"
@@ -661,7 +661,7 @@ export default function SignUpLayout() {
                                     </div>
 
                                     {/* Beneficiaries */}
-                                    {selectedPlan.name !== "Basic" && (
+                                    {selectedPlan.name !== "basic" && (
                                         <>
                                             <p className="mb-2 text-xs tracking-wider uppercase" style={{ color: "#6B6862" }}>
                                                 Beneficiaries

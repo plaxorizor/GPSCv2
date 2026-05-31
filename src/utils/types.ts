@@ -1,13 +1,13 @@
 // Package is just for display/UI use, NOT stored as object in Firestore
 export const PACKAGE_INFO = {
-    Basic: { price: 698, level: 1, rank: "Sales Consultant", rate: 0.2 },
-    Family: { price: 1698, level: 3, rank: "Team Consultant", rate: 0.05 },
-    Premium: { price: 4998, level: 6, rank: "Sales Manager", rate: 0.03 },
+    basic: { price: 698, level: 1, rank: "Sales Consultant", rate: 0.2 },
+    family: { price: 1698, level: 3, rank: "Team Consultant", rate: 0.05 },
+    premium: { price: 4998, level: 6, rank: "Sales Manager", rate: 0.03 },
 } as const;
 
-export type PackageName = "Basic" | "Family" | "Premium";
-export type MemberStatus = "Pending" | "Active" | "Inactive";
-export type MemberCivilStatus = "Single" | "Married" | "Divorced" | "Widowed";
+export type PackageName = "basic" | "family" | "premium";
+export type MemberStatus = "pending" | "active" | "inactive";
+export type MemberCivilStatus = "single" | "married" | "divorced" | "widowed";
 
 export interface Member {
     uid: string;
@@ -38,7 +38,7 @@ export interface MemberStats {
     recentCommissions: any[];
 }
 
-export type CommissionStatus = "Pending" | "Paid";
+export type CommissionStatus = "pending" | "paid";
 
 export interface Commission {
     id: string;
@@ -53,7 +53,7 @@ export interface Commission {
     fromMemberCity: string;
 }
 
-export type ClaimStatus = "Approved" | "Under Review" | "Submitted" | "Rejected" | "Released";
+export type ClaimStatus = "approved" | "under_review" | "submitted" | "rejected" | "released";
 
 export interface Claim {
     id: string;

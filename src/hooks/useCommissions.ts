@@ -8,7 +8,7 @@ interface Commission {
     fromMember: string;
     level: number;
     amount: number;
-    status: "Pending" | "Released";
+    status: "pending" | "released";
     dateCreated: Date;
 }
 

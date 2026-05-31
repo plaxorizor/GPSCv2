@@ -61,7 +61,7 @@ export const MemberEarnings: React.FC<Props> = ({ availableToWithdraw, pendingHo
                                 <td className="text-gpsc-navy p-4 text-right font-medium">+{formatCurrency(c.amount)}</td>
                                 <td className="p-4 text-right">
                                     <span
-                                        className={`rounded-full px-2 py-1 text-xs ${c.status === "Paid" ? "bg-gpsc-green/10 text-gpsc-green" : c.status === "Pending" ? "bg-gpsc-navy/10 text-gpsc-navy" : "bg-amber-100 text-amber-700"}`}
+                                        className={`rounded-full px-2 py-1 text-xs ${c.status === "paid" ? "bg-gpsc-green/10 text-gpsc-green" : c.status === "pending" ? "bg-gpsc-navy/10 text-gpsc-navy" : "bg-amber-100 text-amber-700"}`}
                                     >
                                         {c.status}
                                     </span>

@@ -52,24 +52,24 @@ export const Overview: React.FC<Props> = ({ loading, onRefresh }) => {
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-                <StatCard label="Active members" value={adminStats.activeMembers} icon={Users} />
-                <StatCard label="Total revenue" value={formatCurrency(adminStats.totalRevenue)} sub="From memberships" icon={TrendingUp} />
+                <StatCard label="Active Members" value={adminStats.activeMembers} icon={Users} />
+                <StatCard label="Total Revenue" value={formatCurrency(adminStats.totalRevenue)} sub="From Memberships" icon={TrendingUp} />
                 <StatCard
-                    label="Pending claims"
+                    label="Pending Claims"
                     value={adminStats.pendingClaims}
-                    sub={adminStats.pendingClaims === 0 ? "No pending claims" : ""}
+                    sub={adminStats.pendingClaims === 0 ? "No Pending Claims" : ""}
                     icon={FileText}
                 />
                 <StatCard
-                    label="Pending payouts"
+                    label="Pending Payouts"
                     value={adminStats.pendingPayouts}
-                    sub={adminStats.pendingPayouts === 0 ? "No pending payouts" : ""}
+                    sub={adminStats.pendingPayouts === 0 ? "No Pending Payouts" : ""}
                     icon={Wallet}
                 />
                 <StatCard
                     label="Pending accounts"
                     value={adminStats.pendingAccounts}
-                    sub={adminStats.pendingAccounts === 0 ? "No pending accounts" : "Awaiting approval"}
+                    sub={adminStats.pendingAccounts === 0 ? "No Pending Accounts" : "Awaiting Approval"}
                     icon={UserCheck}
                 />
             </div>
@@ -77,7 +77,7 @@ export const Overview: React.FC<Props> = ({ loading, onRefresh }) => {
             <div className="grid gap-6 lg:grid-cols-3">
                 {/* ── Membership Growth — from adminStats.growthData ── */}
                 <div className="border-gpsc-cream-dark rounded-2xl border bg-white p-6 lg:col-span-2">
-                    <h2 className="font-display text-gpsc-navy mb-1 text-lg">Membership growth</h2>
+                    <h2 className="font-display text-gpsc-navy mb-1 text-lg">Membership Growth</h2>
                     <p className="text-gpsc-stone mb-6 text-xs">New members per month (last 6 months)</p>
                     {adminStats.growthData.length > 0 ? (
                         <ResponsiveContainer width="100%" height={240}>
@@ -99,7 +99,7 @@ export const Overview: React.FC<Props> = ({ loading, onRefresh }) => {
 
                 {/* ── Package Mix — synced from adminStats ── */}
                 <div className="border-gpsc-cream-dark rounded-2xl border bg-white p-6">
-                    <h2 className="font-display text-gpsc-navy mb-1 text-lg">Package mix</h2>
+                    <h2 className="font-display text-gpsc-navy mb-1 text-lg">Package Mix</h2>
                     <p className="text-gpsc-stone mb-4 text-xs">By active memberships</p>
 
                     {syncedPackageMix.length > 0 ? (
@@ -139,7 +139,7 @@ export const Overview: React.FC<Props> = ({ loading, onRefresh }) => {
             <div className="grid gap-6 lg:grid-cols-2">
                 {/* ── Top Recruiters — from adminStats.topRecruiters ── */}
                 <div className="border-gpsc-cream-dark rounded-2xl border bg-white p-6">
-                    <h2 className="font-display text-gpsc-navy mb-4 text-lg">Top recruiters this quarter</h2>
+                    <h2 className="font-display text-gpsc-navy mb-4 text-lg">Top Recruiters</h2>
                     <div className="space-y-3">
                         {adminStats.topRecruiters.length > 0 ? (
                             adminStats.topRecruiters.map((r, i) => (

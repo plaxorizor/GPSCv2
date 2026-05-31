@@ -11,9 +11,9 @@ const PAYMONGO_SECRET_KEY = defineSecret("PAYMONGO_SECRET_KEY");
 const BASE_URL = "https://api.paymongo.com/v1";
 
 const PACKAGE_AMOUNTS: Record<string, number> = {
-    Basic: 69800,
-    Family: 169800,
-    Premium: 499800,
+    basic: 69800,
+    family: 169800,
+    premium: 499800,
 };
 
 // ----------------------------

@@ -83,8 +83,8 @@ export const MemberOverview: React.FC<Props> = ({
                     actionLabel="Request payout"
                     onAction={onRequestPayout}
                 />
-                <StatCard label="Total earned" value={formatCurrency(totalEarned)} sub="Lifetime commissions" icon={TrendingUp} />
-                <StatCard label="Active referrals" value={activeReferralsCount.toString()} sub={`${totalReferralsCount} total`} icon={Users} />
+                <StatCard label="Total Earned" value={formatCurrency(totalEarned)} sub="Lifetime Commissions" icon={TrendingUp} />
+                <StatCard label="Active Referrals" value={activeReferralsCount.toString()} sub={`${totalReferralsCount} total`} icon={Users} />
                 <StatCard
                     label="Approved claims"
                     value={approvedClaimsCount.toString()}
@@ -130,7 +130,7 @@ export const MemberOverview: React.FC<Props> = ({
                             <div className="flex-1">
                                 <div className="text-gpsc-navy text-sm">{item.label}</div>
                                 <div className="text-gpsc-stone text-xs">
-                                    After {item.months} months · {item.unlocked ? "Active" : "Unlocks soon"}
+                                    After {item.months} months · {item.unlocked ? "Active" : "Unlocks Soon"}
                                 </div>
                             </div>
                         </div>

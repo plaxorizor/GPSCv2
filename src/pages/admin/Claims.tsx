@@ -94,7 +94,7 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                         </button>
                     </div>
                     <div className="text-gpsc-stone bg-gpsc-cream rounded-full px-3 py-1 text-xs">
-                        {claims.filter((c) => c.status === "Submitted" || c.status === "Under Review").length} pending
+                        {claims.filter((c) => c.status === "submitted" || c.status === "under_review").length} pending
                     </div>
                 </div>
 
@@ -134,7 +134,7 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                                             >
                                                 <Eye size={16} />
                                             </button>
-                                            {claim.status === "Submitted" && (
+                                            {claim.status === "submitted" && (
                                                 <button
                                                     onClick={() => handleStartReview(claim.id)}
                                                     className="rounded p-1 text-amber-600 transition-colors hover:bg-amber-50"
@@ -143,7 +143,7 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                                                     <Clock size={16} />
                                                 </button>
                                             )}
-                                            {claim.status === "Under Review" && (
+                                            {claim.status === "under_review" && (
                                                 <>
                                                     <button
                                                         onClick={() => onUpdateStatus(claim.id, "Approved")}
@@ -161,7 +161,7 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                                                     </button>
                                                 </>
                                             )}
-                                            {claim.status === "Approved" && (
+                                            {claim.status === "approved" && (
                                                 <button
                                                     onClick={() => onUpdateStatus(claim.id, "Rejected")}
                                                     className="bg-gpsc-green hover:bg-gpsc-green-light rounded px-2 py-1 text-xs text-white transition-colors"
@@ -246,7 +246,7 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                             >
                                 Close
                             </button>
-                            {selectedClaim.status === "Submitted" && (
+                            {selectedClaim.status === "submitted" && (
                                 <button
                                     onClick={() => {
                                         handleStartReview(selectedClaim.id);
@@ -257,7 +257,7 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                                     Start Review
                                 </button>
                             )}
-                            {selectedClaim.status === "Under Review" && (
+                            {selectedClaim.status === "under_review" && (
                                 <div className="flex flex-1 gap-2">
                                     <button
                                         onClick={() => {
@@ -279,7 +279,7 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                                     </button>
                                 </div>
                             )}
-                            {selectedClaim.status === "Approved" && (
+                            {selectedClaim.status === "approved" && (
                                 <button
                                     onClick={() => {
                                         onUpdateStatus(selectedClaim.id, "Released");

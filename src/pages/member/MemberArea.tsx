@@ -73,7 +73,7 @@ export default function MemberArea() {
         level: c.level,
         role: rankName,
         amount: c.amount,
-        status: c.status === "Released" ? "Paid" : "Pending",
+        status: c.status === "released" ? "paid" : "pending",
         date: c.dateCreated?.toISOString?.() ?? "",
         fromMemberName: c.fromMember ?? "",
         fromMemberCity: "",

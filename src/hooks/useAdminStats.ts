@@ -54,9 +54,16 @@ export default () => {
             }
 
             for (const m of members) {
-                if (m.package === "Basic") { packageCounts.Basic++; totalRevenue += 698; }
-                else if (m.package === "Family") { packageCounts.Family++; totalRevenue += 1698; }
-                else if (m.package === "Premium") { packageCounts.Premium++; totalRevenue += 4998; }
+                if (m.package === "Basic") {
+                    packageCounts.Basic++;
+                    totalRevenue += 698;
+                } else if (m.package === "Family") {
+                    packageCounts.Family++;
+                    totalRevenue += 1698;
+                } else if (m.package === "Premium") {
+                    packageCounts.Premium++;
+                    totalRevenue += 4998;
+                }
 
                 if (m.status === "active") activeMembers++;
                 if (m.status === "pending") pendingAccounts++;

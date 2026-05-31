@@ -39,7 +39,7 @@ export const MemberClaims: React.FC<Props> = ({ claims, onFileClaim }) => (
                         <div className="text-right">
                             <div className="font-display text-gpsc-navy text-2xl">{formatCurrency(c.amount)}</div>
                             <span
-                                className={`mt-1 inline-block rounded-full px-3 py-1 text-xs ${c.status === "Approved" ? "bg-gpsc-green/10 text-gpsc-green" : c.status === "Under Review" ? "bg-gpsc-navy/10 text-gpsc-navy" : "bg-amber-100 text-amber-700"}`}
+                                className={`mt-1 inline-block rounded-full px-3 py-1 text-xs ${c.status === "approved" ? "bg-gpsc-green/10 text-gpsc-green" : c.status === "under_review" ? "bg-gpsc-navy/10 text-gpsc-navy" : "bg-amber-100 text-amber-700"}`}
                             >
                                 {c.status.replace("_", " ")}
                             </span>

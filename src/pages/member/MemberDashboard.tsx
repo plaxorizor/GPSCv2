@@ -45,14 +45,14 @@ export default function MemberDashboard({
     const [currentSection, setCurrentSection] = useState("overview");
 
     // Calculate dashboard stats
-    const availableToWithdraw = commissions.filter((c) => c.status === "Paid").reduce((sum, c) => sum + c.amount, 0);
-    const totalEarned = commissions.filter((c) => c.status === "Paid").reduce((sum, c) => sum + c.amount, 0);
+    const availableToWithdraw = commissions.filter((c) => c.status === "paid").reduce((sum, c) => sum + c.amount, 0);
+    const totalEarned = commissions.filter((c) => c.status === "paid").reduce((sum, c) => sum + c.amount, 0);
     const activeReferralsCount = directReferrals.filter((r) => r.status === "active").length;
     const totalReferralsCount = directReferrals.length;
-    const approvedClaimsCount = claims.filter((c) => c.status === "Approved").length;
-    const approvedClaimsTotal = claims.filter((c) => c.status === "Approved").reduce((sum, c) => sum + c.amount, 0);
-    const pendingHold = commissions.filter((c) => c.status === "Pending").reduce((sum, c) => sum + c.amount, 0);
-    const lifetimePaid = commissions.filter((c) => c.status === "Paid").reduce((sum, c) => sum + c.amount, 0);
+    const approvedClaimsCount = claims.filter((c) => c.status === "approved").length;
+    const approvedClaimsTotal = claims.filter((c) => c.status === "approved").reduce((sum, c) => sum + c.amount, 0);
+    const pendingHold = commissions.filter((c) => c.status === "pending").reduce((sum, c) => sum + c.amount, 0);
+    const lifetimePaid = commissions.filter((c) => c.status === "paid").reduce((sum, c) => sum + c.amount, 0);
 
     // Eligibility timeline (example - you can make this dynamic based on member's join date)
     const eligibilityTimeline = getEligibilityTimeline(member.dateCreated);
@@ -69,14 +69,14 @@ export default function MemberDashboard({
     });
 
     // Pending claims count if there's any - TODO: make this dynamic based on claims
-    const pendingClaimsCount = claims.filter((c) => c.status !== "Approved").length;
+    const pendingClaimsCount = claims.filter((c) => c.status !== "approved").length;
 
     // Sidebar items
     const sidebarItems = [];
     sidebarItems.push({ id: "overview", label: "Overview", icon: LayoutGrid });
     sidebarItems.push({ id: "referrals", label: "My Referrals", icon: Network, badge: totalReferralsCount });
     sidebarItems.push({ id: "earnings", label: "Earnings", icon: Wallet });
-    sidebarItems.push({ id: "claims", label: "Claims", icon: FileText, badge: claims.filter((c) => c.status !== "Approved").length });
+    sidebarItems.push({ id: "claims", label: "Claims", icon: FileText, badge: claims.filter((c) => c.status !== "approved").length });
     // Basic members don't have beneficiaries
     if (member.package.toLowerCase() !== "basic") {
         sidebarItems.push({ id: "beneficiaries", label: "Beneficiaries", icon: Wallet });
