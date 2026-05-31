@@ -11,7 +11,7 @@ interface SidebarItem {
 }
 
 interface Props {
-    user: Member;
+    member: Member;
     rankName: string;
     currentSection: string;
     onSectionChange: (section: string) => void;
@@ -19,7 +19,7 @@ interface Props {
     onLogout: () => void;
 }
 
-export const DashboardSidebar: React.FC<Props> = ({ user, rankName, currentSection, onSectionChange, items, onLogout }) => (
+export const DashboardSidebar: React.FC<Props> = ({ member, rankName, currentSection, onSectionChange, items, onLogout }) => (
     <aside className="border-gpsc-cream-dark fixed top-0 left-0 z-30 hidden h-screen w-64 flex-col overflow-y-auto border-r bg-white lg:flex">
         <div className="flex items-center gap-3">
             <img src={logo} alt="GPSC Logo" className="ml-2 h-14 w-14 rounded-full object-contain" />
@@ -31,11 +31,11 @@ export const DashboardSidebar: React.FC<Props> = ({ user, rankName, currentSecti
         <div className="border-gpsc-cream-dark border-b p-4">
             <div className="flex items-center gap-3">
                 <div className="bg-gpsc-navy font-display flex h-10 w-10 items-center justify-center rounded-full text-sm text-white">
-                    {user.firstName.charAt(0).toUpperCase() + user.lastName.charAt(0).toUpperCase()}
+                    {member.firstName.charAt(0).toUpperCase() + member.lastName.charAt(0).toUpperCase()}
                 </div>
                 <div className="min-w-0 flex-1">
                     <div className="font-display text-gpsc-navy truncate text-sm">
-                        {user.firstName} {user.lastName}
+                        {member.firstName} {member.lastName}
                     </div>
                     <div className="text-gpsc-stone truncate text-xs">{rankName}</div>
                 </div>

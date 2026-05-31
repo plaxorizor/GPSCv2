@@ -43,7 +43,6 @@ export default function MemberDashboard({
 }: MemberDashboardProps) {
     const [currentSection, setCurrentSection] = useState("overview");
 
-
     // Calculate dashboard stats
     const availableToWithdraw = commissions.filter((c) => c.status === "Paid").reduce((sum, c) => sum + c.amount, 0);
     const totalEarned = commissions.filter((c) => c.status === "Paid").reduce((sum, c) => sum + c.amount, 0);
@@ -71,22 +70,20 @@ export default function MemberDashboard({
     // Pending claims count if there's any - TODO: make this dynamic based on claims
     const pendingClaimsCount = claims.filter((c) => c.status !== "Approved").length;
 
-    const sidebarItems = [
-        { id: "overview", label: "Overview", icon: LayoutGrid },
-        { id: "referrals", label: "My Referrals", icon: Network, badge: totalReferralsCount },
-        { id: "earnings", label: "Earnings", icon: Wallet },
-        { id: "claims", label: "Claims", icon: FileText, badge: claims.filter((c) => c.status !== "Approved").length },
-        { id: "profile", label: "Profile", icon: Settings },
-    ];
-
-    if (member.package === "Family" || member.package === "Premium") {
-        sidebarItems.push({ id: "payouts", label: "Beneficiaries", icon: Wallet });
+    const sidebarItems = [];
+    sidebarItems.push({ id: "overview", label: "Overview", icon: LayoutGrid });
+    sidebarItems.push({ id: "referrals", label: "My Referrals", icon: Network, badge: totalReferralsCount });
+    sidebarItems.push({ id: "earnings", label: "Earnings", icon: Wallet });
+    sidebarItems.push({ id: "claims", label: "Claims", icon: FileText, badge: claims.filter((c) => c.status !== "Approved").length });
+    if (member.package.toLowerCase() !== "basic") {
+        sidebarItems.push({ id: "beneficiaries", label: "Beneficiaries", icon: Wallet });
     }
+    sidebarItems.push({ id: "profile", label: "Profile", icon: Settings });
 
     return (
         <div className="gpsc-cream flex min-h-screen">
             <DashboardSidebar
-                user={member}
+                member={member}
                 rankName={rankName}
                 currentSection={currentSection}
                 onSectionChange={setCurrentSection}
@@ -138,7 +135,7 @@ export default function MemberDashboard({
                     />
                 )}
                 {currentSection === "claims" && <MemberClaims claims={claims} onFileClaim={onFileClaim} />}
-                {currentSection === "payouts" && (
+                {currentSection === "beneficiaries" && (
                     <div className="border-gpsc-navy rounded-xl border bg-white p-6 shadow-sm">
                         <h2 className="text-gpsc-navy text-2xl font-semibold">Beneficiaries</h2>
                         <p className="mt-2 text-sm text-gray-600">Manage your beneficiaries and payout instructions here.</p>
