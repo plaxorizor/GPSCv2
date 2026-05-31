@@ -7,6 +7,7 @@ import { MemberOverview } from "./Overview";
 import { MemberReferrals } from "./Referrals";
 import { MemberEarnings } from "./Earnings";
 import { MemberClaims } from "./Claims";
+import { MemberBeneficiaries } from "./Beneficiaries";
 import { MemberProfile } from "./Profile";
 import type { Member, Commission, ReferralNode, EarningsTrendPoint, Claim, Payout, MemberStats } from "../../utils/types";
 
@@ -70,11 +71,13 @@ export default function MemberDashboard({
     // Pending claims count if there's any - TODO: make this dynamic based on claims
     const pendingClaimsCount = claims.filter((c) => c.status !== "Approved").length;
 
+    // Sidebar items
     const sidebarItems = [];
     sidebarItems.push({ id: "overview", label: "Overview", icon: LayoutGrid });
     sidebarItems.push({ id: "referrals", label: "My Referrals", icon: Network, badge: totalReferralsCount });
     sidebarItems.push({ id: "earnings", label: "Earnings", icon: Wallet });
     sidebarItems.push({ id: "claims", label: "Claims", icon: FileText, badge: claims.filter((c) => c.status !== "Approved").length });
+    // Basic members don't have beneficiaries
     if (member.package.toLowerCase() !== "basic") {
         sidebarItems.push({ id: "beneficiaries", label: "Beneficiaries", icon: Wallet });
     }
@@ -135,12 +138,7 @@ export default function MemberDashboard({
                     />
                 )}
                 {currentSection === "claims" && <MemberClaims claims={claims} onFileClaim={onFileClaim} />}
-                {currentSection === "beneficiaries" && (
-                    <div className="border-gpsc-navy rounded-xl border bg-white p-6 shadow-sm">
-                        <h2 className="text-gpsc-navy text-2xl font-semibold">Beneficiaries</h2>
-                        <p className="mt-2 text-sm text-gray-600">Manage your beneficiaries and payout instructions here.</p>
-                    </div>
-                )}
+                {currentSection === "beneficiaries" && <MemberBeneficiaries member={member} />}
                 {currentSection === "profile" && <MemberProfile onLogout={onLogout} user={member} />}
             </main>
         </div>

@@ -1,5 +1,5 @@
 // firebase/admin.ts
-import { collection, getDocs, doc, updateDoc, addDoc, serverTimestamp, query, where, orderBy, limit as limitQuery } from "firebase/firestore";
+import { collection, getDocs, doc, updateDoc, addDoc, serverTimestamp, query, where, orderBy, limit as limitQuery, setDoc } from "firebase/firestore";
 import { db } from "./config";
 
 // --- MEMBERS ---
@@ -11,6 +11,34 @@ export const getAllMembers = async () => {
 
 export const updateMemberStatus = async (uid: string, status: "active" | "inactive" | "pending") => {
     await updateDoc(doc(db, "members", uid), { status });
+};
+
+const generateReferralCode = (): string => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    const segment = (len: number) => Array.from({ length: len }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+    return `${segment(4)}-${segment(4)}-${segment(4)}`;
+};
+
+export const activateMember = async (uid: string) => {
+    const referralCode = generateReferralCode();
+
+    // 1. Activate member + assign referral code
+    await updateDoc(doc(db, "members", uid), {
+        status: "Active",
+        referralCode,
+        activatedAt: serverTimestamp(),
+    });
+
+    // 2. Register referral code for lookup
+    await setDoc(doc(db, "referralCodes", referralCode), {
+        uid,
+    });
+};
+
+export const deactivateMember = async (uid: string) => {
+    await updateDoc(doc(db, "members", uid), {
+        status: "Inactive",
+    });
 };
 
 // --- CLAIMS ---
