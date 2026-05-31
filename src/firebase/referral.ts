@@ -5,7 +5,9 @@ export interface TreeNode {
     uid: string;
     firstName: string;
     lastName: string;
-    package: string | null;
+    city: string;
+    //dateCreated: Date;
+    package: string;
     status: string;
     level: number;
     children: TreeNode[];
@@ -23,8 +25,10 @@ export const buildReferralTree = async (memberId: string, level: number = 1, max
         const children = await buildReferralTree(doc.id, level + 1, maxLevel);
         nodes.push({
             uid: doc.id,
-            firstName: data.firstName ?? "",
-            lastName: data.lastName ?? "",
+            firstName: data.firstName,
+            lastName: data.lastName,
+            city: data.city,
+            //dateCreated: data.dateCreated,
             package: data.package,
             status: data.status,
             level,

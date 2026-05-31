@@ -4,6 +4,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { StatCard } from "./StatCard";
 import { type Member, type EarningsTrendPoint } from "../../utils/types";
 import { formatCurrency, formatDate } from "../../utils/formatter";
+import { QRCode } from "react-qr-code";
 
 interface Props {
     user: Member;
@@ -66,13 +67,13 @@ export const MemberOverview: React.FC<Props> = ({
     return (
         <div className="space-y-6">
             <div>
-                <div className="text-gpsc-stone text-xs tracking-wider uppercase">Welcome back</div>
                 <h1 className="font-display text-gpsc-navy text-3xl">
                     {user.firstName} {user.lastName}
                 </h1>
                 <div className="text-gpsc-stone mt-1 text-sm">
-                    {rankName} · {packageName} member since {user.dateCreated?.toDate?.()?.toLocaleDateString() ?? "—"}
+                    {rankName} · {packageName} Care
                 </div>
+                <div className="text-gpsc-stone mt-1 text-sm">Member since: {user.dateCreated?.toDate?.()?.toLocaleDateString()}</div>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

@@ -68,6 +68,7 @@ export default function MemberArea() {
     }));
 
     // 4. Map tree — use firstName/lastName directly (no more fullName split)
+    const commissionRates = [20, 5, 3, 2, 1, 1];
     const mapTreeToReferralNodes = (nodes: typeof tree, depth: number = 0): ReferralNode[] =>
         nodes.map((node) => ({
             id: node.uid,
@@ -75,11 +76,11 @@ export default function MemberArea() {
             lastName: node.lastName,
             initials: `${node.firstName[0] ?? ""}${node.lastName[0] ?? ""}`.toUpperCase() || "?",
             packageName: node.package ?? "",
-            city: "",
-            memberSince: "",
+            city: node.city,
+            memberSince: node.dateCreated,
             status: node.status ?? "active",
             level: depth,
-            commissionRate: 0,
+            commissionRate: commissionRates[depth] ?? 0,
             downline: mapTreeToReferralNodes(node.children ?? [], depth + 1),
         }));
 

@@ -3,7 +3,7 @@ import { LayoutGrid, Wallet, FileText, Settings, Network } from "lucide-react";
 
 const tabs = [
     { id: "overview", label: "Home", icon: LayoutGrid },
-    { id: "referrals", label: "Network", icon: Network },
+    { id: "referrals", label: "Referrals", icon: Network },
     { id: "earnings", label: "Earnings", icon: Wallet },
     { id: "claims", label: "Claims", icon: FileText },
     { id: "profile", label: "Profile", icon: Settings },
@@ -17,24 +17,22 @@ interface Props {
 }
 
 export const MobileBottomNav: React.FC<Props> = ({ current, onChange, claimsBadge, referralsBadge }) => (
-    <nav className="lg:hidden fixed bottom-0 inset-x-0 bg-white border-t border-gpsc-cream-dark z-50 flex">
+    <nav className="border-gpsc-cream-dark fixed inset-x-0 bottom-0 z-50 flex border-t bg-white lg:hidden">
         {tabs.map(({ id, label, icon: Icon }) => {
             const badge = id === "claims" ? claimsBadge : id === "referrals" ? referralsBadge : undefined;
             return (
                 <button
                     key={id}
                     onClick={() => onChange(id)}
-                    className={`flex-1 flex flex-col items-center justify-center py-2 gap-0.5 relative text-xs transition-colors ${
+                    className={`relative flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-xs transition-colors ${
                         current === id ? "text-gpsc-navy" : "text-gpsc-stone"
                     }`}
                 >
-                    {current === id && (
-                        <span className="absolute top-0 inset-x-3 h-0.5 bg-gpsc-navy rounded-full" />
-                    )}
+                    {current === id && <span className="bg-gpsc-navy absolute inset-x-3 top-0 h-0.5 rounded-full" />}
                     <div className="relative">
                         <Icon size={20} />
                         {badge !== undefined && badge > 0 && (
-                            <span className="absolute -top-1 -right-2 bg-gpsc-green text-white text-[9px] rounded-full w-4 h-4 flex items-center justify-center leading-none">
+                            <span className="bg-gpsc-green absolute -top-1 -right-2 flex h-4 w-4 items-center justify-center rounded-full text-[9px] leading-none text-white">
                                 {badge}
                             </span>
                         )}

@@ -60,7 +60,7 @@ const ReferralNodeView: React.FC<{ node: ReferralNode }> = ({ node }) => (
                     {node.firstName} {node.lastName}
                 </div>
                 <div className="text-gpsc-stone truncate text-xs">
-                    {node.packageName} · {node.city} · {formatDate(node.memberSince)}
+                    {node.packageName} Care · {node.city} · {formatDate(node.memberSince)}
                 </div>
             </div>
             <div className="shrink-0 text-right">
@@ -72,7 +72,7 @@ const ReferralNodeView: React.FC<{ node: ReferralNode }> = ({ node }) => (
                     {node.status}
                 </div>
                 <div className="text-gpsc-stone mt-1 text-xs">
-                    L{node.level} · {node.commissionRate}%
+                    Level {node.level + 1} · {node.commissionRate}%
                 </div>
             </div>
         </div>
@@ -124,6 +124,8 @@ export const MemberReferrals: React.FC<Props> = ({ user, referralLink, onCopyRef
                 )}
             </div>
         </div>
+
+        {/* Referral Link & QR */}
         <div className="bg-gpsc-navy rounded-2xl p-6 text-white">
             <div className="grid items-center gap-6 sm:grid-cols-2">
                 <div>

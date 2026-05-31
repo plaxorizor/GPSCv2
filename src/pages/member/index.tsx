@@ -77,7 +77,7 @@ export default function MemberDashboard({
 
     const sidebarItems = [
         { id: "overview", label: "Overview", icon: LayoutGrid },
-        { id: "referrals", label: "My referrals", icon: Network, badge: totalReferralsCount },
+        { id: "referrals", label: "My Referrals", icon: Network, badge: totalReferralsCount },
         { id: "earnings", label: "Earnings", icon: Wallet },
         { id: "claims", label: "Claims", icon: FileText, badge: claims.filter((c) => c.status !== "approved").length },
         { id: "profile", label: "Profile", icon: Settings },
