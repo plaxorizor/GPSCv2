@@ -105,7 +105,7 @@ export const MemberProfile: React.FC<Props> = ({ user, onChangePassword, onEnabl
                             onClick={onLogout}
                             className="flex w-full items-center justify-center gap-2 rounded-2xl border border-red-200 bg-red-50 py-3 text-sm font-medium text-red-600 transition-colors hover:bg-red-100"
                         >
-                            <LogOut size={16} /> Sign out
+                            <LogOut size={16} /> Logout
                         </button>
                     </div>
                 </div>

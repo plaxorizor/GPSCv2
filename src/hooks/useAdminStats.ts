@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../firebase/config";
+import type { Member } from "../utils/types";
 
 interface TopRecruiter {
     uid: string;
@@ -17,7 +18,7 @@ interface AdminStats {
     activeMembers: number;
     pendingAccounts: number;
     totalRevenue: number;
-    packageCounts: { Basic: number; Family: number; Premium: number };
+    packageCounts: { basic: number; family: number; premium: number };
     pendingClaims: number;
     pendingPayouts: number;
     topRecruiters: TopRecruiter[];
@@ -38,7 +39,7 @@ export default () => {
 
             const members = membersSnap.docs.map((d) => ({ uid: d.id, ...d.data() }) as any);
 
-            const packageCounts = { Basic: 0, Family: 0, Premium: 0 };
+            const packageCounts = { basic: 0, family: 0, premium: 0 };
             let totalRevenue = 0;
             let activeMembers = 0;
             let pendingAccounts = 0;
@@ -54,18 +55,22 @@ export default () => {
             }
 
             for (const m of members) {
-                if (m.package === "Basic") {
-                    packageCounts.Basic++;
-                    totalRevenue += 698;
-                } else if (m.package === "Family") {
-                    packageCounts.Family++;
-                    totalRevenue += 1698;
-                } else if (m.package === "Premium") {
-                    packageCounts.Premium++;
-                    totalRevenue += 4998;
+                if (m.status === "active") {
+                    activeMembers++;
+
+                    // total revenue counts only active members
+                    if (m.package === "basic") {
+                        totalRevenue += 698;
+                        packageCounts.basic++;
+                    } else if (m.package === "family") {
+                        totalRevenue += 1698;
+                        packageCounts.family++;
+                    } else if (m.package === "premium") {
+                        totalRevenue += 4998;
+                        packageCounts.premium++;
+                    }
                 }
 
-                if (m.status === "active") activeMembers++;
                 if (m.status === "pending") pendingAccounts++;
 
                 if (m.referredBy) {
@@ -91,7 +96,7 @@ export default () => {
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 3)
                 .map(([uid, count]) => {
-                    const found = members.find((m: any) => m.uid === uid);
+                    const found = members.find((m: Member) => m.uid === uid);
                     return {
                         uid,
                         name: found ? `${found.firstName} ${found.lastName}` : "Unknown",

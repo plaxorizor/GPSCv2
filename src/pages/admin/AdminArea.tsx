@@ -6,6 +6,8 @@ import AdminDashboard from "./AdminDashboard";
 import type { Member, Claim } from "../../utils/types";
 import type { DashboardStats, GrowthDataPoint, PackageMixItem, TopRecruiter, PendingCommission, CommissionRecord } from "../../utils/types";
 
+import { activateMember, deactivateMember } from "../../firebase/admin";
+
 // Mock data fetching functions - replace with your actual API calls
 const fetchDashboardStats = async (): Promise<DashboardStats> => {
     return {
@@ -168,8 +170,12 @@ export default function AdminArea() {
         setCommissionHistory(history);
     };
 
-    const handleUpdateMemberStatus = async (memberId: string, status: "active" | "inactive") => {
-        console.log(`Update member ${memberId} to ${status}`);
+    const handleUpdateMemberStatus = async (memberId: string, status: string) => {
+        if (status === "active") await activateMember(memberId);
+        if (status === "inactive") await deactivateMember(memberId);
+
+        // refresh current changed member on the list
+        
     };
 
     const handleUpdateClaimStatus = async (claimId: string, status: "Approved" | "Rejected" | "Released") => {

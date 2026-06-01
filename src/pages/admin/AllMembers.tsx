@@ -1,6 +1,5 @@
 import { useAllMembers } from "../../hooks/useAllMembers";
 import { Eye, CheckCircle, XCircle } from "lucide-react";
-import { PACKAGE_INFO } from "../../utils/types";
 import type { MemberRow } from "./Members";
 
 interface Props {
@@ -70,8 +69,7 @@ const AllMembers = ({ query, packageFilter, statusFilter, onSelectMember, onUpda
                         </div>
                     </td>
                     <td className="text-gpsc-stone p-4">{m.package ?? "—"}</td>
-                    <td className="text-gpsc-stone p-4">{m.sponsorName ?? "—"}</td>
-                    <td className="text-gpsc-stone p-4">{m.package ? (PACKAGE_INFO[m.package as keyof typeof PACKAGE_INFO]?.rank ?? "—") : "—"}</td>
+                    <td className="text-gpsc-stone p-4">{m.sponsorName}</td>
                     <td className="text-gpsc-stone p-4">{m.dateCreated?.toDate?.()?.toLocaleDateString() ?? "—"}</td>
                     <td className="p-4">
                         <span

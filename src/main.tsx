@@ -33,12 +33,12 @@ createRoot(document.getElementById("root")!).render(
 
                     <Route path="/signin" element={<SignIn />} />
                     <Route path="/signup" element={<SignUp />} />
-                          <Route path="/referral" element={<Referral />} />
+                    <Route path="/referral" element={<Referral />} />
                     <Route path="/faq" element={<FAQ />} />
                     <Route path="/contact" element={<Contact />} />
                     <Route path="/about" element={<About />} />
                     <Route path="/membership" element={<Membership />} />
-                    
+
                     <Route
                         path="/dashboard"
                         element={

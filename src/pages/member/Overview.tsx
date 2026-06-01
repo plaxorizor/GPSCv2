@@ -66,7 +66,7 @@ export const MemberOverview: React.FC<Props> = ({
         <div className="space-y-6">
             <div>
                 <h1 className="font-display text-gpsc-navy text-3xl">
-                    {member.firstName} {member.lastName}
+                    {member.firstName} {member.lastName} <span className="text-gpsc-stone text-sm">({member.status})</span>
                 </h1>
                 <div className="text-gpsc-stone mt-1 text-sm">
                     {rankName} · {packageName} Care
@@ -95,7 +95,7 @@ export const MemberOverview: React.FC<Props> = ({
 
             <div className="grid gap-6 lg:grid-cols-3">
                 <div className="border-gpsc-cream-dark rounded-2xl border bg-white p-6 lg:col-span-2">
-                    <h2 className="font-display text-gpsc-navy mb-1 text-lg">Earnings trend</h2>
+                    <h2 className="font-display text-gpsc-navy mb-1 text-lg">Earnings Trend</h2>
                     <p className="text-gpsc-stone mb-6 text-xs">Last 6 months</p>
                     <ResponsiveContainer width="100%" height={220}>
                         <AreaChart data={earningsTrend}>
@@ -118,7 +118,7 @@ export const MemberOverview: React.FC<Props> = ({
             </div>
 
             <div className="border-gpsc-cream-dark rounded-2xl border bg-white p-6">
-                <h2 className="font-display text-gpsc-navy mb-4 text-lg">Eligibility timeline</h2>
+                <h2 className="font-display text-gpsc-navy mb-4 text-lg">Eligibility Timeline</h2>
                 <div className="space-y-3">
                     {eligibilityTimeline.map((item, i) => (
                         <div key={i} className="flex items-center gap-4">
@@ -139,7 +139,7 @@ export const MemberOverview: React.FC<Props> = ({
             </div>
 
             <div className="border-gpsc-cream-dark rounded-2xl border bg-white p-6">
-                <h2 className="font-display text-gpsc-navy mb-4 text-lg">Recent activity</h2>
+                <h2 className="font-display text-gpsc-navy mb-4 text-lg">Recent Activity</h2>
                 <div className="space-y-3">
                     {recentCommissions.map((c) => (
                         <div key={c.id} className="border-gpsc-cream-dark flex items-center gap-4 border-b py-2 last:border-0">

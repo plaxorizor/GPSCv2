@@ -35,9 +35,9 @@ export const Overview: React.FC<Props> = ({ loading, onRefresh }) => {
 
     // Package mix derived from adminStats — pie + legend always in sync
     const syncedPackageMix: PackageMixItem[] = [
-        { name: "Basic", value: adminStats.packageCounts.Basic, color: "#4F46E5" },
-        { name: "Family", value: adminStats.packageCounts.Family, color: "#65A30D" },
-        { name: "Premium", value: adminStats.packageCounts.Premium, color: "#EAB308" },
+        { name: "Basic", value: adminStats.packageCounts.basic, color: "#4F46E5" },
+        { name: "Family", value: adminStats.packageCounts.family, color: "#65A30D" },
+        { name: "Premium", value: adminStats.packageCounts.premium, color: "#EAB308" },
     ].filter((p) => p.value > 0);
 
     return (
@@ -122,9 +122,9 @@ export const Overview: React.FC<Props> = ({ loading, onRefresh }) => {
 
                     <div className="mt-2 space-y-2">
                         {[
-                            { label: "Basic Care", color: "#4F46E5", count: adminStats.packageCounts.Basic },
-                            { label: "Family Care", color: "#65A30D", count: adminStats.packageCounts.Family },
-                            { label: "Premium Care", color: "#EAB308", count: adminStats.packageCounts.Premium },
+                            { label: "Basic Care", color: "#4F46E5", count: adminStats.packageCounts.basic },
+                            { label: "Family Care", color: "#65A30D", count: adminStats.packageCounts.family },
+                            { label: "Premium Care", color: "#EAB308", count: adminStats.packageCounts.premium },
                         ].map(({ label, color, count }) => (
                             <div key={label} className="flex items-center gap-2 text-sm">
                                 <div className="h-3 w-3 rounded-full" style={{ backgroundColor: color }} />
@@ -146,6 +146,7 @@ export const Overview: React.FC<Props> = ({ loading, onRefresh }) => {
                                 <div key={r.uid} className="flex items-center gap-3">
                                     <div className="font-display text-gpsc-stone w-6 text-xs">#{i + 1}</div>
                                     <div className="bg-gpsc-navy font-display flex h-10 w-10 items-center justify-center rounded-full text-xs text-white">
+                                        
                                         {r.name
                                             .split(" ")
                                             .map((n: string) => n[0])
@@ -170,7 +171,7 @@ export const Overview: React.FC<Props> = ({ loading, onRefresh }) => {
 
                 {/* ── Claims Queue ── */}
                 <div className="border-gpsc-cream-dark rounded-2xl border bg-white p-6">
-                    <h2 className="font-display text-gpsc-navy mb-4 text-lg">Claims queue</h2>
+                    <h2 className="font-display text-gpsc-navy mb-4 text-lg">Claims Queue</h2>
                     <div className="space-y-3">
                         <div className="text-gpsc-stone py-8 text-center">No pending claims</div>
                     </div>

@@ -6,7 +6,7 @@ const tabs = [
     { id: "members", label: "Members", icon: Users },
     { id: "claims", label: "Claims", icon: FileText },
     { id: "commissions", label: "Commissions", icon: DollarSign },
-    { id: "logout", label: "Sign out", icon: LogOut },
+    { id: "logout", label: "Logout", icon: LogOut },
 ];
 
 interface Props {

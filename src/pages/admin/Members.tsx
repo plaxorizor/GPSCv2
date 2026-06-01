@@ -40,7 +40,6 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport, onAddMember
         <div className="space-y-6">
             <div className="flex flex-wrap items-end justify-between gap-4">
                 <div>
-                    <div className="text-gpsc-stone text-xs tracking-wider uppercase">Management</div>
                     <h1 className="font-display text-gpsc-navy text-3xl">Members</h1>
                 </div>
                 <div className="flex gap-2">
@@ -104,7 +103,6 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport, onAddMember
                                 <th className="p-4 text-left">Member</th>
                                 <th className="p-4 text-left">Package</th>
                                 <th className="p-4 text-left">Sponsor</th>
-                                <th className="p-4 text-left">Rank</th>
                                 <th className="p-4 text-left">Joined</th>
                                 <th className="p-4 text-left">Status</th>
                                 <th className="p-4 text-right">Actions</th>
@@ -162,11 +160,11 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport, onAddMember
                                         : "—",
                                 },
                                 { label: "Sponsor", value: selectedMember.sponsorName ?? "—" },
-                                { label: "Referral code", value: selectedMember.referralCode ?? "—" },
+                                { label: "Referral Code", value: selectedMember.referralCode ?? "—" },
                                 { label: "City", value: selectedMember.city ?? "—" },
                                 { label: "Province", value: selectedMember.province ?? "—" },
-                                { label: "Civil status", value: selectedMember.civilStatus ?? "—" },
-                                { label: "Birth date", value: selectedMember.birthDate ?? "—" },
+                                { label: "Civil Status", value: selectedMember.civilStatus ?? "—" },
+                                { label: "Birth Date", value: selectedMember.birthDate ?? "—" },
                                 { label: "Joined", value: selectedMember.dateCreated?.toDate?.()?.toLocaleDateString() ?? "—" },
                                 { label: "Status", value: selectedMember.status ?? "—" },
                             ].map(({ label, value }) => (

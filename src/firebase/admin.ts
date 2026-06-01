@@ -1,5 +1,18 @@
 // firebase/admin.ts
-import { collection, getDocs, doc, updateDoc, addDoc, serverTimestamp, query, where, orderBy, limit as limitQuery, setDoc } from "firebase/firestore";
+import {
+    collection,
+    getDocs,
+    getDoc,
+    doc,
+    updateDoc,
+    addDoc,
+    serverTimestamp,
+    query,
+    where,
+    orderBy,
+    limit as limitQuery,
+    setDoc,
+} from "firebase/firestore";
 import { db } from "./config";
 
 // --- MEMBERS ---
@@ -20,19 +33,30 @@ const generateReferralCode = (): string => {
 };
 
 export const activateMember = async (uid: string) => {
-    const referralCode = generateReferralCode();
+    const memberSnap = await getDoc(doc(db, "members", uid));
+    if (!memberSnap.exists()) return;
 
-    // 1. Activate member + assign referral code
-    await updateDoc(doc(db, "members", uid), {
-        status: "active",
-        referralCode,
-        activatedAt: serverTimestamp(),
-    });
+    const memberData = memberSnap.data();
 
-    // 2. Register referral code for lookup
-    await setDoc(doc(db, "referralCodes", referralCode), {
-        uid,
-    });
+    // Only generate a new code if they don't have one yet
+    if (!memberData.referralCode) {
+        const referralCode = generateReferralCode();
+
+        await updateDoc(doc(db, "members", uid), {
+            status: "active",
+            referralCode,
+            activatedAt: serverTimestamp(),
+        });
+
+        await setDoc(doc(db, "referralCodes", referralCode), {
+            uid,
+        });
+    } else {
+        // Already has a code — just reactivate
+        await updateDoc(doc(db, "members", uid), {
+            status: "active",
+        });
+    }
 };
 
 export const deactivateMember = async (uid: string) => {

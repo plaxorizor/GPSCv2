@@ -9,8 +9,6 @@ import logo from "../../components/ui/Logo.png";
 import { RadioGroup, Radio } from "@headlessui/react";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 
-import { type PackageName } from "../../utils/types";
-
 // ── Design tokens (mirrors pro.jsx GlobalStyles) ──────────────────
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=DM+Sans:wght@400;500;600;700&display=swap');
@@ -20,7 +18,7 @@ const css = `
 
 const plans = [
     {
-        name: "Basic" as PackageName,
+        name: "Basic",
         price: 698,
         level: 1,
         rank: "Sales Consultant",
@@ -29,7 +27,7 @@ const plans = [
         tagline: "Individual protection, simple start",
     },
     {
-        name: "Family" as PackageName,
+        name: "Family",
         price: 1698,
         level: 3,
         rank: "Team Consultant",
@@ -39,7 +37,7 @@ const plans = [
         popular: true,
     },
     {
-        name: "Premium" as PackageName,
+        name: "Premium",
         price: 4998,
         level: 6,
         rank: "Sales Manager",
@@ -50,12 +48,6 @@ const plans = [
 ];
 
 const STEPS = ["Package", "Your Info", "Sponsor & Beneficiaries", "Review"];
-
-const generateReferralCode = (): string => {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    const segment = (len: number) => Array.from({ length: len }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
-    return `${segment(4)}-${segment(4)}-${segment(4)}`;
-};
 
 // ── Shared input / label styles ───────────────────────────────────
 const inputCls =
@@ -141,7 +133,7 @@ export default function SignUpLayout() {
                 setError("Referral code is required.");
                 return false;
             }
-            if (selectedPlan.name !== "basic") {
+            if (selectedPlan.name !== "Basic") {
                 for (let i = 0; i < form.beneficiaries.length; i++) {
                     if (!form.beneficiaries[i].name.trim()) {
                         setError(`Beneficiary ${i + 1} name is required.`);
@@ -177,11 +169,10 @@ export default function SignUpLayout() {
             const referredBy = snap.data().uid;
 
             const { user } = await registerUser(form.email, form.password);
-            const referralCode = generateReferralCode();
-
+            
             await setDoc(doc(db, "members", user.uid), {
-                referralCode,
-                referredBy,
+                referralCode: null,
+                referredBy: referredBy,
                 firstName: form.firstName,
                 lastName: form.lastName,
                 email: form.email,
@@ -190,15 +181,14 @@ export default function SignUpLayout() {
                 civilStatus: form.civilStatus,
                 city: form.city,
                 province: form.province,
-                package: selectedPlan.name,
+                package: selectedPlan.name.toLowerCase(),
                 beneficiaries: form.beneficiaries,
                 status: "pending",
                 isAdmin: false,
                 dateCreated: serverTimestamp(),
             });
-
-            await setDoc(doc(db, "referralCodes", referralCode), { uid: user.uid });
-            navigate("/dashboard/member");
+            
+            navigate("/");
         } catch (err) {
             setError(err instanceof Error ? err.message : "An unknown error occurred");
         }
@@ -293,6 +283,7 @@ export default function SignUpLayout() {
                                                             </div>
                                                             <div>
                                                                 <div className="font-display text-lg" style={{ color: "#14365C" }}>
+                                                                    {/* Capitalize first letter */}
                                                                     {plan.name} Care
                                                                     {plan.popular && (
                                                                         <span
@@ -478,7 +469,7 @@ export default function SignUpLayout() {
                                     <div className="space-y-5">
                                         <div>
                                             <label className={labelCls}>
-                                                Sponsor / referral code <span style={{ color: "#B91C1C" }}>*</span>
+                                                Sponsor / Referral Code <span style={{ color: "#B91C1C" }}>*</span>
                                             </label>
                                             <input
                                                 required
@@ -492,12 +483,14 @@ export default function SignUpLayout() {
                                             />
                                         </div>
 
-                                        {selectedPlan.name !== "basic" && (
+                                        {selectedPlan.name !== "Basic" && (
                                             <div className="mt-1 border-t pt-5" style={{ borderColor: "#E5DDC8" }}>
+                                                {/* only show on non-basic */}
+
                                                 <label className={labelCls}>
                                                     Beneficiaries
                                                     <span className="ml-1 normal-case" style={{ color: "#6B6862" }}>
-                                                        (up to {selectedPlan.name === "family" ? 2 : 4})
+                                                        (up to {selectedPlan.name === "Family" ? 2 : 4})
                                                     </span>
                                                 </label>
 
@@ -551,7 +544,7 @@ export default function SignUpLayout() {
                                                 </div>
 
                                                 <div className="mt-3 flex gap-4">
-                                                    {form.beneficiaries.length < (selectedPlan.name === "family" ? 2 : 4) && (
+                                                    {form.beneficiaries.length < (selectedPlan.name === "Family" ? 2 : 4) && (
                                                         <button
                                                             type="button"
                                                             className="flex items-center gap-1 text-sm font-medium hover:underline"
@@ -661,7 +654,7 @@ export default function SignUpLayout() {
                                     </div>
 
                                     {/* Beneficiaries */}
-                                    {selectedPlan.name !== "basic" && (
+                                    {selectedPlan.name !== "Basic" && (
                                         <>
                                             <p className="mb-2 text-xs tracking-wider uppercase" style={{ color: "#6B6862" }}>
                                                 Beneficiaries
@@ -694,7 +687,7 @@ export default function SignUpLayout() {
                                         onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#5DAB3A")}
                                         onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#4A8A2C")}
                                     >
-                                        Create account
+                                        Create Account
                                     </button>
                                 </div>
                             )}

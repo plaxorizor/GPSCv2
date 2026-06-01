@@ -58,8 +58,7 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
         <div className="space-y-6">
             <div className="flex flex-wrap items-end justify-between gap-4">
                 <div>
-                    <div className="text-gpsc-stone text-xs tracking-wider uppercase">Claims operations</div>
-                    <h1 className="font-display text-gpsc-navy text-3xl">Claims queue</h1>
+                    <h1 className="font-display text-gpsc-navy text-3xl">Claims Operations</h1>
                 </div>
                 <div className="flex gap-2">
                     <button

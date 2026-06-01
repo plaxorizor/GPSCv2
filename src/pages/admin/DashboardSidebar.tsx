@@ -69,7 +69,7 @@ export const DashboardSidebar: React.FC<Props> = ({ user, rankName, currentSecti
             onClick={onLogout}
             className="text-gpsc-stone hover:bg-gpsc-cream/60 m-3 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors"
         >
-            <LogOut size={16} /> Sign out
+            <LogOut size={16} /> Logout
         </button>
     </aside>
 );
