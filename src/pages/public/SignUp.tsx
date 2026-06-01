@@ -75,12 +75,12 @@ export default function SignUpLayout() {
         civilStatus: "",
         city: "",
         province: "",
-        referralCode: "",
+        referralCode: refValue,
         beneficiaries: [{ name: "", relationship: "" }],
     });
     const [error, setError] = useState("");
 
-    const validateStep = (): boolean => {
+    const validateStep = async (): Promise<boolean> => {
         setError("");
         if (step === 2) {
             if (!form.firstName.trim()) {
@@ -129,10 +129,18 @@ export default function SignUpLayout() {
             }
         }
         if (step === 3) {
-            if (!refValue.trim()) {
+            if (!form.referralCode.trim()) {
                 setError("Referral code is required.");
                 return false;
             }
+
+            const snap = await getDoc(doc(db, "referralCodes", form.referralCode));
+
+            if (!snap.exists()) {
+                setError("Invalid referral code.");
+                return false;
+            }
+
             if (selectedPlan.name !== "Basic") {
                 for (let i = 0; i < form.beneficiaries.length; i++) {
                     if (!form.beneficiaries[i].name.trim()) {
@@ -149,11 +157,11 @@ export default function SignUpLayout() {
         return true;
     };
 
-    const handleContinue = () => {
-        if (validateStep()) setStep(step + 1);
+    const handleContinue = async () => {
+        if (await validateStep()) setStep(step + 1);
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.SubmitEvent) => {
         e.preventDefault();
         setError("");
         if (form.password !== form.confirmPassword) {
@@ -169,7 +177,7 @@ export default function SignUpLayout() {
             const referredBy = snap.data().uid;
 
             const { user } = await registerUser(form.email, form.password);
-            
+
             await setDoc(doc(db, "members", user.uid), {
                 referralCode: null,
                 referredBy: referredBy,
@@ -187,7 +195,7 @@ export default function SignUpLayout() {
                 isAdmin: false,
                 dateCreated: serverTimestamp(),
             });
-            
+
             navigate("/");
         } catch (err) {
             setError(err instanceof Error ? err.message : "An unknown error occurred");
@@ -473,7 +481,7 @@ export default function SignUpLayout() {
                                             </label>
                                             <input
                                                 required
-                                                value={refValue}
+                                                value={form.referralCode}
                                                 placeholder="e.g. MARIA-ABCD-1234"
                                                 className={inputCls}
                                                 onChange={(e) => {

@@ -43,7 +43,7 @@ export const Hero: React.FC = () => {
                                 }}
                                 className="border-gpsc-navy cursor-pointer rounded-full border px-8 py-4 font-medium transition-colors"
                             >
-                                Earn as a consultant
+                                Know more...
                             </button>
                         </div>
                         <div className="mt-12 flex flex-wrap items-center gap-8 text-sm">
