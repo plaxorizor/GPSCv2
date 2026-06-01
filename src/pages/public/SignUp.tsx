@@ -55,6 +55,7 @@ const inputCls =
 const labelCls = "text-xs uppercase tracking-wider text-[#6B6862]";
 
 export default function SignUpLayout() {
+    const [loading, setLoading] = useState(false);
     const [searchParams] = useSearchParams();
     const [refValue, setRefValue] = useState<string>(() => searchParams.get("ref") ?? "");
     const [step, setStep] = useState(1);
@@ -164,6 +165,7 @@ export default function SignUpLayout() {
     const handleSubmit = async (e: React.SubmitEvent) => {
         e.preventDefault();
         setError("");
+        setLoading(true);
         if (form.password !== form.confirmPassword) {
             setError("Passwords do not match.");
             return;
@@ -199,6 +201,8 @@ export default function SignUpLayout() {
             navigate("/");
         } catch (err) {
             setError(err instanceof Error ? err.message : "An unknown error occurred");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -690,12 +694,32 @@ export default function SignUpLayout() {
 
                                     <button
                                         type="submit"
-                                        className="w-full rounded-xl py-3 font-medium text-white transition-colors"
+                                        disabled={loading || step !== totalSteps}
+                                        className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-500 py-3 text-white hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-60"
                                         style={{ backgroundColor: "#4A8A2C" }}
                                         onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#5DAB3A")}
                                         onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#4A8A2C")}
                                     >
-                                        Create Account
+                                        {loading ? (
+                                            <>
+                                                <svg
+                                                    className="h-4 w-4 animate-spin text-white"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                                    <path
+                                                        className="opacity-75"
+                                                        fill="currentColor"
+                                                        d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"
+                                                    />
+                                                </svg>
+                                                Creating your account...
+                                            </>
+                                        ) : (
+                                            "Register"
+                                        )}
                                     </button>
                                 </div>
                             )}
