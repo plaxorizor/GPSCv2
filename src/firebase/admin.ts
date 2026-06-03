@@ -37,15 +37,26 @@ export const activateMember = async (uid: string) => {
     if (!memberSnap.exists()) return;
 
     const memberData = memberSnap.data();
+    const now = new Date();
+
+    // 1 year expiry from activation date
+    const expiresAt = new Date(now);
+    expiresAt.setFullYear(expiresAt.getFullYear() + 1);
+
+    // 1 month contestability window
+    const contestabilityEndsAt = new Date(now);
+    contestabilityEndsAt.setMonth(contestabilityEndsAt.getMonth() + 1);
 
     // Only generate a new code if they don't have one yet
     if (!memberData.referralCode) {
         const referralCode = generateReferralCode();
-
         await updateDoc(doc(db, "members", uid), {
             status: "active",
             referralCode,
             activatedAt: serverTimestamp(),
+            expiresAt: expiresAt,
+            contestabilityEndsAt, // upgrade window
+            packageLocked: false,
         });
 
         await setDoc(doc(db, "referralCodes", referralCode), {
@@ -55,6 +66,10 @@ export const activateMember = async (uid: string) => {
         // Already has a code — just reactivate
         await updateDoc(doc(db, "members", uid), {
             status: "active",
+            activatedAt: serverTimestamp(),
+            expiresAt,
+            contestabilityEndsAt,
+            packageLocked: false,
         });
     }
 };
@@ -63,6 +78,48 @@ export const deactivateMember = async (uid: string) => {
     await updateDoc(doc(db, "members", uid), {
         status: "Inactive",
     });
+};
+
+export const upgradeMember = async (uid: string, newPackage: "family" | "premium") => {
+    const memberSnap = await getDoc(doc(db, "members", uid));
+    if (!memberSnap.exists()) return;
+
+    const data = memberSnap.data();
+
+    // Check if locked
+    if (data.packageLocked) {
+        throw new Error("Package is locked. Contestability period has expired.");
+    }
+
+    // Check contestability window
+    const now = new Date();
+    const contestabilityEndsAt = data.contestabilityEndsAt?.toDate?.();
+    if (!contestabilityEndsAt || now > contestabilityEndsAt) {
+        // Lock and reject
+        await updateDoc(doc(db, "members", uid), { packageLocked: true });
+        throw new Error("Contestability period has expired.");
+    }
+
+    await updateDoc(doc(db, "members", uid), {
+        package: newPackage,
+    });
+};
+
+export const checkAndLockPackage = async (uid: string) => {
+    const memberSnap = await getDoc(doc(db, "members", uid));
+    if (!memberSnap.exists()) return;
+
+    const data = memberSnap.data();
+    if (data.packageLocked) return; // already locked
+
+    const now = new Date();
+    const contestabilityEndsAt = data.contestabilityEndsAt?.toDate?.();
+
+    if (contestabilityEndsAt && now > contestabilityEndsAt) {
+        await updateDoc(doc(db, "members", uid), {
+            packageLocked: true,
+        });
+    }
 };
 
 // --- CLAIMS ---

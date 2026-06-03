@@ -17,6 +17,21 @@ const COMMISSION_TABLE: Record<Package, Record<number, number>> = {
     premium: { 1: 750, 2: 375, 3: 225, 4: 150, 5: 113, 6: 75 },
 };
 
+export const COMMISSION_RATES: Record<number, number> = {
+    1: 0.2,
+    2: 0.05,
+    3: 0.03,
+    4: 0.02,
+    5: 0.01,
+    6: 0.01,
+};
+
+export const PACKAGE_PRICES: Record<Package, number> = {
+    basic:   698,
+    family:  1698,
+    premium: 4998,
+};
+
 export const triggerCommissions = async (newMemberId: string, pkg: Package) => {
     const commissions = COMMISSION_TABLE[pkg];
     let currentUid = newMemberId;

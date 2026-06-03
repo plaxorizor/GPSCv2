@@ -23,22 +23,22 @@ export const Footer: React.FC = () => (
                     <ul className="space-y-2 text-sm text-white/70">
                         <li>
                             <Link to="/membership" className="transition-colors hover:text-white">
-                                Membership packages
+                                Membership Packages
                             </Link>
                         </li>
                         <li>
                             <Link to="/referral" className="transition-colors hover:text-white">
-                                Referral program
+                                Referral Program
                             </Link>
                         </li>
                         <li>
                             <Link to="/membership" className="transition-colors hover:text-white">
-                                Benefits & claims
+                                Benefits & Claims
                             </Link>
                         </li>
                         <li>
                             <Link to="/about" className="transition-colors hover:text-white">
-                                Livelihood programs
+                                Livelihood Programs
                             </Link>
                         </li>
                     </ul>
@@ -68,22 +68,22 @@ export const Footer: React.FC = () => (
                     <ul className="space-y-2 text-sm text-white/70">
                         <li>
                             <Link to="/faq" className="transition-colors hover:text-white">
-                                Privacy policy
+                                Privacy Policy
                             </Link>
                         </li>
                         <li>
                             <Link to="/faq" className="transition-colors hover:text-white">
-                                Terms of service
+                                Terms of Service
                             </Link>
                         </li>
                         <li>
                             <Link to="/faq" className="transition-colors hover:text-white">
-                                Data privacy
+                                Data Privacy
                             </Link>
                         </li>
                         <li>
                             <Link to="/faq" className="transition-colors hover:text-white">
-                                Refund policy
+                                Refund Policy
                             </Link>
                         </li>
                     </ul>

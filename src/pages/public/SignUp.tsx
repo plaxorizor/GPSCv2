@@ -55,13 +55,14 @@ const inputCls =
 const labelCls = "text-xs uppercase tracking-wider text-[#6B6862]";
 
 export default function SignUpLayout() {
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [searchParams] = useSearchParams();
-    const [refValue, setRefValue] = useState<string>(() => searchParams.get("ref") ?? "");
+    const [refCode, setRefCode] = useState<string>(() => searchParams.get("ref") ?? "");
+    const [error, setError] = useState("");
     const [step, setStep] = useState(1);
     const totalSteps = 4;
 
-    const navigate = useNavigate();
 
     const [selectedPlan, setSelectedPlan] = useState(plans[0]);
     const [form, setForm] = useState({
@@ -76,10 +77,9 @@ export default function SignUpLayout() {
         civilStatus: "",
         city: "",
         province: "",
-        referralCode: refValue,
+        referralCode: refCode,
         beneficiaries: [{ name: "", relationship: "" }],
     });
-    const [error, setError] = useState("");
 
     const validateStep = async (): Promise<boolean> => {
         setError("");
@@ -326,7 +326,7 @@ export default function SignUpLayout() {
                             {step === 2 && (
                                 <div>
                                     <h2 className="font-display mb-6 text-2xl" style={{ color: "#14365C" }}>
-                                        Step 2 · Your information
+                                        Step 2 · Your Information
                                     </h2>
                                     <div className="space-y-4">
                                         <div className="grid gap-4 sm:grid-cols-2">
@@ -476,7 +476,7 @@ export default function SignUpLayout() {
                             {step === 3 && (
                                 <div>
                                     <h2 className="font-display mb-6 text-2xl" style={{ color: "#14365C" }}>
-                                        Step 3 · Sponsor &amp; beneficiaries
+                                        Step 3 · Sponsor &amp; Beneficiaries
                                     </h2>
                                     <div className="space-y-5">
                                         <div>
@@ -489,7 +489,7 @@ export default function SignUpLayout() {
                                                 placeholder="e.g. MARIA-ABCD-1234"
                                                 className={inputCls}
                                                 onChange={(e) => {
-                                                    setRefValue(e.target.value);
+                                                    setRefCode(e.target.value);
                                                     setForm((prev) => ({ ...prev, referralCode: e.target.value }));
                                                 }}
                                             />
@@ -660,7 +660,7 @@ export default function SignUpLayout() {
                                         <div className="flex justify-between rounded-xl px-4 py-3 text-sm" style={{ backgroundColor: "#FAF6EE" }}>
                                             <span style={{ color: "#6B6862" }}>Referral code</span>
                                             <span className="font-medium" style={{ color: "#14365C" }}>
-                                                {refValue || "—"}
+                                                {refCode || "—"}
                                             </span>
                                         </div>
                                     </div>

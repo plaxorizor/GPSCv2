@@ -12,7 +12,7 @@ export default function PublicNav(): React.ReactElement {
         { id: "home", label: "Home", path: "/" },
         { id: "about", label: "About", path: "/about" },
         { id: "membership", label: "Membership", path: "/membership" },
-        { id: "referral", label: "Referral program", path: "/referral" },
+        { id: "referral", label: "Referral Program", path: "/referral" },
         { id: "faq", label: "FAQ", path: "/faq" },
         { id: "contact", label: "Contact", path: "/contact" },
     ];

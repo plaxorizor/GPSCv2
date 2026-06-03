@@ -1,3 +1,5 @@
+import { Timestamp } from "firebase/firestore";
+
 // Package is just for display/UI use, NOT stored as object in Firestore
 export const PACKAGE_INFO = {
     basic: { price: 698, level: 1, rank: "Sales Consultant", rate: 0.2 },
@@ -25,7 +27,11 @@ export interface Member {
     referredBy: string;
     beneficiaries: Beneficiary[];
     isAdmin: boolean;
-    dateCreated: any; // Firestore Timestamp
+    dateCreated: Timestamp;
+    activatedAt?: Timestamp;
+    expiresAt?: Timestamp;
+    contestabilityEndsAt?: Timestamp;
+    packageLocked?: boolean;
 }
 
 export interface MemberStats {
@@ -35,7 +41,7 @@ export interface MemberStats {
     activeReferrals: number;
     approvedClaimsCount: number;
     approvedClaimsTotal: number;
-    recentCommissions: any[];
+    recentCommissions: Commission[];
 }
 
 export type CommissionStatus = "pending" | "paid";
