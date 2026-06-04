@@ -77,22 +77,7 @@ const fetchRecentClaims = async (): Promise<Claim[]> => {
     ];
 };
 
-const fetchMembers = async (): Promise<Member[]> => {
-    // Replace with actual API call
-    return [];
-};
-
 const fetchClaims = async (): Promise<Claim[]> => {
-    // Replace with actual API call
-    return [];
-};
-
-const fetchPendingCommissions = async (): Promise<PendingCommission[]> => {
-    // Replace with actual API call
-    return [];
-};
-
-const fetchCommissionHistory = async (): Promise<CommissionRecord[]> => {
     // Replace with actual API call
     return [];
 };

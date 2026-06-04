@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { LogOut } from "lucide-react";
+import { Power } from "lucide-react";
 import type { Member } from "../../utils/types";
 import logo from "../../components/ui/Logo.png";
 
@@ -21,11 +21,15 @@ interface Props {
 
 export const DashboardSidebar: React.FC<Props> = ({ member, rankName, currentSection, onSectionChange, items, onLogout }) => {
     const [expanded, setExpanded] = useState(false);
+    const [hoveredId, setHoveredId] = useState<string | null>(null);
 
     return (
         <aside
             onMouseEnter={() => setExpanded(true)}
-            onMouseLeave={() => setExpanded(false)}
+            onMouseLeave={() => {
+                setExpanded(false);
+                setHoveredId(null);
+            }}
             style={{ width: expanded ? "16rem" : "4rem", transition: "width 400ms cubic-bezier(0.4, 0, 0.2, 1)" }}
             className="border-gpsc-cream-dark fixed top-0 left-0 z-30 hidden h-screen flex-col overflow-hidden border-r bg-white lg:flex"
         >
@@ -74,9 +78,14 @@ export const DashboardSidebar: React.FC<Props> = ({ member, rankName, currentSec
             </div>
 
             {/* Nav items */}
-            <nav className="flex-1 space-y-1 overflow-y-auto p-2">
+            <nav className="flex-1 [scrollbar-width:none] space-y-1 overflow-y-auto p-2 [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                 {items.map((item, i) => (
-                    <div key={item.id} className="group relative">
+                    <div
+                        key={item.id}
+                        className="relative"
+                        onMouseEnter={() => !expanded && setHoveredId(item.id)}
+                        onMouseLeave={() => setHoveredId(null)}
+                    >
                         <button
                             onClick={() => onSectionChange(item.id)}
                             className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition-colors ${
@@ -111,31 +120,31 @@ export const DashboardSidebar: React.FC<Props> = ({ member, rankName, currentSec
                             )}
                         </button>
 
-                        {/* Tooltip when collapsed */}
-                        <div
-                            style={{ pointerEvents: "none" }}
-                            className="absolute top-1/2 left-full z-50 ml-2 hidden -translate-y-1/2 items-center group-hover:flex"
-                        >
-                            {!expanded && (
+                        {/* Tooltip — only rendered when collapsed AND hovered */}
+                        {!expanded && hoveredId === item.id && (
+                            <div
+                                style={{ pointerEvents: "none" }}
+                                className="absolute top-1/2 left-full z-50 ml-2 flex -translate-y-1/2 items-center"
+                            >
                                 <div className="bg-gpsc-navy rounded-lg px-2.5 py-1.5 text-xs whitespace-nowrap text-white shadow-sm">
                                     {item.label}
                                     {item.badge !== undefined && item.badge > 0 && (
                                         <span className="bg-gpsc-green ml-1.5 rounded-full px-1.5 py-0.5 text-xs">{item.badge}</span>
                                     )}
                                 </div>
-                            )}
-                        </div>
+                            </div>
+                        )}
                     </div>
                 ))}
             </nav>
 
             {/* Logout */}
-            <div className="group relative">
+            <div className="relative" onMouseEnter={() => !expanded && setHoveredId("__logout__")} onMouseLeave={() => setHoveredId(null)}>
                 <button
                     onClick={onLogout}
                     className="text-gpsc-stone hover:bg-gpsc-cream/60 m-2 flex w-[calc(100%-1rem)] items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors"
                 >
-                    <LogOut size={16} className="shrink-0" />
+                    <Power size={16} className="shrink-0" />
                     <span
                         style={{
                             opacity: expanded ? 1 : 0,
@@ -149,12 +158,11 @@ export const DashboardSidebar: React.FC<Props> = ({ member, rankName, currentSec
                         Log out
                     </span>
                 </button>
-                <div
-                    style={{ pointerEvents: "none" }}
-                    className="absolute top-1/2 left-full z-50 ml-2 hidden -translate-y-1/2 items-center group-hover:flex"
-                >
-                    {!expanded && <div className="bg-gpsc-navy rounded-lg px-2.5 py-1.5 text-xs whitespace-nowrap text-white shadow-sm">Log out</div>}
-                </div>
+                {!expanded && hoveredId === "__logout__" && (
+                    <div style={{ pointerEvents: "none" }} className="absolute top-1/2 left-full z-50 ml-2 flex -translate-y-1/2 items-center">
+                        <div className="bg-gpsc-navy rounded-lg px-2.5 py-1.5 text-xs whitespace-nowrap text-white shadow-sm">Log out</div>
+                    </div>
+                )}
             </div>
         </aside>
     );

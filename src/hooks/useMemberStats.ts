@@ -26,7 +26,7 @@ const useMemberStats = () => {
             const missingUids = [
                 ...new Set(
                     commissions
-                        .filter((c: any) => !c.fromMemberName && c.fromMember)
+                        .filter((c: any) => !c.fromMemberName && typeof c.fromMember === "string" && c.fromMember.length > 0)
                         .map((c: any) => c.fromMember as string),
                 ),
             ];
