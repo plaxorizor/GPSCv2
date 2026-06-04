@@ -1,6 +1,6 @@
 // admin/DashboardSidebar.tsx
 import React from "react";
-import { LogOut } from "lucide-react";
+import { LogOut, Lock } from "lucide-react";
 import logoSrc from "../../components/ui/Logo.png";
 
 interface SidebarItem {
@@ -15,9 +15,10 @@ interface Props {
     onSectionChange: (section: string) => void;
     items: SidebarItem[];
     onLogout: () => void;
+    onChangePassword: () => void;
 }
 
-export const DashboardSidebar: React.FC<Props> = ({ currentSection, onSectionChange, items, onLogout }) => (
+export const DashboardSidebar: React.FC<Props> = ({ currentSection, onSectionChange, items, onLogout, onChangePassword }) => (
     <aside className="border-gpsc-cream-dark fixed top-0 left-0 z-40 hidden h-screen w-64 flex-col border-r bg-white lg:flex">
         <div className="border-gpsc-cream-dark border-b p-6">
             <div className="flex items-center gap-3">
@@ -46,11 +47,19 @@ export const DashboardSidebar: React.FC<Props> = ({ currentSection, onSectionCha
                 </button>
             ))}
         </nav>
-        <button
-            onClick={onLogout}
-            className="text-gpsc-stone hover:bg-gpsc-cream/60 m-3 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors"
-        >
-            <LogOut size={16} /> Logout
-        </button>
+        <div className="m-3 space-y-1">
+            <button
+                onClick={onChangePassword}
+                className="text-gpsc-stone hover:bg-gpsc-cream/60 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors"
+            >
+                <Lock size={16} /> Change Password
+            </button>
+            <button
+                onClick={onLogout}
+                className="text-gpsc-stone hover:bg-gpsc-cream/60 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors"
+            >
+                <LogOut size={16} /> Logout
+            </button>
+        </div>
     </aside>
 );

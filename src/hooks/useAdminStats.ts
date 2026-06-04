@@ -61,14 +61,15 @@ export default () => {
                 if (m.status === "active") {
                     activeMembers++;
 
-                    // total revenue counts only active members
-                    if (m.package === "basic") {
+                    // normalise casing — Firestore may store "Basic" or "basic"
+                    const pkg = m.package?.toLowerCase();
+                    if (pkg === "basic") {
                         totalRevenue += 698;
                         packageCounts.basic++;
-                    } else if (m.package === "family") {
+                    } else if (pkg === "family") {
                         totalRevenue += 1698;
                         packageCounts.family++;
-                    } else if (m.package === "premium") {
+                    } else if (pkg === "premium") {
                         totalRevenue += 4998;
                         packageCounts.premium++;
                     }

@@ -30,6 +30,7 @@ interface AdminDashboardProps {
     onExportMembers: () => void;
     onExportClaims: () => void;
     onLogout: () => void;
+    onChangePassword: () => void;
 }
 
 export default function AdminDashboard({
@@ -47,6 +48,7 @@ export default function AdminDashboard({
     onExportMembers,
     onExportClaims,
     onLogout,
+    onChangePassword,
 }: AdminDashboardProps) {
     const [currentSection, setCurrentSection] = useState("overview");
 
@@ -67,6 +69,7 @@ export default function AdminDashboard({
                 onSectionChange={setCurrentSection}
                 items={sidebarItems}
                 onLogout={onLogout}
+                onChangePassword={onChangePassword}
             />
 
             <MobileBottomNav

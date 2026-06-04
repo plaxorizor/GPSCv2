@@ -26,7 +26,11 @@ const PACKAGE_MAX_LEVELS: Record<Package, number> = {
 };
 
 export const triggerCommissions = async (newMemberId: string, pkg: Package) => {
-    const packagePrice = PACKAGE_AMOUNTS[pkg];
+    // Normalise casing — Firestore may store "Basic", "basic", etc.
+    const normPkg = pkg.toLowerCase() as Package;
+    const packagePrice = PACKAGE_AMOUNTS[normPkg];
+    if (!packagePrice) return; // unknown package, bail out safely
+
     let currentUid = newMemberId;
 
     for (let level = 1; level <= 6; level++) {
@@ -39,8 +43,8 @@ export const triggerCommissions = async (newMemberId: string, pkg: Package) => {
         const uplineSnap = await getDoc(doc(db, "members", referredBy));
         if (!uplineSnap.exists()) break;
 
-        const uplinePackage = uplineSnap.data().package as Package | null;
-        if (!uplinePackage) break;
+        const uplinePackage = (uplineSnap.data().package as string | null)?.toLowerCase() as Package | undefined;
+        if (!uplinePackage || !PACKAGE_MAX_LEVELS[uplinePackage]) break;
 
         // Upline's package determines how deep they can earn
         if (level <= PACKAGE_MAX_LEVELS[uplinePackage]) {

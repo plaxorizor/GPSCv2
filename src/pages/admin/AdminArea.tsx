@@ -1,5 +1,6 @@
 // admin/AdminArea.tsx
-import { useState, useEffect, useMemo } from "react";
+import { useState } from "react";
+import ChangePasswordModal from "../../components/ChangePasswordModal";
 import useAuth from "../../context/useAuth";
 import { Navigate } from "react-router-dom";
 import AdminDashboard from "./AdminDashboard";
@@ -99,6 +100,7 @@ const fetchCommissionHistory = async (): Promise<CommissionRecord[]> => {
 
 export default function AdminArea() {
     const { currentUser, loading: authLoading } = useAuth();
+    const [showChangePassword, setShowChangePassword] = useState(false);
 
     const [claims, setClaims] = useState<Claim[]>([]);
     const [pendingCommissions, setPendingCommissions] = useState<PendingCommission[]>([]);
@@ -172,6 +174,8 @@ export default function AdminArea() {
     }
 
     return (
+        <>
+        {showChangePassword && <ChangePasswordModal onClose={() => setShowChangePassword(false)} />}
         <AdminDashboard
             claims={claims}
             pendingCommissions={pendingCommissions}
@@ -193,6 +197,8 @@ export default function AdminArea() {
             onExportMembers={handleExportMembers}
             onExportClaims={handleExportClaims}
             onLogout={handleLogout}
+            onChangePassword={() => setShowChangePassword(true)}
         />
+        </>
     );
 }

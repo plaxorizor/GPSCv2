@@ -6,6 +6,7 @@ import useMemberStats from "../../hooks/useMemberStats";
 import { useCommissions } from "../../hooks/useCommissions";
 import { useReferralTree } from "../../hooks/useReferralTree";
 import MemberDashboard from "./MemberDashboard";
+import ChangePasswordModal from "../../components/ChangePasswordModal";
 import { PACKAGE_INFO } from "../../utils/types";
 import type { Member, Commission, ReferralNode, EarningsTrendPoint, Claim, Payout } from "../../utils/types";
 
@@ -25,6 +26,7 @@ import type { Member, Commission, ReferralNode, EarningsTrendPoint, Claim, Payou
 export default function MemberArea() {
     const navigate = useNavigate();
     const [currentSection, setCurrentSection] = useState("overview");
+    const [showChangePassword, setShowChangePassword] = useState(false);
 
     const { member, loading: memberLoading } = useMember();
     const { stats: memberStats, loading: statsLoading } = useMemberStats();
@@ -72,7 +74,7 @@ export default function MemberArea() {
     const rankName = pkgInfo?.rank ?? "—";
     const packageName = pkgInfo ? pkgKey.charAt(0).toUpperCase() + pkgKey.slice(1) : (user.package ?? "—");
 
-    // 3. Map commissions
+    // 3. Map commissions — use the enriched fields from useCommissions
     const commissions: Commission[] = rawCommissions.map((c) => ({
         id: c.id,
         membershipId: "",
@@ -81,9 +83,9 @@ export default function MemberArea() {
         role: rankName,
         amount: c.amount,
         status: c.status === "released" ? "paid" : "pending",
-        date: c.dateCreated?.toISOString?.() ?? "",
-        fromMemberName: c.fromMember ?? "",
-        fromMemberCity: "",
+        date: c.dateCreated?.toDate?.()?.toISOString?.() ?? "",
+        fromMemberName: c.fromMemberName ?? "—",
+        fromMemberCity: c.fromMemberCity ?? "—",
     }));
 
     // 4. Map tree — use firstName/lastName directly (no more fullName split)
@@ -124,21 +126,25 @@ export default function MemberArea() {
     };
 
     return (
-        <MemberDashboard
-            member={user}
-            memberStats={memberStats}
-            rankName={rankName}
-            packageName={packageName}
-            commissions={commissions}
-            directReferrals={directReferrals}
-            earningsTrend={earningsTrend}
-            claims={claims}
-            payouts={payouts}
-            currentSection={currentSection}
-            onSectionChange={setCurrentSection}
-            onRequestPayout={handleRequestPayout}
-            onFileClaim={handleFileClaim}
-            onLogout={handleLogout}
-        />
+        <>
+            {showChangePassword && <ChangePasswordModal onClose={() => setShowChangePassword(false)} />}
+            <MemberDashboard
+                member={user}
+                memberStats={memberStats}
+                rankName={rankName}
+                packageName={packageName}
+                commissions={commissions}
+                directReferrals={directReferrals}
+                earningsTrend={earningsTrend}
+                claims={claims}
+                payouts={payouts}
+                currentSection={currentSection}
+                onSectionChange={setCurrentSection}
+                onRequestPayout={handleRequestPayout}
+                onFileClaim={handleFileClaim}
+                onLogout={handleLogout}
+                onChangePassword={() => setShowChangePassword(true)}
+            />
+        </>
     );
 }

@@ -28,6 +28,7 @@ interface MemberDashboardProps {
     onRequestPayout: () => void;
     onFileClaim: () => void;
     onLogout: () => void;
+    onChangePassword: () => void;
 }
 
 export default function MemberDashboard({
@@ -45,17 +46,20 @@ export default function MemberDashboard({
     onRequestPayout,
     onFileClaim,
     onLogout,
+    onChangePassword,
 }: MemberDashboardProps) {
 
-    // Calculate dashboard stats
-    const availableToWithdraw = commissions.filter((c) => c.status === "paid").reduce((sum, c) => sum + c.amount, 0);
-    const totalEarned = commissions.filter((c) => c.status === "paid").reduce((sum, c) => sum + c.amount, 0);
-    const activeReferralsCount = directReferrals.filter((r) => r.status === "active").length;
-    const totalReferralsCount = directReferrals.length;
-    const approvedClaimsCount = claims.filter((c) => c.status === "approved").length;
-    const approvedClaimsTotal = claims.filter((c) => c.status === "approved").reduce((sum, c) => sum + c.amount, 0);
+    // Stats from memberStats (always loaded with the overview — no extra fetch needed)
+    const availableToWithdraw = memberStats?.availableToWithdraw ?? 0;
+    const totalEarned = memberStats?.totalEarned ?? 0;
+    const activeReferralsCount = memberStats?.activeReferrals ?? 0;
+    const totalReferralsCount = memberStats?.totalReferrals ?? 0;
+    const approvedClaimsCount = memberStats?.approvedClaimsCount ?? 0;
+    const approvedClaimsTotal = memberStats?.approvedClaimsTotal ?? 0;
+
+    // These need the full commission list — only available once Earnings section is visited
     const pendingHold = commissions.filter((c) => c.status === "pending").reduce((sum, c) => sum + c.amount, 0);
-    const lifetimePaid = commissions.filter((c) => c.status === "paid").reduce((sum, c) => sum + c.amount, 0);
+    const lifetimePaid = commissions.filter((c) => c.status === "released").reduce((sum, c) => sum + c.amount, 0);
 
     // Eligibility timeline (example - you can make this dynamic based on member's join date)
     const eligibilityTimeline = getEligibilityTimeline(member.dateCreated);
@@ -142,7 +146,7 @@ export default function MemberDashboard({
                 )}
                 {currentSection === "claims" && <MemberClaims claims={claims} onFileClaim={onFileClaim} />}
                 {currentSection === "beneficiaries" && <MemberBeneficiaries member={member} />}
-                {currentSection === "profile" && <MemberProfile onLogout={onLogout} user={member} />}
+                {currentSection === "profile" && <MemberProfile onLogout={onLogout} user={member} onChangePassword={onChangePassword} />}
             </main>
         </div>
     );

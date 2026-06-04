@@ -52,7 +52,7 @@ export const MemberEarnings: React.FC<Props> = ({ availableToWithdraw, pendingHo
                     <tbody>
                         {commissions.map((c) => (
                             <tr key={c.id} className="border-gpsc-cream-dark border-t">
-                                <td className="text-gpsc-stone p-4">{c.dateCreated}</td>
+                                <td className="text-gpsc-stone p-4">{formatDate(c.date)}</td>
                                 <td className="p-4">
                                     <div className="text-gpsc-navy">{c.fromMemberName}</div>
                                     <div className="text-gpsc-stone text-xs">{c.fromMemberCity}</div>
