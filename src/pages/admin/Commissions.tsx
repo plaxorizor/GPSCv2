@@ -17,11 +17,10 @@ export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHis
     const [reference, setReference] = useState("");
 
     const handleRelease = async () => {
-        if (selectedCommission && reference) {
-            await onRelease(selectedCommission.id, selectedCommission.recipientName, selectedCommission.amount, reference);
-            setSelectedCommission(null);
-            setReference("");
-        }
+        if (!selectedCommission) return;
+        await onRelease(selectedCommission.id, selectedCommission.recipientName, selectedCommission.amount, reference || "");
+        setSelectedCommission(null);
+        setReference("");
     };
 
     if (loading) {
@@ -184,7 +183,11 @@ export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHis
             {selectedCommission && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setSelectedCommission(null)}>
                     <div className="animate-fade-up mx-4 w-full max-w-md rounded-2xl bg-white p-6" onClick={(e) => e.stopPropagation()}>
-                        <h2 className="font-display text-gpsc-navy mb-4 text-xl">Release Commission</h2>
+                        <h2 className="font-display text-gpsc-navy mb-1 text-xl">Release Commission</h2>
+                        <p className="text-gpsc-stone mb-4 text-xs">
+                            This marks the commission as available for the member to withdraw. No money is sent yet — the
+                            member will submit a payout request and you'll process it separately.
+                        </p>
                         <div className="space-y-4">
                             <div className="bg-gpsc-cream rounded-xl p-4">
                                 <div className="flex justify-between text-sm">
@@ -196,16 +199,22 @@ export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHis
                                     <span className="text-gpsc-navy font-display text-lg">{formatCurrency(selectedCommission.amount)}</span>
                                 </div>
                                 <div className="mt-2 flex justify-between text-sm">
-                                    <span className="text-gpsc-stone">From:</span>
+                                    <span className="text-gpsc-stone">From member:</span>
                                     <span className="text-gpsc-navy font-medium">{selectedCommission.fromMemberName}</span>
+                                </div>
+                                <div className="mt-2 flex justify-between text-sm">
+                                    <span className="text-gpsc-stone">Level:</span>
+                                    <span className="text-gpsc-navy font-medium">Level {selectedCommission.level}</span>
                                 </div>
                             </div>
                             <div>
-                                <label className="text-gpsc-stone mb-1 block text-xs">Reference Number</label>
+                                <label className="text-gpsc-stone mb-1 block text-xs">
+                                    Notes <span className="text-gpsc-stone/60">(optional)</span>
+                                </label>
                                 <input
                                     value={reference}
                                     onChange={(e) => setReference(e.target.value)}
-                                    placeholder="e.g., TRANSFER-2024-001"
+                                    placeholder="e.g., Batch approval Jun 2025"
                                     className="border-gpsc-cream-dark focus:ring-gpsc-green w-full rounded-xl border px-4 py-2 focus:ring-2 focus:outline-none"
                                     autoFocus
                                 />
@@ -220,8 +229,7 @@ export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHis
                             </button>
                             <button
                                 onClick={handleRelease}
-                                disabled={!reference}
-                                className="bg-gpsc-green hover:bg-gpsc-green-light flex-1 rounded-lg px-4 py-2 font-medium text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                                className="bg-gpsc-green hover:bg-gpsc-green-light flex-1 rounded-lg px-4 py-2 font-medium text-white transition-colors"
                             >
                                 Confirm Release
                             </button>
