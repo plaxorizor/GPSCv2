@@ -20,7 +20,7 @@ export const MemberEarnings: React.FC<Props> = ({ availableToWithdraw, pendingHo
         </div>
         <div className="grid gap-4 sm:grid-cols-3">
             <StatCard label="Available" value={formatCurrency(availableToWithdraw)} sub="Ready to withdraw" icon={Wallet} />
-            <StatCard label="Pending hold" value={formatCurrency(pendingHold)} sub="Clears after 7 days" icon={Clock} />
+            <StatCard label="Pending hold" value={formatCurrency(pendingHold)} sub="Pending admin release" icon={Clock} />
             <StatCard label="Lifetime paid" value={formatCurrency(lifetimePaid)} sub="Since joining" icon={TrendingUp} />
         </div>
         <div className="border-gpsc-cream-dark overflow-hidden rounded-2xl border bg-white">

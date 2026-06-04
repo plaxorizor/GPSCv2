@@ -110,11 +110,9 @@ export const getPendingCommissions = async () => {
     return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 };
 
-export const releaseCommission = async (commissionId: string, memberId: string, amount: number, reference: string) => {
-    await updateDoc(doc(db, "commissions", commissionId), { status: "released" });
-    await addDoc(collection(db, "payouts"), {
-        memberId,
-        amount,
+export const releaseCommission = async (commissionId: string, reference: string) => {
+    await updateDoc(doc(db, "commissions", commissionId), {
+        status: "released",
         reference,
         releasedAt: serverTimestamp(),
     });

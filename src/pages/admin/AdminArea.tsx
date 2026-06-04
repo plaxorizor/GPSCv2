@@ -4,12 +4,11 @@ import ChangePasswordModal from "../../components/ChangePasswordModal";
 import useAuth from "../../context/useAuth";
 import { Navigate } from "react-router-dom";
 import AdminDashboard from "./AdminDashboard";
-import type { Member, Claim } from "../../utils/types";
-import type { DashboardStats, GrowthDataPoint, PackageMixItem, TopRecruiter, PendingCommission, CommissionRecord } from "../../utils/types";
+import type { Claim } from "../../utils/types";
+import type { DashboardStats, GrowthDataPoint, PackageMixItem, TopRecruiter } from "../../utils/types";
 
-import { activateMember, deactivateMember } from "../../firebase/admin";
-
-import { Timestamp } from "firebase/firestore";
+import { activateMember, deactivateMember, releaseCommission } from "../../firebase/admin";
+import useAdminCommissions from "../../hooks/useAdminCommissions";
 
 
 // Mock data fetching functions - replace with your actual API calls
@@ -101,33 +100,26 @@ const fetchCommissionHistory = async (): Promise<CommissionRecord[]> => {
 export default function AdminArea() {
     const { currentUser, loading: authLoading } = useAuth();
     const [showChangePassword, setShowChangePassword] = useState(false);
-
     const [claims, setClaims] = useState<Claim[]>([]);
-    const [pendingCommissions, setPendingCommissions] = useState<PendingCommission[]>([]);
-    const [commissionHistory, setCommissionHistory] = useState<CommissionRecord[]>([]);
+
+    const {
+        pendingCommissions,
+        commissionHistory,
+        loading: commissionsLoading,
+        refetch: refetchCommissions,
+    } = useAdminCommissions();
 
     // Handlers
-    const handleRefreshStats = async () => {
-        //const data = await fetchDashboardStats();
-        //setStats(data);
-    };
+    const handleRefreshStats = async () => {};
 
     const handleRefreshClaims = async () => {
         const data = await fetchClaims();
         setClaims(data);
     };
 
-    const handleRefreshCommissions = async () => {
-        const [pending, history] = await Promise.all([fetchPendingCommissions(), fetchCommissionHistory()]);
-        setPendingCommissions(pending);
-        setCommissionHistory(history);
-    };
-
     const handleUpdateMemberStatus = async (memberId: string, status: string) => {
         if (status === "active") await activateMember(memberId);
         if (status === "inactive") await deactivateMember(memberId);
-
-        // refresh current changed member on the list
     };
 
     const handleUpdateClaimStatus = async (claimId: string, status: "Approved" | "Rejected" | "Released") => {
@@ -140,9 +132,9 @@ export default function AdminArea() {
         await handleRefreshClaims();
     };
 
-    const handleReleaseCommission = async (commissionId: string, earnedBy: string, amount: number, reference: string) => {
-        console.log(`Release commission ${commissionId} to ${earnedBy} for ${amount} with ref ${reference}`);
-        await handleRefreshCommissions();
+    const handleReleaseCommission = async (commissionId: string, _earnedBy: string, _amount: number, reference: string) => {
+        await releaseCommission(commissionId, reference);
+        await refetchCommissions();
     };
 
     const handleExportMembers = () => {
@@ -181,15 +173,14 @@ export default function AdminArea() {
             pendingCommissions={pendingCommissions}
             commissionHistory={commissionHistory}
             loading={{
-                // TODO : add loading state
                 stats: false,
                 members: false,
                 claims: false,
-                commissions: false,
+                commissions: commissionsLoading,
             }}
             onRefreshStats={handleRefreshStats}
             onRefreshClaims={handleRefreshClaims}
-            onRefreshCommissions={handleRefreshCommissions}
+            onRefreshCommissions={refetchCommissions}
             onUpdateMemberStatus={handleUpdateMemberStatus}
             onUpdateClaimStatus={handleUpdateClaimStatus}
             onReviewClaim={handleReviewClaim}

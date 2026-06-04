@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase/config";
 import useAuth from "../context/useAuth";
 import type { MemberStats } from "../utils/types";
@@ -21,6 +21,30 @@ const useMemberStats = () => {
 
             const commissions = commissionsSnap.docs.map((d) => ({ id: d.id, ...d.data() }) as any);
             const referrals = referralsSnap.docs.map((d) => d.data() as any);
+
+            // Enrich legacy docs missing fromMemberName — look up by fromMember UID
+            const missingUids = [
+                ...new Set(
+                    commissions
+                        .filter((c: any) => !c.fromMemberName && c.fromMember)
+                        .map((c: any) => c.fromMember as string),
+                ),
+            ];
+            if (missingUids.length > 0) {
+                const snaps = await Promise.all(missingUids.map((uid) => getDoc(doc(db, "members", uid))));
+                const nameMap = new Map<string, string>();
+                snaps.forEach((snap) => {
+                    if (snap.exists()) {
+                        const d = snap.data();
+                        nameMap.set(snap.id, `${d.firstName ?? ""} ${d.lastName ?? ""}`.trim());
+                    }
+                });
+                commissions.forEach((c: any) => {
+                    if (!c.fromMemberName && c.fromMember && nameMap.has(c.fromMember)) {
+                        c.fromMemberName = nameMap.get(c.fromMember);
+                    }
+                });
+            }
 
             const totalEarned = commissions.reduce((sum: number, c: any) => sum + c.amount, 0);
             const totalSentPayouts = payoutsSnap.docs.reduce((sum, d) => sum + (d.data().amount ?? 0), 0);

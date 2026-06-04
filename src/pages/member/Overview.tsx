@@ -1,11 +1,9 @@
 import React from "react";
-import { Wallet, TrendingUp, Users, CheckCircle, Clock, Check } from "lucide-react";
+import { Wallet, TrendingUp, Users, CheckCircle, Clock, Check, ShieldAlert } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { StatCard } from "./StatCard";
 import { type Member, type EarningsTrendPoint } from "../../utils/types";
 import { formatCurrency, formatDate } from "../../utils/formatter";
-
-// import ReferralCard
 import ReferralCard from "./ReferralCard";
 
 interface Props {
@@ -19,7 +17,6 @@ interface Props {
     approvedClaimsCount: number;
     approvedClaimsTotal: number;
     earningsTrend: EarningsTrendPoint[];
-    //referralLink: string;
     onRequestPayout: () => void;
     eligibilityTimeline: Array<{ label: string; months: number; unlocked: boolean }>;
     recentCommissions: Array<{
@@ -33,6 +30,68 @@ interface Props {
     }>;
 }
 
+const ContestabilityCard: React.FC = () => (
+    <div className="border-gpsc-cream-dark rounded-2xl border bg-white p-6">
+        <div className="mb-4 flex items-start justify-between">
+            <div>
+                <h2 className="font-display text-gpsc-navy text-lg">Contestability Period</h2>
+                <p className="text-gpsc-stone mt-0.5 text-xs">
+                    Claims may be investigated within the first 1 month of membership. Upgrade your package within this period.
+                </p>
+            </div>
+            {/* TODO: swap className between active/cleared based on contestability status */}
+            <span className="shrink-0 rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700">
+                {/* TODO: "Cleared" or "Active" */}
+                Active
+            </span>
+        </div>
+
+        <div className="text-gpsc-stone mb-2 flex items-center justify-between text-xs">
+            <span>Day 1</span>
+            <span>Month 1</span>
+        </div>
+
+        <div className="bg-gpsc-cream-dark relative h-3 w-full overflow-hidden rounded-full">
+            {/* TODO: set width to progress percentage, swap color class for cleared state */}
+            <div className="h-full w-1/2 rounded-full bg-amber-400 transition-all duration-700" />
+        </div>
+
+        <div className="mt-3 flex items-center justify-between text-xs">
+            {/* TODO: replace placeholder text with computed elapsed/remaining values */}
+            <span className="text-gpsc-stone">— of 1 month elapsed</span>
+            <span className="flex items-center gap-1 text-amber-600">
+                <ShieldAlert size={12} /> — days remaining
+            </span>
+        </div>
+
+        <div className="border-gpsc-cream-dark mt-4 grid grid-cols-3 gap-3 border-t pt-4">
+            <div>
+                <div className="text-gpsc-stone text-xs">Period start</div>
+                {/* TODO: fill with member enrollment date */}
+                <div className="text-gpsc-navy mt-0.5 text-sm">—</div>
+            </div>
+            <div>
+                <div className="text-gpsc-stone text-xs">Period end</div>
+                {/* TODO: fill with enrollment date + 1 month */}
+                <div className="text-gpsc-navy mt-0.5 text-sm">—</div>
+            </div>
+            <div>
+                <div className="text-gpsc-stone text-xs">Progress</div>
+                {/* TODO: fill with percentage */}
+                <div className="text-gpsc-navy mt-0.5 text-sm font-medium">—%</div>
+            </div>
+        </div>
+
+        <div className="mt-4 rounded-xl bg-amber-50 px-4 py-3">
+            <p className="text-xs font-medium text-amber-700">Upgrade required within 1 month</p>
+            <p className="text-gpsc-stone mt-1 text-xs leading-relaxed">
+                Members must upgrade their package within the contestability period. Claims filed before an upgrade is completed may be subject to
+                investigation or denial.
+            </p>
+        </div>
+    </div>
+);
+
 export const MemberOverview: React.FC<Props> = ({
     member,
     packageName,
@@ -44,18 +103,12 @@ export const MemberOverview: React.FC<Props> = ({
     approvedClaimsCount,
     approvedClaimsTotal,
     earningsTrend,
-    //referralLink,
     onRequestPayout,
     eligibilityTimeline,
     recentCommissions,
 }) => {
-    // Static QR placeholder (no random)
-    //const qrPlaceholder = Array.from({ length: 49 }).map((_, i) => i % 2 === 0);
-
-    // YAxis tick formatter
     const yAxisTickFormatter = (value: number) => `₱${value}`;
 
-    // Tooltip formatter that safely handles any value type from recharts
     const tooltipFormatter = (value: unknown): React.ReactNode => {
         if (typeof value === "number") return formatCurrency(value);
         if (typeof value === "string") return formatCurrency(Number(value));
@@ -80,7 +133,7 @@ export const MemberOverview: React.FC<Props> = ({
                     value={formatCurrency(availableToWithdraw)}
                     sub="Cleared & ready"
                     icon={Wallet}
-                    actionLabel="Request Payout"
+                    actionLabel="Request payout"
                     onAction={onRequestPayout}
                 />
                 <StatCard label="Total Earned" value={formatCurrency(totalEarned)} sub="Lifetime Commissions" icon={TrendingUp} />
@@ -117,6 +170,9 @@ export const MemberOverview: React.FC<Props> = ({
                 <ReferralCard member={member} />
             </div>
 
+            {/* Contestability Period */}
+            <ContestabilityCard />
+
             <div className="border-gpsc-cream-dark rounded-2xl border bg-white p-6">
                 <h2 className="font-display text-gpsc-navy mb-4 text-lg">Eligibility Timeline</h2>
                 <div className="space-y-3">
@@ -139,37 +195,30 @@ export const MemberOverview: React.FC<Props> = ({
             </div>
 
             <div className="border-gpsc-cream-dark rounded-2xl border bg-white p-6">
-                <h2 className="font-display text-gpsc-navy mb-4 text-lg">Recent Commissions</h2>
-                {recentCommissions.length === 0 ? (
-                    <div className="text-gpsc-stone py-6 text-center text-sm">
-                        No commissions yet — share your referral link to start earning.
-                    </div>
-                ) : (
-                    <div className="space-y-3">
-                        {recentCommissions.map((c) => {
-                            const isPaid = c.status === "released" || c.status === "paid";
-                            const statusLabel = isPaid ? "Paid" : "Pending";
-                            const statusClass = isPaid ? "text-gpsc-green" : "text-amber-600";
-                            return (
-                                <div key={c.id} className="border-gpsc-cream-dark flex items-center gap-4 border-b py-2 last:border-0">
-                                    <div className="bg-gpsc-cream-dark text-gpsc-navy font-display flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs">
-                                        {c.fromMemberInitials}
-                                    </div>
-                                    <div className="flex-1">
-                                        <div className="text-gpsc-navy text-sm">{c.fromMemberName}</div>
-                                        <div className="text-gpsc-stone text-xs">
-                                            Level {c.level} commission · {formatDate(c.date)}
-                                        </div>
-                                    </div>
-                                    <div className="text-right">
-                                        <div className="text-gpsc-navy font-medium">+{formatCurrency(c.amount)}</div>
-                                        <div className={`text-xs ${statusClass}`}>{statusLabel}</div>
-                                    </div>
+                <h2 className="font-display text-gpsc-navy mb-4 text-lg">Recent Activity</h2>
+                <div className="space-y-3">
+                    {recentCommissions.map((c) => (
+                        <div key={c.id} className="border-gpsc-cream-dark flex items-center gap-4 border-b py-2 last:border-0">
+                            <div className="bg-gpsc-cream-dark text-gpsc-navy font-display flex h-8 w-8 items-center justify-center rounded-full text-xs">
+                                {c.fromMemberInitials}
+                            </div>
+                            <div className="flex-1">
+                                <div className="text-gpsc-navy text-sm">{c.fromMemberName}</div>
+                                <div className="text-gpsc-stone text-xs">
+                                    Level {c.level} commission · {formatDate(c.date)}
                                 </div>
-                            );
-                        })}
-                    </div>
-                )}
+                            </div>
+                            <div className="text-right">
+                                <div className="text-gpsc-navy font-medium">+{formatCurrency(c.amount)}</div>
+                                <div
+                                    className={`text-xs ${c.status === "paid" ? "text-gpsc-green" : c.status === "pending" ? "text-amber-600" : "text-gpsc-navy-light"}`}
+                                >
+                                    {c.status}
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
     );

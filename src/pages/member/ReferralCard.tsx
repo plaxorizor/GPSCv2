@@ -28,15 +28,16 @@ const ReferralCard: React.FC<{ member: Member }> = ({ member }) => {
     return (
         <>
             {/* Only show the referral card if the member is active */}
+            {/* Center and make it on the middle */}
             {member.status === "active" && (
-                <div className="border-gpsc-navy/ overflow-hidden rounded-2xl border">
+                <div className="border-gpsc-cream-dark flex items-center justify-center overflow-hidden rounded-2xl border">
                     {/* QR section — top */}
                     <button
                         onClick={() => setModalOpen(true)}
                         className="group relative flex w-full flex-col items-center gap-3 rounded-2xl bg-white px-8 pt-8 pb-8 transition-colors hover:bg-gray-50"
                     >
                         <QRCode value={referralLink} qrStyle="squares" ecLevel="H" size={160} eyeRadius={6} bgColor="#ffffff" fgColor="#0E1F3D" />
-                        <div className="flex w-full items-center gap-2">
+                        <div className="flex w-full items-center gap-2 ">
                             <div className="bg-gpsc-navy/15 h-px flex-1" />
                             <span className="text-gpsc-navy/40 text-[12px] font-bold tracking-widest uppercase">{member.referralCode}</span>
 
