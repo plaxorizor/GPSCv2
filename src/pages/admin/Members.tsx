@@ -1,8 +1,9 @@
 // admin/Members.tsx
 import React, { useState } from "react";
-import { Plus, Search, Download } from "lucide-react";
+import { Plus, Search, Download, RefreshCw } from "lucide-react";
 import { PACKAGE_INFO } from "../../utils/types";
 import AllMembers from "./AllMembers";
+import { useAllMembers } from "../../hooks/useAllMembers";
 
 export interface MemberRow {
     uid: string;
@@ -24,17 +25,30 @@ export interface MemberRow {
 }
 
 interface Props {
-    loading: boolean;
     onUpdateStatus: (memberId: string, status: "active" | "inactive") => Promise<void>;
     onExport: () => void;
     onAddMember?: () => void;
 }
 
 export const Members: React.FC<Props> = ({ onUpdateStatus, onExport, onAddMember }) => {
+    const { members, loading, refetch } = useAllMembers();
     const [query, setQuery] = useState("");
     const [packageFilter, setPackageFilter] = useState("all");
     const [statusFilter, setStatusFilter] = useState("all");
     const [selectedMember, setSelectedMember] = useState<MemberRow | null>(null);
+    const [activating, setActivating] = useState(false);
+
+    const handleUpdateStatus = async () => {
+        if (!selectedMember) return;
+        setActivating(true);
+        await onUpdateStatus(
+            selectedMember.uid,
+            selectedMember.status === "active" ? "inactive" : "active",
+        );
+        await refetch();
+        setActivating(false);
+        setSelectedMember(null);
+    };
 
     return (
         <div className="space-y-6">
@@ -91,7 +105,12 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport, onAddMember
                         <option value="inactive">Inactive</option>
                         <option value="pending">Pending</option>
                     </select>
-                    <button className="border-gpsc-cream-dark hover:bg-gpsc-cream/60 rounded-lg border px-3 py-2 text-sm transition-colors">
+                    <button
+                        onClick={refetch}
+                        disabled={loading}
+                        className="border-gpsc-cream-dark hover:bg-gpsc-cream/60 flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm transition-colors disabled:opacity-50"
+                    >
+                        <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
                         Refresh
                     </button>
                 </div>
@@ -105,11 +124,12 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport, onAddMember
                                 <th className="p-4 text-left">Sponsor</th>
                                 <th className="p-4 text-left">Joined</th>
                                 <th className="p-4 text-left">Status</th>
-                                <th className="p-4 text-right">Actions</th>
                             </tr>
                         </thead>
 
                         <AllMembers
+                            members={members}
+                            loading={loading}
                             query={query}
                             packageFilter={packageFilter}
                             statusFilter={statusFilter}
@@ -122,13 +142,17 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport, onAddMember
 
             {/* ── Member Detail Modal ── */}
             {selectedMember && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setSelectedMember(null)}>
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+                    onClick={() => { if (!activating) setSelectedMember(null); }}
+                >
                     <div className="mx-4 w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
                         <div className="mb-4 flex items-center justify-between">
                             <h2 className="font-display text-gpsc-navy text-xl">Member Details</h2>
                             <button
                                 onClick={() => setSelectedMember(null)}
-                                className="text-gpsc-stone hover:text-gpsc-navy text-lg transition-colors"
+                                disabled={activating}
+                                className="text-gpsc-stone hover:text-gpsc-navy text-lg transition-colors disabled:opacity-40"
                             >
                                 ✕
                             </button>
@@ -172,7 +196,11 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport, onAddMember
                                     <div className="text-gpsc-stone mb-0.5 text-xs">{label}</div>
                                     <div
                                         className={`text-sm font-medium ${
-                                            label === "Status" ? (value === "active" ? "text-gpsc-green" : "text-red-500") : "text-gpsc-navy"
+                                            label === "Status"
+                                                ? value === "active"
+                                                    ? "text-gpsc-green"
+                                                    : "text-red-500"
+                                                : "text-gpsc-navy"
                                         }`}
                                     >
                                         {value}
@@ -200,20 +228,23 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport, onAddMember
                         <div className="mt-6 flex gap-3">
                             <button
                                 onClick={() => setSelectedMember(null)}
-                                className="border-gpsc-cream-dark text-gpsc-stone hover:bg-gpsc-cream/60 flex-1 rounded-lg border px-4 py-2 transition-colors"
+                                disabled={activating}
+                                className="border-gpsc-cream-dark text-gpsc-stone hover:bg-gpsc-cream/60 flex-1 rounded-lg border px-4 py-2 transition-colors disabled:opacity-40"
                             >
                                 Close
                             </button>
                             <button
-                                onClick={() => {
-                                    onUpdateStatus(selectedMember.uid, selectedMember.status === "active" ? "inactive" : "active");
-                                    setSelectedMember(null);
-                                }}
-                                className={`flex-1 rounded-lg px-4 py-2 font-medium text-white transition-colors ${
+                                onClick={handleUpdateStatus}
+                                disabled={activating}
+                                className={`flex-1 rounded-lg px-4 py-2 font-medium text-white transition-colors disabled:opacity-70 ${
                                     selectedMember.status === "active" ? "bg-red-500 hover:bg-red-600" : "bg-gpsc-green hover:bg-gpsc-green/80"
                                 }`}
                             >
-                                {selectedMember.status === "active" ? "Deactivate" : "Activate"}
+                                {activating
+                                    ? "Please wait..."
+                                    : selectedMember.status === "active"
+                                      ? "Deactivate"
+                                      : "Activate"}
                             </button>
                         </div>
                     </div>

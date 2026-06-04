@@ -1,15 +1,18 @@
 import { useEffect, useState } from "react";
-import { collection, query, where, orderBy, getDocs } from "firebase/firestore";
+import { collection, query, where, orderBy, getDocs, getDoc, doc } from "firebase/firestore";
 import { db } from "../firebase/config";
 import useAuth from "../context/useAuth";
 
-interface Commission {
+export interface Commission {
     id: string;
     fromMember: string;
+    fromMemberName: string;
+    fromMemberInitials: string;
+    fromMemberCity: string;
     level: number;
     amount: number;
     status: "pending" | "released";
-    dateCreated: Date;
+    dateCreated: any; // Firestore Timestamp
 }
 
 export const useCommissions = () => {
@@ -20,14 +23,44 @@ export const useCommissions = () => {
 
     useEffect(() => {
         if (!currentUser) return;
+
         const fetch = async () => {
             const q = query(collection(db, "commissions"), where("earnedBy", "==", currentUser.uid), orderBy("dateCreated", "desc"));
             const snap = await getDocs(q);
-            const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Commission);
-            setCommissions(data);
-            setTotalEarned(data.reduce((sum, c) => sum + c.amount, 0));
+            const raw = snap.docs.map((d) => ({ id: d.id, ...d.data() })) as any[];
+
+            // Fetch unique member names for fromMember UIDs
+            const uniqueUids = [...new Set(raw.map((c) => c.fromMember).filter(Boolean))];
+            const memberMap: Record<string, { name: string; initials: string; city: string }> = {};
+
+            await Promise.all(
+                uniqueUids.map(async (uid: string) => {
+                    const memberSnap = await getDoc(doc(db, "members", uid));
+                    if (memberSnap.exists()) {
+                        const d = memberSnap.data();
+                        const firstName = d.firstName || "";
+                        const lastName = d.lastName || "";
+                        memberMap[uid] = {
+                            name: `${firstName} ${lastName}`.trim(),
+                            initials: `${firstName[0] || ""}${lastName[0] || ""}`.toUpperCase(),
+                            city: d.city || "—",
+                        };
+                    }
+                }),
+            );
+
+            const enriched: Commission[] = raw.map((c) => ({
+                ...c,
+                fromMemberName: memberMap[c.fromMember]?.name ?? "—",
+                fromMemberInitials: memberMap[c.fromMember]?.initials ?? "?",
+                fromMemberCity: memberMap[c.fromMember]?.city ?? "—",
+            }));
+
+            setCommissions(enriched);
+            setTotalEarned(enriched.reduce((sum, c) => sum + c.amount, 0));
             setLoading(false);
         };
+
         fetch();
     }, [currentUser]);
 

@@ -55,6 +55,7 @@ export interface Commission {
     amount: number;
     status: CommissionStatus;
     date: string;
+    fromMember: string;
     fromMemberName: string;
     fromMemberCity: string;
 }

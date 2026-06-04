@@ -11,15 +11,17 @@ export interface MemberWithSponsor extends Member {
 export const useAllMembers = () => {
     const [members, setMembers] = useState<MemberWithSponsor[]>([]);
     const [loading, setLoading] = useState(true);
+    const [tick, setTick] = useState(0);
 
     useEffect(() => {
-        const fetch = async () => {
-            const raw = await getAllMembers();
+        let cancelled = false;
 
-            // Collect unique sponsor UIDs
+        const load = async () => {
+            setLoading(true);
+
+            const raw = await getAllMembers();
             const sponsorUids = [...new Set(raw.map((m: any) => m.referredBy).filter(Boolean))];
 
-            // Fetch all sponsor docs in parallel
             const sponsorMap: Record<string, string> = {};
             await Promise.all(
                 sponsorUids.map(async (uid: string) => {
@@ -31,17 +33,26 @@ export const useAllMembers = () => {
                 }),
             );
 
-            // Attach sponsor name to each member
             const withSponsors: MemberWithSponsor[] = raw.map((m: any) => ({
                 ...m,
                 sponsorName: m.referredBy ? (sponsorMap[m.referredBy] ?? "—") : "—",
             }));
 
-            setMembers(withSponsors);
-            setLoading(false);
+            if (!cancelled) {
+                setMembers(withSponsors);
+                setLoading(false);
+            }
         };
-        fetch();
-    }, []);
 
-    return { members, loading };
+        load();
+        return () => {
+            cancelled = true;
+        };
+    }, [tick]);
+
+    const refetch = () => setTick((t) => t + 1);
+
+    return { members, loading, refetch };
 };
+
+export default useAllMembers;

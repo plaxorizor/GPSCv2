@@ -37,7 +37,7 @@ export default () => {
                 getDocs(query(collection(db, "payouts"), where("status", "==", "requested"))),
             ]);
 
-            const members = membersSnap.docs.map((d) => ({ uid: d.id, ...d.data() }) as any);
+            const members = membersSnap.docs.map((d) => ({ uid: d.id, ...d.data() }) as Member);
 
             const packageCounts = { basic: 0, family: 0, premium: 0 };
             let totalRevenue = 0;
@@ -79,7 +79,7 @@ export default () => {
 
                 // Map dateCreated (Firestore Timestamp) into monthly buckets
                 if (m.dateCreated) {
-                    const date: Date = m.dateCreated.toDate ? m.dateCreated.toDate() : new Date(m.dateCreated);
+                    const date: Date = m.dateCreated.toDate();
                     const key = date.toLocaleString("default", { month: "short", year: "2-digit" });
                     if (key in monthBuckets) {
                         monthBuckets[key]++;

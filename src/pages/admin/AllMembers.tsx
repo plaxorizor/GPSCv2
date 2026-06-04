@@ -1,8 +1,9 @@
-import { useAllMembers } from "../../hooks/useAllMembers";
-import { Eye, CheckCircle, XCircle } from "lucide-react";
 import type { MemberRow } from "./Members";
+import type { MemberWithSponsor } from "../../hooks/useAllMembers";
 
 interface Props {
+    members: MemberWithSponsor[];
+    loading: boolean;
     query: string;
     packageFilter: string;
     statusFilter: string;
@@ -10,14 +11,12 @@ interface Props {
     onUpdateStatus: (uid: string, status: "active" | "inactive") => Promise<void>;
 }
 
-const AllMembers = ({ query, packageFilter, statusFilter, onSelectMember, onUpdateStatus }: Props) => {
-    const { members, loading } = useAllMembers();
-
+const AllMembers = ({ members, loading, query, packageFilter, statusFilter, onSelectMember }: Props) => {
     if (loading)
         return (
             <tbody>
                 <tr>
-                    <td colSpan={7} className="text-gpsc-stone p-8 text-center">
+                    <td colSpan={5} className="text-gpsc-stone p-8 text-center">
                         Loading members...
                     </td>
                 </tr>
@@ -34,7 +33,6 @@ const AllMembers = ({ query, packageFilter, statusFilter, onSelectMember, onUpda
             m.city?.toLowerCase().includes(q);
 
         const matchesPackage = packageFilter === "all" || m.package?.toLowerCase() === packageFilter.toLowerCase();
-
         const matchesStatus = statusFilter === "all" || m.status?.toLowerCase() === statusFilter.toLowerCase();
 
         return matchesQuery && matchesPackage && matchesStatus;
@@ -44,7 +42,7 @@ const AllMembers = ({ query, packageFilter, statusFilter, onSelectMember, onUpda
         return (
             <tbody>
                 <tr>
-                    <td colSpan={7} className="text-gpsc-stone p-8 text-center">
+                    <td colSpan={5} className="text-gpsc-stone p-8 text-center">
                         No members match your filters.
                     </td>
                 </tr>
@@ -54,28 +52,44 @@ const AllMembers = ({ query, packageFilter, statusFilter, onSelectMember, onUpda
     return (
         <tbody>
             {filtered.map((m) => (
-                <tr key={m.uid} className="border-gpsc-cream-dark hover:bg-gpsc-cream/40 border-t transition-colors">
+                <tr
+                    key={m.uid}
+                    className="border-gpsc-cream-dark hover:bg-gpsc-cream/40 cursor-pointer border-t transition-colors"
+                    onClick={() => onSelectMember(m)}
+                >
                     <td className="p-4">
                         <div className="flex items-center gap-3">
                             <div className="bg-gpsc-navy font-display flex h-9 w-9 items-center justify-center rounded-full text-xs text-white">
                                 {m.firstName.charAt(0).toUpperCase() + m.lastName.charAt(0).toUpperCase()}
                             </div>
                             <div>
-                                <button className="text-gpsc-navy text-left font-medium hover:underline" onClick={() => onSelectMember(m)}>
+                                <div className="text-gpsc-navy font-medium">
                                     {m.firstName} {m.lastName}
-                                </button>
+                                </div>
                                 <div className="text-gpsc-stone text-xs">{m.email}</div>
                             </div>
                         </div>
                     </td>
-                    <td className="text-gpsc-stone p-4">{m.package ?? "—"}</td>
-                    <td className="text-gpsc-stone p-4">{m.sponsorName}</td>
+                    <td className="text-gpsc-stone p-4">
+                        <span
+                            className={`inline-block rounded-full px-2 py-1 text-xs font-medium capitalize ${
+                                m.package?.toLowerCase() === "premium"
+                                    ? "bg-yellow-100 text-yellow-800"
+                                    : m.package?.toLowerCase() === "family"
+                                    ? "bg-slate-100 text-slate-700"
+                                    : "bg-amber-100 text-amber-700"
+                            }`}
+                        >
+                            {m.package ?? "—"} Care
+                        </span>
+                    </td>
+                    <td className="text-gpsc-stone p-4">{m.sponsorName || "—"}</td>
                     <td className="text-gpsc-stone p-4">{m.dateCreated?.toDate?.()?.toLocaleDateString() ?? "—"}</td>
                     <td className="p-4">
                         <span
-                            className={`rounded-full px-2 py-1 text-xs ${
+                            className={`rounded-full px-2 py-1 text-xs font-medium ${
                                 m.status === "active"
-                                    ? "bg-gpsc-green/10 text-gpsc-green"
+                                    ? "bg-green-100 text-green-700"
                                     : m.status === "pending"
                                       ? "bg-amber-100 text-amber-700"
                                       : "bg-red-100 text-red-700"
@@ -83,24 +97,6 @@ const AllMembers = ({ query, packageFilter, statusFilter, onSelectMember, onUpda
                         >
                             {m.status}
                         </span>
-                    </td>
-                    <td className="p-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                            <button
-                                className="text-gpsc-stone hover:bg-gpsc-cream rounded p-1 transition-colors"
-                                title="View details"
-                                onClick={() => onSelectMember(m)}
-                            >
-                                <Eye size={16} />
-                            </button>
-                            <button
-                                onClick={() => onUpdateStatus(m.uid, m.status === "active" ? "inactive" : "active")}
-                                className={`rounded p-1 transition-colors ${m.status === "active" ? "text-red-500 hover:bg-red-50" : "text-gpsc-green hover:bg-gpsc-green/10"}`}
-                                title={m.status === "active" ? "Deactivate" : "Activate"}
-                            >
-                                {m.status === "active" ? <XCircle size={16} /> : <CheckCircle size={16} />}
-                            </button>
-                        </div>
                     </td>
                 </tr>
             ))}

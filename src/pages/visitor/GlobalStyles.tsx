@@ -1,7 +1,7 @@
 import React from "react";
 
 export const GlobalStyles: React.FC = () => (
-  <style>{`
+    <style>{`
     @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,800&family=DM+Sans:wght@400;500;600;700&display=swap');
     .font-display { font-family: 'Fraunces', Georgia, serif; font-optical-sizing: auto; }
     .font-body { font-family: 'DM Sans', system-ui, sans-serif; }
@@ -35,5 +35,65 @@ export const GlobalStyles: React.FC = () => (
     .anim-delay-200 { animation-delay: 0.2s; opacity: 0; }
     .anim-delay-300 { animation-delay: 0.3s; opacity: 0; }
     .anim-delay-400 { animation-delay: 0.4s; opacity: 0; }
+
+    /* ── Tier: Bronze ─────────────────────────────────────── */
+    .tier-bronze {
+      background-color: #FDF5EC;
+      border: 1.5px solid #C8864A;
+    }
+    .tier-bronze .tier-label        { color: #A0622A; }
+    .tier-bronze .tier-coverage     { color: #B8784A; }
+    .tier-bronze .tier-name         { color: #6B3D18; }
+    .tier-bronze .tier-tagline      { color: #B8784A; }
+    .tier-bronze .tier-price        { color: #A0622A; }
+    .tier-bronze .tier-price-note   { color: #B8784A; }
+    .tier-bronze .tier-divider      { background-color: #E8CFA8; }
+    .tier-bronze .tier-check        { color: #C8864A; }
+    .tier-bronze .tier-benefit-name { color: #6B3D18; }
+    .tier-bronze .tier-benefit-amt  { color: #B8784A; }
+    .tier-bronze .tier-more         { color: #B8784A; }
+    .tier-bronze .tier-pill         { background-color: #F5E5D0; color: #6B3D18; border: 1px solid #C8864A; }
+    .tier-bronze .tier-btn          { background-color: #A0622A; color: #fff; border: none; }
+    .tier-bronze .tier-btn:hover    { background-color: #8A5020; }
+
+    /* ── Tier: Silver (dark card) ─────────────────────────── */
+    .tier-silver {
+      background-color: #1C2A3A;
+      border: 1.5px solid #8FA8BF;
+    }
+    .tier-silver .tier-label        { color: #8FA8BF; }
+    .tier-silver .tier-coverage     { color: #8FA8BF; }
+    .tier-silver .tier-name         { color: #E8F0F7; }
+    .tier-silver .tier-tagline      { color: #5C84A0; }
+    .tier-silver .tier-price        { color: #B8CFE2; }
+    .tier-silver .tier-price-note   { color: #8FA8BF; }
+    .tier-silver .tier-divider      { background-color: #2D4A62; }
+    .tier-silver .tier-check        { color: #9DC4D8; }
+    .tier-silver .tier-benefit-name { color: #E8F0F7; }
+    .tier-silver .tier-benefit-amt  { color: #5C84A0; }
+    .tier-silver .tier-more         { color: #5C84A0; }
+    .tier-silver .tier-pill         { background-color: #2D4A62; color: #B8CFE2; border: 1px solid #8FA8BF; }
+    .tier-silver .tier-btn          { background-color: #6BA0C0; color: #fff; border: none; }
+    .tier-silver .tier-btn:hover    { background-color: #5088A8; }
+
+    /* ── Tier: Gold ───────────────────────────────────────── */
+    .tier-gold {
+      background-color: #FFFBF0;
+      border: 1.5px solid #C8A84A;
+    }
+    .tier-gold .tier-label        { color: #A07830; }
+    .tier-gold .tier-coverage     { color: #C8A84A; }
+    .tier-gold .tier-name         { color: #5A3A08; }
+    .tier-gold .tier-tagline      { color: #C8A84A; }
+    .tier-gold .tier-price        { color: #A07830; }
+    .tier-gold .tier-price-note   { color: #C8A84A; }
+    .tier-gold .tier-divider      { background-color: #F0D888; }
+    .tier-gold .tier-check        { color: #C8A84A; }
+    .tier-gold .tier-benefit-name { color: #5A3A08; }
+    .tier-gold .tier-benefit-amt  { color: #C8A84A; }
+    .tier-gold .tier-more         { color: #C8A84A; }
+    .tier-gold .tier-pill         { background-color: #FFF3D0; color: #5A3A08; border: 1px solid #C8A84A; }
+    .tier-gold .tier-btn          { background-color: #A07830; color: #fff; border: none; }
+    .tier-gold .tier-btn:hover    { background-color: #886020; }
   `}</style>
 );

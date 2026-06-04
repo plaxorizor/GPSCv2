@@ -4,9 +4,8 @@
 
 ### Frontend
 
-- Home/Landing Page
-- Register/Sign-up Page
-- Login/Logout Page
+- Fix the UI
+- Add new pages
 
 ---
 

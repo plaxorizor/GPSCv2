@@ -7,13 +7,10 @@ import { Overview } from "./Overview";
 import { Members } from "./Members";
 import { Claims } from "./Claims";
 import { Commissions } from "./Commissions";
-import type { Member } from "../../utils/types";
-import type { DashboardStats, PendingCommission, CommissionRecord } from "../../utils/types";
+import type { PendingCommission, CommissionRecord } from "../../utils/types";
 import type { Claim } from "../../utils/types";
 
 interface AdminDashboardProps {
-    adminUser: Member;
-    stats: DashboardStats;
     claims: Claim[];
     pendingCommissions: PendingCommission[];
     commissionHistory: CommissionRecord[];
@@ -36,7 +33,6 @@ interface AdminDashboardProps {
 }
 
 export default function AdminDashboard({
-    adminUser,
     claims,
     pendingCommissions,
     commissionHistory,
@@ -64,13 +60,9 @@ export default function AdminDashboard({
         { id: "commissions", label: "Commissions", icon: DollarSign, badge: pendingCommissionsCount },
     ];
 
-    const rankName = "Administrator";
-
     return (
         <div className="gpsc-cream font-body flex min-h-screen">
             <DashboardSidebar
-                user={adminUser}
-                rankName={rankName}
                 currentSection={currentSection}
                 onSectionChange={setCurrentSection}
                 items={sidebarItems}
@@ -89,7 +81,7 @@ export default function AdminDashboard({
             <main className="max-w-6xl flex-1 p-6 pb-24 lg:p-10 lg:pb-10 lg:pl-68">
                 {currentSection === "overview" && <Overview loading={loading.stats || false} onRefresh={onRefreshStats} />}
                 {currentSection === "members" && (
-                    <Members loading={loading.members || false} onUpdateStatus={onUpdateMemberStatus} onExport={onExportMembers} />
+                    <Members onUpdateStatus={onUpdateMemberStatus} onExport={onExportMembers} />
                 )}
                 {currentSection === "claims" && (
                     <Claims

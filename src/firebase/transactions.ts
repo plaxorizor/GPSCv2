@@ -1,8 +1,7 @@
-import { doc, addDoc, updateDoc, collection, serverTimestamp } from "firebase/firestore";
+import { doc, addDoc, updateDoc, getDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "./config";
-import { triggerCommissions } from "./commissions";
 
-type Package = "basic" | "family" | "premium";
+export type Package = "basic" | "family" | "premium";
 
 const PACKAGE_AMOUNTS: Record<Package, number> = {
     basic: 698,
@@ -10,7 +9,56 @@ const PACKAGE_AMOUNTS: Record<Package, number> = {
     premium: 4998,
 };
 
-// Call this when member selects a package and pays
+export const COMMISSION_RATES: Record<number, number> = {
+    1: 0.2,
+    2: 0.05,
+    3: 0.03,
+    4: 0.02,
+    5: 0.01,
+    6: 0.01,
+};
+
+// How many levels deep each package can earn commissions from
+const PACKAGE_MAX_LEVELS: Record<Package, number> = {
+    basic: 1,
+    family: 3,
+    premium: 6,
+};
+
+export const triggerCommissions = async (newMemberId: string, pkg: Package) => {
+    const packagePrice = PACKAGE_AMOUNTS[pkg];
+    let currentUid = newMemberId;
+
+    for (let level = 1; level <= 6; level++) {
+        const memberSnap = await getDoc(doc(db, "members", currentUid));
+        if (!memberSnap.exists()) break;
+
+        const referredBy = memberSnap.data().referredBy as string | null;
+        if (!referredBy) break;
+
+        const uplineSnap = await getDoc(doc(db, "members", referredBy));
+        if (!uplineSnap.exists()) break;
+
+        const uplinePackage = uplineSnap.data().package as Package | null;
+        if (!uplinePackage) break;
+
+        // Upline's package determines how deep they can earn
+        if (level <= PACKAGE_MAX_LEVELS[uplinePackage]) {
+            const amount = packagePrice * COMMISSION_RATES[level];
+            await addDoc(collection(db, "commissions"), {
+                earnedBy: referredBy,
+                fromMember: newMemberId,
+                level,
+                amount,
+                status: "pending",
+                dateCreated: serverTimestamp(),
+            });
+        }
+
+        currentUid = referredBy;
+    }
+};
+
 export const createTransaction = async (memberId: string, pkg: Package) => {
     const txRef = await addDoc(collection(db, "transactions"), {
         memberId,
@@ -22,19 +70,8 @@ export const createTransaction = async (memberId: string, pkg: Package) => {
     return txRef.id;
 };
 
-// Call this after payment gateway confirms payment
 export const confirmTransaction = async (transactionId: string, memberId: string, pkg: Package) => {
-    // 1. Mark transaction as confirmed
-    await updateDoc(doc(db, "transactions", transactionId), {
-        status: "confirmed",
-    });
-
-    // 2. Activate the member
-    await updateDoc(doc(db, "members", memberId), {
-        package: pkg,
-        status: "active",
-    });
-
-    // 3. Fire commissions up the chain
+    await updateDoc(doc(db, "transactions", transactionId), { status: "confirmed" });
+    await updateDoc(doc(db, "members", memberId), { package: pkg, status: "active" });
     await triggerCommissions(memberId, pkg);
 };

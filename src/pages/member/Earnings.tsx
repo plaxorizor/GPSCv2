@@ -52,7 +52,7 @@ export const MemberEarnings: React.FC<Props> = ({ availableToWithdraw, pendingHo
                     <tbody>
                         {commissions.map((c) => (
                             <tr key={c.id} className="border-gpsc-cream-dark border-t">
-                                <td className="text-gpsc-stone p-4">{formatDate(c.date)}</td>
+                                <td className="text-gpsc-stone p-4">{c.dateCreated}</td>
                                 <td className="p-4">
                                     <div className="text-gpsc-navy">{c.fromMemberName}</div>
                                     <div className="text-gpsc-stone text-xs">{c.fromMemberCity}</div>
@@ -61,7 +61,9 @@ export const MemberEarnings: React.FC<Props> = ({ availableToWithdraw, pendingHo
                                 <td className="text-gpsc-navy p-4 text-right font-medium">+{formatCurrency(c.amount)}</td>
                                 <td className="p-4 text-right">
                                     <span
-                                        className={`rounded-full px-2 py-1 text-xs ${c.status === "paid" ? "bg-gpsc-green/10 text-gpsc-green" : c.status === "pending" ? "bg-gpsc-navy/10 text-gpsc-navy" : "bg-amber-100 text-amber-700"}`}
+                                        className={`rounded-full px-2 py-1 text-xs ${
+                                            c.status === "paid" ? "bg-gpsc-green/10 text-gpsc-green" : "bg-amber-100 text-amber-700"
+                                        }`}
                                     >
                                         {c.status}
                                     </span>
@@ -103,7 +105,9 @@ export const MemberEarnings: React.FC<Props> = ({ availableToWithdraw, pendingHo
                                 <td className="text-gpsc-navy p-4 text-right font-medium">{formatCurrency(p.amount)}</td>
                                 <td className="p-4 text-right">
                                     <span
-                                        className={`rounded-full px-2 py-1 text-xs ${p.status === "sent" ? "bg-gpsc-green/10 text-gpsc-green" : "bg-amber-100 text-amber-700"}`}
+                                        className={`rounded-full px-2 py-1 text-xs ${
+                                            p.status === "sent" ? "bg-gpsc-green/10 text-gpsc-green" : "bg-amber-100 text-amber-700"
+                                        }`}
                                     >
                                         {p.status}
                                     </span>

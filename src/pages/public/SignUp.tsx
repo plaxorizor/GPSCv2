@@ -7,7 +7,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import logo from "../../components/ui/Logo.png";
 
 import { RadioGroup, Radio } from "@headlessui/react";
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Eye, EyeOff } from "lucide-react";
 
 // ── Design tokens (mirrors pro.jsx GlobalStyles) ──────────────────
 const css = `
@@ -47,7 +47,7 @@ const plans = [
     },
 ];
 
-const STEPS = ["Package", "Your Info", "Sponsor & Beneficiaries", "Review"];
+const STEPS = ["Package", "Your Info", "Sponsor & Beneficiaries", "Payment", "Review"];
 
 // ── Shared input / label styles ───────────────────────────────────
 const inputCls =
@@ -61,25 +61,57 @@ export default function SignUpLayout() {
     const [refCode, setRefCode] = useState<string>(() => searchParams.get("ref") ?? "");
     const [error, setError] = useState("");
     const [step, setStep] = useState(1);
-    const totalSteps = 4;
+    const totalSteps = 5;
 
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [consented, setConsented] = useState(false);
+    const [policyTab, setPolicyTab] = useState<"privacy" | "terms" | "refund">("privacy");
 
     const [selectedPlan, setSelectedPlan] = useState(plans[0]);
+    const [paymentProofFile, setPaymentProofFile] = useState<File | null>(null);
+    const [paymentProofPreview, setPaymentProofPreview] = useState<string | null>(null);
     const [form, setForm] = useState({
         package: "",
         firstName: "",
+        middleName: "",
         lastName: "",
+        suffix: "",
         email: "",
+        confirmEmail: "",
         password: "",
         confirmPassword: "",
         mobile: "",
+        telephone: "",
         birthDate: "",
+        birthPlace: "",
+        gender: "",
         civilStatus: "",
+        streetAddress: "",
+        barangay: "",
         city: "",
         province: "",
+        postalCode: "",
+        country: "Philippines",
         referralCode: refCode,
         beneficiaries: [{ name: "", relationship: "" }],
     });
+
+    // Password strength
+    const getPasswordStrength = (pwd: string): { score: number; label: string; color: string } => {
+        if (!pwd) return { score: 0, label: "", color: "#E5DDC8" };
+        let score = 0;
+        if (pwd.length >= 8) score++;
+        if (pwd.length >= 12) score++;
+        if (/[A-Z]/.test(pwd)) score++;
+        if (/[0-9]/.test(pwd)) score++;
+        if (/[^A-Za-z0-9]/.test(pwd)) score++;
+        if (score <= 1) return { score, label: "Weak", color: "#DC2626" };
+        if (score <= 2) return { score, label: "Fair", color: "#F59E0B" };
+        if (score <= 3) return { score, label: "Good", color: "#3B82F6" };
+        return { score, label: "Strong", color: "#4A8A2C" };
+    };
+    const pwStrength = getPasswordStrength(form.password);
 
     const validateStep = async (): Promise<boolean> => {
         setError("");
@@ -94,6 +126,10 @@ export default function SignUpLayout() {
             }
             if (!form.email.trim()) {
                 setError("Email is required.");
+                return false;
+            }
+            if (form.email !== form.confirmEmail) {
+                setError("Emails do not match.");
                 return false;
             }
             if (!form.password) {
@@ -114,6 +150,22 @@ export default function SignUpLayout() {
             }
             if (!form.birthDate) {
                 setError("Birth date is required.");
+                return false;
+            }
+            // Check age (must be 18+)
+            const birthDate = new Date(form.birthDate);
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            if (age < 18) {
+                setError("You must be at least 18 years old to register.");
+                return false;
+            }
+            if (!form.gender) {
+                setError("Gender is required.");
                 return false;
             }
             if (!form.civilStatus) {
@@ -155,6 +207,12 @@ export default function SignUpLayout() {
                 }
             }
         }
+        if (step === 4) {
+            if (!paymentProofFile) {
+                setError("Please upload your proof of payment before continuing.");
+                return false;
+            }
+        }
         return true;
     };
 
@@ -162,18 +220,25 @@ export default function SignUpLayout() {
         if (await validateStep()) setStep(step + 1);
     };
 
-    const handleSubmit = async (e: React.SubmitEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError("");
         setLoading(true);
         if (form.password !== form.confirmPassword) {
             setError("Passwords do not match.");
+            setLoading(false);
+            return;
+        }
+        if (form.email !== form.confirmEmail) {
+            setError("Emails do not match.");
+            setLoading(false);
             return;
         }
         try {
             const snap = await getDoc(doc(db, "referralCodes", form.referralCode));
             if (!snap.exists()) {
                 setError("Invalid referral code.");
+                setLoading(false);
                 return;
             }
             const referredBy = snap.data().uid;
@@ -184,15 +249,25 @@ export default function SignUpLayout() {
                 referralCode: null,
                 referredBy: referredBy,
                 firstName: form.firstName,
+                middleName: form.middleName || null,
                 lastName: form.lastName,
+                suffix: form.suffix || null,
                 email: form.email,
                 mobile: form.mobile,
+                telephone: form.telephone || null,
                 birthDate: form.birthDate,
+                birthPlace: form.birthPlace || null,
+                gender: form.gender,
                 civilStatus: form.civilStatus,
+                streetAddress: form.streetAddress || null,
+                barangay: form.barangay || null,
                 city: form.city,
                 province: form.province,
+                postalCode: form.postalCode || null,
+                country: form.country,
                 package: selectedPlan.name.toLowerCase(),
                 beneficiaries: form.beneficiaries,
+                paymentProofFileName: paymentProofFile?.name ?? null,
                 status: "pending",
                 isAdmin: false,
                 dateCreated: serverTimestamp(),
@@ -226,541 +301,967 @@ export default function SignUpLayout() {
                         </p>
                     </div>
 
-                    {/* ── Step progress bar ── */}
-                    <div className="relative mb-8 flex items-center justify-between">
-                        {/* Background line */}
-                        <div className="absolute right-0 left-0 h-px" style={{ backgroundColor: "#E5DDC8", top: "50%" }} />
-                        {STEPS.map((_label, i) => {
-                            const s = i + 1;
-                            const active = s === step;
-                            const done = s < step;
-                            return (
-                                <div
-                                    key={s}
-                                    className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold transition-colors"
-                                    style={{
-                                        backgroundColor: done || active ? "#14365C" : "#E5DDC8",
-                                        color: done || active ? "#fff" : "#6B6862",
-                                    }}
-                                >
-                                    {done ? "✓" : s}
-                                </div>
-                            );
-                        })}
-                    </div>
+                    {/* ════ CONSENT GATE ════ */}
+                    {!consented ? (
+                        <div className="rounded-3xl p-8" style={{ backgroundColor: "#fff", border: "1px solid #E5DDC8" }}>
+                            <h2 className="font-display mb-2 text-2xl" style={{ color: "#14365C" }}>
+                                Before you continue
+                            </h2>
+                            <p className="mb-6 text-sm" style={{ color: "#6B6862" }}>
+                                Please read and agree to our policies before creating your account.
+                            </p>
 
-                    {/* ── Card ── */}
-                    <div className="rounded-3xl p-8" style={{ backgroundColor: "#fff", border: "1px solid #E5DDC8" }}>
-                        {error && (
-                            <div className="mb-4 rounded-xl px-4 py-3 text-sm" style={{ backgroundColor: "#FEE2E2", color: "#B91C1C" }}>
-                                {error}
+                            {/* Tab bar */}
+                            <div className="mb-5 flex rounded-xl overflow-hidden" style={{ border: "1px solid #E5DDC8" }}>
+                                {(["privacy", "terms", "refund"] as const).map((tab) => {
+                                    const labels = { privacy: "Privacy Policy", terms: "Terms & Conditions", refund: "Refund Policy" };
+                                    const active = policyTab === tab;
+                                    return (
+                                        <button
+                                            key={tab}
+                                            type="button"
+                                            onClick={() => setPolicyTab(tab)}
+                                            className="flex-1 py-2.5 text-xs font-medium transition-colors"
+                                            style={{
+                                                backgroundColor: active ? "#14365C" : "#FAF6EE",
+                                                color: active ? "#fff" : "#6B6862",
+                                                borderRight: tab !== "refund" ? "1px solid #E5DDC8" : undefined,
+                                            }}
+                                        >
+                                            {labels[tab]}
+                                        </button>
+                                    );
+                                })}
                             </div>
-                        )}
 
-                        <form onSubmit={handleSubmit} className="space-y-5">
-                            {/* ════ STEP 1 — Package ════ */}
-                            {step === 1 && (
-                                <div>
-                                    <h2 className="font-display mb-6 text-2xl" style={{ color: "#14365C" }}>
-                                        Step 1 · Choose your package
-                                    </h2>
-                                    <RadioGroup
-                                        by="name"
-                                        value={selectedPlan}
-                                        onChange={setSelectedPlan}
-                                        aria-label="Membership package"
-                                        className="space-y-3"
-                                    >
-                                        {plans.map((plan) => (
-                                            <Radio
-                                                key={plan.name}
-                                                value={plan}
-                                                className={({ checked }) =>
-                                                    `block cursor-pointer rounded-2xl border p-4 transition-all outline-none ${
-                                                        checked ? "border-[#4A8A2C] bg-[#FAF6EE]" : "border-[#E5DDC8] hover:bg-[#FAF6EE]/60"
-                                                    }`
-                                                }
+                            {/* Tab content */}
+                            <div
+                                className="rounded-2xl p-5 mb-6 overflow-y-auto space-y-3 text-sm leading-relaxed"
+                                style={{ backgroundColor: "#FAF6EE", border: "1px solid #E5DDC8", maxHeight: "320px", color: "#4B4A47" }}
+                            >
+                                {policyTab === "privacy" && (
+                                    <>
+                                        <p><strong style={{ color: "#14365C" }}>Last updated: June 2025</strong></p>
+                                        <p>GPSC ("we", "us", or "our") is committed to protecting your personal information. This Privacy Policy explains how we collect, use, and safeguard the data you provide when registering as a member.</p>
+                                        <p><strong style={{ color: "#14365C" }}>Information We Collect</strong><br />We collect your name, email address, mobile number, birth date, civil status, location, referral code, beneficiary details, and proof of payment.</p>
+                                        <p><strong style={{ color: "#14365C" }}>How We Use Your Information</strong><br />Your data is used to process your membership application, verify identity, manage your account, facilitate referral rewards, and communicate important updates.</p>
+                                        <p><strong style={{ color: "#14365C" }}>Data Sharing</strong><br />We do not sell or rent your personal data. Information may be shared only with service providers necessary to operate our platform, or as required by law.</p>
+                                        <p><strong style={{ color: "#14365C" }}>Data Security</strong><br />We use industry-standard security measures to protect your information. However, no online transmission is 100% secure and we cannot guarantee absolute security.</p>
+                                        <p><strong style={{ color: "#14365C" }}>Your Rights</strong><br />You may request access to, correction of, or deletion of your personal data by contacting us at support@gpsc.com.</p>
+                                    </>
+                                )}
+                                {policyTab === "terms" && (
+                                    <>
+                                        <p><strong style={{ color: "#14365C" }}>Last updated: June 2025</strong></p>
+                                        <p>By registering for a GPSC membership, you agree to be bound by these Terms &amp; Conditions. Please read them carefully before proceeding.</p>
+                                        <p><strong style={{ color: "#14365C" }}>Eligibility</strong><br />Membership is open to individuals 18 years of age or older. By registering, you confirm that all information provided is accurate and truthful.</p>
+                                        <p><strong style={{ color: "#14365C" }}>Membership Plans</strong><br />Each plan (Basic, Family, Premium) carries distinct benefits and referral structures. Plan details are subject to change with prior notice to members.</p>
+                                        <p><strong style={{ color: "#14365C" }}>Referral Program</strong><br />Referral commissions are credited upon successful activation of referred members. GPSC reserves the right to adjust commission rates with reasonable notice.</p>
+                                        <p><strong style={{ color: "#14365C" }}>Account Responsibility</strong><br />You are responsible for maintaining the confidentiality of your account credentials. GPSC is not liable for unauthorized access resulting from your failure to secure your account.</p>
+                                        <p><strong style={{ color: "#14365C" }}>Termination</strong><br />GPSC reserves the right to suspend or terminate any account found to be in violation of these Terms or engaged in fraudulent activity.</p>
+                                        <p><strong style={{ color: "#14365C" }}>Governing Law</strong><br />These Terms are governed by the laws of the Republic of the Philippines.</p>
+                                    </>
+                                )}
+                                {policyTab === "refund" && (
+                                    <>
+                                        <p><strong style={{ color: "#14365C" }}>Last updated: June 2025</strong></p>
+                                        <p>GPSC strives to ensure member satisfaction. Please review our refund policy before completing your registration.</p>
+                                        <p><strong style={{ color: "#14365C" }}>Cooling-Off Period</strong><br />Members may request a full refund within 7 calendar days of account activation, provided no referral commissions have been disbursed under their account.</p>
+                                        <p><strong style={{ color: "#14365C" }}>Non-Refundable Circumstances</strong><br />Refunds will not be granted if the membership has been active for more than 7 days, if commissions have already been paid to the member, or if the account has been found in violation of our Terms &amp; Conditions.</p>
+                                        <p><strong style={{ color: "#14365C" }}>How to Request a Refund</strong><br />To initiate a refund, contact our support team at support@gpsc.com with your registered email and reason for the request. Approved refunds will be processed within 7–14 business days.</p>
+                                        <p><strong style={{ color: "#14365C" }}>Plan Upgrades</strong><br />Payments made for plan upgrades are non-refundable once the upgraded plan has been activated.</p>
+                                    </>
+                                )}
+                            </div>
+
+                            {/* Action buttons */}
+                            <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
+                                <button
+                                    type="button"
+                                    onClick={() => navigate("/")}
+                                    className="flex-1 rounded-xl border py-3 text-sm font-medium transition-colors"
+                                    style={{ borderColor: "#E5DDC8", color: "#6B6862", backgroundColor: "#FAF6EE" }}
+                                    onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#E5DDC8")}
+                                    onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#FAF6EE")}
+                                >
+                                    I Disagree — Go Back
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setConsented(true)}
+                                    className="flex-1 rounded-xl py-3 text-sm font-medium text-white transition-colors"
+                                    style={{ backgroundColor: "#4A8A2C" }}
+                                    onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#5DAB3A")}
+                                    onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#4A8A2C")}
+                                >
+                                    I Agree — Continue Registration
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
+                        <>
+                            {/* ════ MAIN SIGNUP FLOW (after consent) ════ */}
+                            <div className="relative mb-8 flex items-center justify-between">
+                                {/* Background line */}
+                                <div className="absolute right-0 left-0 h-px" style={{ backgroundColor: "#E5DDC8", top: "50%" }} />
+                                {STEPS.map((_label, i) => {
+                                    const s = i + 1;
+                                    const active = s === step;
+                                    const done = s < step;
+                                    return (
+                                        <div
+                                            key={s}
+                                            className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold transition-colors"
+                                            style={{
+                                                backgroundColor: done || active ? "#14365C" : "#E5DDC8",
+                                                color: done || active ? "#fff" : "#6B6862",
+                                            }}
+                                        >
+                                            {done ? "✓" : s}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+
+                            {/* ── Card ── */}
+                            <div className="rounded-3xl p-8" style={{ backgroundColor: "#fff", border: "1px solid #E5DDC8" }}>
+                                {error && (
+                                    <div className="mb-4 rounded-xl px-4 py-3 text-sm" style={{ backgroundColor: "#FEE2E2", color: "#B91C1C" }}>
+                                        {error}
+                                    </div>
+                                )}
+
+                                <form onSubmit={handleSubmit} className="space-y-5">
+                                    {/* ════ STEP 1 — Package ════ */}
+                                    {step === 1 && (
+                                        <div>
+                                            <h2 className="font-display mb-6 text-2xl" style={{ color: "#14365C" }}>
+                                                Step 1 · Choose your package
+                                            </h2>
+                                            <RadioGroup
+                                                by="name"
+                                                value={selectedPlan}
+                                                onChange={setSelectedPlan}
+                                                aria-label="Membership package"
+                                                className="space-y-3"
                                             >
-                                                {({ checked }) => (
-                                                    <div className="flex items-center justify-between">
-                                                        <div className="flex items-center gap-4">
-                                                            <div
-                                                                className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors"
-                                                                style={{
-                                                                    borderColor: checked ? "#4A8A2C" : "#D1D5DB",
-                                                                    backgroundColor: checked ? "#4A8A2C" : "transparent",
-                                                                }}
+                                                {plans.map((plan) => (
+                                                    <Radio
+                                                        key={plan.name}
+                                                        value={plan}
+                                                        className={({ checked }) =>
+                                                            `block cursor-pointer rounded-2xl border p-4 transition-all outline-none ${
+                                                                checked ? "border-[#4A8A2C] bg-[#FAF6EE]" : "border-[#E5DDC8] hover:bg-[#FAF6EE]/60"
+                                                            }`
+                                                        }
+                                                    >
+                                                        {({ checked }) => (
+                                                            <div className="flex items-center justify-between">
+                                                                <div className="flex items-center gap-4">
+                                                                    <div
+                                                                        className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors"
+                                                                        style={{
+                                                                            borderColor: checked ? "#4A8A2C" : "#D1D5DB",
+                                                                            backgroundColor: checked ? "#4A8A2C" : "transparent",
+                                                                        }}
+                                                                    >
+                                                                        {checked && <div className="h-2 w-2 rounded-full bg-white" />}
+                                                                    </div>
+                                                                    <div>
+                                                                        <div className="font-display text-lg" style={{ color: "#14365C" }}>
+                                                                            {plan.name} Care
+                                                                            {plan.popular && (
+                                                                                <span
+                                                                                    className="ml-2 rounded-full px-2 py-0.5 font-sans text-xs"
+                                                                                    style={{ backgroundColor: "#4A8A2C", color: "#fff" }}
+                                                                                >
+                                                                                    Popular
+                                                                                </span>
+                                                                            )}
+                                                                        </div>
+                                                                        <div className="text-xs" style={{ color: "#6B6862" }}>
+                                                                            {plan.coverage} · {plan.tagline}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="font-display text-xl" style={{ color: "#14365C" }}>
+                                                                    ₱{plan.price.toLocaleString("en-PH")}
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </Radio>
+                                                ))}
+                                            </RadioGroup>
+                                        </div>
+                                    )}
+
+                                    {/* ════ STEP 2 — Personal info (Enhanced) ════ */}
+                                    {step === 2 && (
+                                        <div>
+                                            <h2 className="font-display mb-6 text-2xl" style={{ color: "#14365C" }}>
+                                                Step 2 · Your Information
+                                            </h2>
+                                            <div className="space-y-4">
+                                                {/* Full Name Section */}
+                                                <div className="grid gap-4 sm:grid-cols-2">
+                                                    <div>
+                                                        <label className={labelCls}>
+                                                            First name <span style={{ color: "#B91C1C" }}>*</span>
+                                                        </label>
+                                                        <input
+                                                            required
+                                                            value={form.firstName}
+                                                            placeholder="Juan"
+                                                            className={inputCls}
+                                                            onChange={(e) => setForm((prev) => ({ ...prev, firstName: e.target.value }))}
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className={labelCls}>
+                                                            Last name <span style={{ color: "#B91C1C" }}>*</span>
+                                                        </label>
+                                                        <input
+                                                            required
+                                                            value={form.lastName}
+                                                            placeholder="Dela Cruz"
+                                                            className={inputCls}
+                                                            onChange={(e) => setForm((prev) => ({ ...prev, lastName: e.target.value }))}
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                {/* Middle Name & Suffix */}
+                                                <div className="grid gap-4 sm:grid-cols-2">
+                                                    <div>
+                                                        <label className={labelCls}>
+                                                            Middle name
+                                                        </label>
+                                                        <input
+                                                            value={form.middleName}
+                                                            placeholder="Santos"
+                                                            className={inputCls}
+                                                            onChange={(e) => setForm((prev) => ({ ...prev, middleName: e.target.value }))}
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className={labelCls}>
+                                                            Suffix
+                                                        </label>
+                                                        <select
+                                                            value={form.suffix}
+                                                            className={inputCls}
+                                                            onChange={(e) => setForm((prev) => ({ ...prev, suffix: e.target.value }))}
+                                                        >
+                                                            <option value="">None</option>
+                                                            <option value="Jr.">Jr.</option>
+                                                            <option value="Sr.">Sr.</option>
+                                                            <option value="II">II</option>
+                                                            <option value="III">III</option>
+                                                            <option value="IV">IV</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                {/* Contact Information */}
+                                                <div className="grid gap-4 sm:grid-cols-2">
+                                                    <div>
+                                                        <label className={labelCls}>
+                                                            Email <span style={{ color: "#B91C1C" }}>*</span>
+                                                        </label>
+                                                        <input
+                                                            required
+                                                            type="email"
+                                                            value={form.email}
+                                                            placeholder="juandelacruz@example.com"
+                                                            className={inputCls}
+                                                            onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className={labelCls}>
+                                                            Confirm Email <span style={{ color: "#B91C1C" }}>*</span>
+                                                        </label>
+                                                        <input
+                                                            required
+                                                            type="email"
+                                                            value={form.confirmEmail}
+                                                            placeholder="juandelacruz@example.com"
+                                                            className={inputCls}
+                                                            onChange={(e) => setForm((prev) => ({ ...prev, confirmEmail: e.target.value }))}
+                                                        />
+                                                        {form.confirmEmail && form.email !== form.confirmEmail && (
+                                                            <p className="mt-1 text-xs" style={{ color: "#DC2626" }}>
+                                                                Emails do not match
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                {/* Mobile & Alternate Contact */}
+                                                <div className="grid gap-4 sm:grid-cols-2">
+                                                    <div>
+                                                        <label className={labelCls}>
+                                                            Mobile number <span style={{ color: "#B91C1C" }}>*</span>
+                                                        </label>
+                                                        <input
+                                                            required
+                                                            value={form.mobile}
+                                                            placeholder="09XXXXXXXXX"
+                                                            className={inputCls}
+                                                            onChange={(e) => setForm((prev) => ({ ...prev, mobile: e.target.value }))}
+                                                        />
+                                                        <p className="mt-1 text-xs" style={{ color: "#6B6862" }}>
+                                                            Format: 09XX-XXX-XXXX
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <label className={labelCls}>
+                                                            Telephone number (optional)
+                                                        </label>
+                                                        <input
+                                                            value={form.telephone}
+                                                            placeholder="(02) 1234-5678"
+                                                            className={inputCls}
+                                                            onChange={(e) => setForm((prev) => ({ ...prev, telephone: e.target.value }))}
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                {/* Password Section */}
+                                                <div className="grid gap-4 sm:grid-cols-2">
+                                                    <div>
+                                                        <label className={labelCls}>
+                                                            Password <span style={{ color: "#B91C1C" }}>*</span>
+                                                        </label>
+                                                        <div className="relative">
+                                                            <input
+                                                                required
+                                                                type={showPassword ? "text" : "password"}
+                                                                value={form.password}
+                                                                className={inputCls}
+                                                                style={{ paddingRight: "2.75rem" }}
+                                                                onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setShowPassword((v) => !v)}
+                                                                className="absolute inset-y-0 right-3 flex items-center text-[#6B6862] hover:text-[#14365C] transition-colors"
+                                                                tabIndex={-1}
+                                                                aria-label={showPassword ? "Hide password" : "Show password"}
                                                             >
-                                                                {checked && <div className="h-2 w-2 rounded-full bg-white" />}
-                                                            </div>
-                                                            <div>
-                                                                <div className="font-display text-lg" style={{ color: "#14365C" }}>
-                                                                    {/* Capitalize first letter */}
-                                                                    {plan.name} Care
-                                                                    {plan.popular && (
-                                                                        <span
-                                                                            className="ml-2 rounded-full px-2 py-0.5 font-sans text-xs"
-                                                                            style={{ backgroundColor: "#4A8A2C", color: "#fff" }}
-                                                                        >
-                                                                            Popular
-                                                                        </span>
-                                                                    )}
-                                                                </div>
-                                                                <div className="text-xs" style={{ color: "#6B6862" }}>
-                                                                    {plan.coverage} · {plan.tagline}
-                                                                </div>
-                                                            </div>
+                                                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                                            </button>
                                                         </div>
-                                                        <div className="font-display text-xl" style={{ color: "#14365C" }}>
-                                                            ₱{plan.price.toLocaleString("en-PH")}
+                                                        {form.password.length > 0 && (
+                                                            <div className="mt-2">
+                                                                <div className="flex gap-1 mb-1">
+                                                                    {[1, 2, 3, 4].map((seg) => (
+                                                                        <div
+                                                                            key={seg}
+                                                                            className="h-1 flex-1 rounded-full transition-colors duration-300"
+                                                                            style={{
+                                                                                backgroundColor: pwStrength.score >= seg ? pwStrength.color : "#E5DDC8",
+                                                                            }}
+                                                                        />
+                                                                    ))}
+                                                                </div>
+                                                                <p className="text-xs" style={{ color: pwStrength.color }}>
+                                                                    {pwStrength.label}: {pwStrength.label === "Strong" ? "✓ " : ""}
+                                                                    {pwStrength.score <= 1 && "Use 8+ characters with letters, numbers & symbols"}
+                                                                    {pwStrength.score === 2 && "Add numbers or symbols to strengthen"}
+                                                                    {pwStrength.score === 3 && "Good! Add more variety for strong password"}
+                                                                    {pwStrength.score >= 4 && "Excellent security"}
+                                                                </p>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div>
+                                                        <label className={labelCls}>
+                                                            Confirm password <span style={{ color: "#B91C1C" }}>*</span>
+                                                        </label>
+                                                        <div className="relative">
+                                                            <input
+                                                                required
+                                                                type={showConfirmPassword ? "text" : "password"}
+                                                                value={form.confirmPassword}
+                                                                className={inputCls}
+                                                                style={{ paddingRight: "2.75rem" }}
+                                                                onChange={(e) => setForm((prev) => ({ ...prev, confirmPassword: e.target.value }))}
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setShowConfirmPassword((v) => !v)}
+                                                                className="absolute inset-y-0 right-3 flex items-center text-[#6B6862] hover:text-[#14365C] transition-colors"
+                                                                tabIndex={-1}
+                                                                aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                                                            >
+                                                                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                                            </button>
+                                                        </div>
+                                                        {form.confirmPassword.length > 0 && (
+                                                            <p className="mt-2 text-xs" style={{ color: form.password === form.confirmPassword ? "#4A8A2C" : "#DC2626" }}>
+                                                                {form.password === form.confirmPassword ? "Passwords match ✓" : "Passwords do not match"}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                {/* Personal Details Section */}
+                                                <div className="grid gap-4 sm:grid-cols-2">
+                                                    <div>
+                                                        <label className={labelCls}>
+                                                            Birth date <span style={{ color: "#B91C1C" }}>*</span>
+                                                        </label>
+                                                        <input
+                                                            required
+                                                            type="date"
+                                                            value={form.birthDate}
+                                                            className={inputCls}
+                                                            onChange={(e) => setForm((prev) => ({ ...prev, birthDate: e.target.value }))}
+                                                        />
+                                                        <p className="mt-1 text-xs" style={{ color: "#6B6862" }}>
+                                                            Must be 18 years or older
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <label className={labelCls}>
+                                                            Place of birth
+                                                        </label>
+                                                        <input
+                                                            value={form.birthPlace}
+                                                            placeholder="City, Province"
+                                                            className={inputCls}
+                                                            onChange={(e) => setForm((prev) => ({ ...prev, birthPlace: e.target.value }))}
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                {/* Gender & Civil Status */}
+                                                <div className="grid gap-4 sm:grid-cols-2">
+                                                    <div>
+                                                        <label className={labelCls}>
+                                                            Gender <span style={{ color: "#B91C1C" }}>*</span>
+                                                        </label>
+                                                        <select
+                                                            required
+                                                            value={form.gender}
+                                                            className={inputCls}
+                                                            onChange={(e) => setForm((prev) => ({ ...prev, gender: e.target.value }))}
+                                                        >
+                                                            <option value="">Select Gender</option>
+                                                            <option value="male">Male</option>
+                                                            <option value="female">Female</option>
+                                                            <option value="other">Other</option>
+                                                            <option value="prefer-not">Prefer not to say</option>
+                                                        </select>
+                                                    </div>
+                                                    <div>
+                                                        <label className={labelCls}>
+                                                            Civil status <span style={{ color: "#B91C1C" }}>*</span>
+                                                        </label>
+                                                        <select
+                                                            required
+                                                            value={form.civilStatus}
+                                                            className={inputCls}
+                                                            onChange={(e) => setForm((prev) => ({ ...prev, civilStatus: e.target.value }))}
+                                                        >
+                                                            <option value="">Select Status</option>
+                                                            <option value="single">Single</option>
+                                                            <option value="married">Married</option>
+                                                            <option value="divorced">Divorced</option>
+                                                            <option value="widowed">Widowed</option>
+                                                            <option value="separated">Legally Separated</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                {/* Address Information */}
+                                                <div className="grid gap-4 sm:grid-cols-2">
+                                                    <div>
+                                                        <label className={labelCls}>
+                                                            Street address
+                                                        </label>
+                                                        <input
+                                                            value={form.streetAddress}
+                                                            placeholder="123 Rizal Street"
+                                                            className={inputCls}
+                                                            onChange={(e) => setForm((prev) => ({ ...prev, streetAddress: e.target.value }))}
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className={labelCls}>
+                                                            Barangay
+                                                        </label>
+                                                        <input
+                                                            value={form.barangay}
+                                                            placeholder="Barangay name"
+                                                            className={inputCls}
+                                                            onChange={(e) => setForm((prev) => ({ ...prev, barangay: e.target.value }))}
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                <div className="grid gap-4 sm:grid-cols-2">
+                                                    <div>
+                                                        <label className={labelCls}>
+                                                            City / Municipality <span style={{ color: "#B91C1C" }}>*</span>
+                                                        </label>
+                                                        <input
+                                                            required
+                                                            value={form.city}
+                                                            placeholder="Davao City"
+                                                            className={inputCls}
+                                                            onChange={(e) => setForm((prev) => ({ ...prev, city: e.target.value }))}
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className={labelCls}>
+                                                            Province <span style={{ color: "#B91C1C" }}>*</span>
+                                                        </label>
+                                                        <input
+                                                            required
+                                                            value={form.province}
+                                                            placeholder="Davao del Sur"
+                                                            className={inputCls}
+                                                            onChange={(e) => setForm((prev) => ({ ...prev, province: e.target.value }))}
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                <div className="grid gap-4 sm:grid-cols-2">
+                                                    <div>
+                                                        <label className={labelCls}>
+                                                            Postal / ZIP code
+                                                        </label>
+                                                        <input
+                                                            value={form.postalCode}
+                                                            placeholder="8000"
+                                                            className={inputCls}
+                                                            onChange={(e) => setForm((prev) => ({ ...prev, postalCode: e.target.value }))}
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className={labelCls}>
+                                                            Country
+                                                        </label>
+                                                        <input
+                                                            value={form.country}
+                                                            className={inputCls}
+                                                            onChange={(e) => setForm((prev) => ({ ...prev, country: e.target.value }))}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* ════ STEP 3 — Sponsor & Beneficiaries ════ */}
+                                    {step === 3 && (
+                                        <div>
+                                            <h2 className="font-display mb-6 text-2xl" style={{ color: "#14365C" }}>
+                                                Step 3 · Sponsor &amp; Beneficiaries
+                                            </h2>
+                                            <div className="space-y-5">
+                                                <div>
+                                                    <label className={labelCls}>
+                                                        Sponsor / Referral Code <span style={{ color: "#B91C1C" }}>*</span>
+                                                    </label>
+                                                    <input
+                                                        required
+                                                        value={form.referralCode}
+                                                        placeholder="e.g. MARIA-ABCD-1234"
+                                                        className={inputCls}
+                                                        onChange={(e) => {
+                                                            setRefCode(e.target.value);
+                                                            setForm((prev) => ({ ...prev, referralCode: e.target.value }));
+                                                        }}
+                                                    />
+                                                </div>
+
+                                                {selectedPlan.name !== "Basic" && (
+                                                    <div className="mt-1 border-t pt-5" style={{ borderColor: "#E5DDC8" }}>
+                                                        <label className={labelCls}>
+                                                            Beneficiaries
+                                                            <span className="ml-1 normal-case" style={{ color: "#6B6862" }}>
+                                                                (up to {selectedPlan.name === "Family" ? 2 : 4})
+                                                            </span>
+                                                        </label>
+
+                                                        <div className="mt-3 space-y-3">
+                                                            {form.beneficiaries.map((b, index) => (
+                                                                <div
+                                                                    key={index}
+                                                                    className="space-y-3 rounded-2xl p-4"
+                                                                    style={{ backgroundColor: "#FAF6EE", border: "1px solid #E5DDC8" }}
+                                                                >
+                                                                    <p className="text-xs font-semibold" style={{ color: "#14365C" }}>
+                                                                        Beneficiary {index + 1}
+                                                                    </p>
+                                                                    <input
+                                                                        required
+                                                                        placeholder="Full name (e.g. Maria Dela Cruz)"
+                                                                        className={inputCls}
+                                                                        value={b.name}
+                                                                        onChange={(e) => {
+                                                                            const val = e.target.value;
+                                                                            setForm((prev) => {
+                                                                                const updated = prev.beneficiaries.map((item, i) =>
+                                                                                    i === index ? { ...item, name: val } : item,
+                                                                                );
+                                                                                return { ...prev, beneficiaries: updated };
+                                                                            });
+                                                                        }}
+                                                                    />
+                                                                    <select
+                                                                        required
+                                                                        className={inputCls}
+                                                                        value={b.relationship}
+                                                                        onChange={(e) => {
+                                                                            const val = e.target.value;
+                                                                            setForm((prev) => {
+                                                                                const updated = prev.beneficiaries.map((item, i) =>
+                                                                                    i === index ? { ...item, relationship: val } : item,
+                                                                                );
+                                                                                return { ...prev, beneficiaries: updated };
+                                                                            });
+                                                                        }}
+                                                                    >
+                                                                        <option value="">Select relationship</option>
+                                                                        <option value="Parent">Parent</option>
+                                                                        <option value="Sibling">Sibling</option>
+                                                                        <option value="Child">Child</option>
+                                                                        <option value="Spouse">Spouse</option>
+                                                                    </select>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+
+                                                        <div className="mt-3 flex gap-4">
+                                                            {form.beneficiaries.length < (selectedPlan.name === "Family" ? 2 : 4) && (
+                                                                <button
+                                                                    type="button"
+                                                                    className="flex items-center gap-1 text-sm font-medium hover:underline"
+                                                                    style={{ color: "#4A8A2C" }}
+                                                                    onClick={() =>
+                                                                        setForm((prev) => ({
+                                                                            ...prev,
+                                                                            beneficiaries: [...prev.beneficiaries, { name: "", relationship: "" }],
+                                                                        }))
+                                                                    }
+                                                                >
+                                                                    <Plus size={14} /> Add another
+                                                                </button>
+                                                            )}
+                                                            {form.beneficiaries.length > 1 && (
+                                                                <button
+                                                                    type="button"
+                                                                    className="text-sm hover:underline"
+                                                                    style={{ color: "#B91C1C" }}
+                                                                    onClick={() =>
+                                                                        setForm((prev) => ({
+                                                                            ...prev,
+                                                                            beneficiaries: prev.beneficiaries.slice(0, -1),
+                                                                        }))
+                                                                    }
+                                                                >
+                                                                    − Remove last
+                                                                </button>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 )}
-                                            </Radio>
-                                        ))}
-                                    </RadioGroup>
-                                </div>
-                            )}
-
-                            {/* ════ STEP 2 — Personal info ════ */}
-                            {step === 2 && (
-                                <div>
-                                    <h2 className="font-display mb-6 text-2xl" style={{ color: "#14365C" }}>
-                                        Step 2 · Your Information
-                                    </h2>
-                                    <div className="space-y-4">
-                                        <div className="grid gap-4 sm:grid-cols-2">
-                                            <div>
-                                                <label className={labelCls}>
-                                                    First name <span style={{ color: "#B91C1C" }}>*</span>
-                                                </label>
-                                                <input
-                                                    required
-                                                    value={form.firstName}
-                                                    placeholder="Juan"
-                                                    className={inputCls}
-                                                    onChange={(e) => setForm((prev) => ({ ...prev, firstName: e.target.value }))}
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className={labelCls}>
-                                                    Last name <span style={{ color: "#B91C1C" }}>*</span>
-                                                </label>
-                                                <input
-                                                    required
-                                                    value={form.lastName}
-                                                    placeholder="Dela Cruz"
-                                                    className={inputCls}
-                                                    onChange={(e) => setForm((prev) => ({ ...prev, lastName: e.target.value }))}
-                                                />
                                             </div>
                                         </div>
+                                    )}
 
+                                    {/* ════ STEP 4 — Payment ════ */}
+                                    {step === 4 && (
                                         <div>
-                                            <label className={labelCls}>
-                                                Email <span style={{ color: "#B91C1C" }}>*</span>
-                                            </label>
-                                            <input
-                                                required
-                                                type="email"
-                                                value={form.email}
-                                                placeholder="juandelacruz@example.com"
-                                                className={inputCls}
-                                                onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
-                                            />
-                                        </div>
+                                            <h2 className="font-display mb-2 text-2xl" style={{ color: "#14365C" }}>
+                                                Step 4 · Payment
+                                            </h2>
+                                            <p className="mb-6 text-sm" style={{ color: "#6B6862" }}>
+                                                Send your payment to one of the accounts below, then upload your proof of payment.
+                                            </p>
 
-                                        <div className="grid gap-4 sm:grid-cols-2">
-                                            <div>
-                                                <label className={labelCls}>
-                                                    Password <span style={{ color: "#B91C1C" }}>*</span>
-                                                </label>
-                                                <input
-                                                    required
-                                                    type="password"
-                                                    value={form.password}
-                                                    className={inputCls}
-                                                    onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
-                                                />
+                                            <div className="mb-6 flex items-center justify-between rounded-2xl px-5 py-4" style={{ backgroundColor: "#FAF6EE", border: "1px solid #E5DDC8" }}>
+                                                <div>
+                                                    <p className="text-xs uppercase tracking-wider" style={{ color: "#6B6862" }}>Amount Due</p>
+                                                    <p className="font-display text-2xl font-semibold" style={{ color: "#14365C" }}>
+                                                        ₱{selectedPlan.price.toLocaleString("en-PH")}
+                                                    </p>
+                                                </div>
+                                                <span className="rounded-full px-3 py-1 text-xs font-medium text-white" style={{ backgroundColor: "#4A8A2C" }}>
+                                                    {selectedPlan.name} Care
+                                                </span>
                                             </div>
-                                            <div>
-                                                <label className={labelCls}>
-                                                    Confirm password <span style={{ color: "#B91C1C" }}>*</span>
-                                                </label>
-                                                <input
-                                                    required
-                                                    type="password"
-                                                    value={form.confirmPassword}
-                                                    className={inputCls}
-                                                    onChange={(e) => setForm((prev) => ({ ...prev, confirmPassword: e.target.value }))}
-                                                />
-                                            </div>
-                                        </div>
 
-                                        <div>
-                                            <label className={labelCls}>
-                                                Mobile number <span style={{ color: "#B91C1C" }}>*</span>
-                                            </label>
-                                            <input
-                                                required
-                                                value={form.mobile}
-                                                placeholder="09XXXXXXXXX"
-                                                className={inputCls}
-                                                onChange={(e) => setForm((prev) => ({ ...prev, mobile: e.target.value }))}
-                                            />
-                                        </div>
+                                            <div className="mb-6 grid gap-4 sm:grid-cols-2">
+                                                <div className="flex flex-col items-center rounded-2xl p-5" style={{ border: "1px solid #E5DDC8", backgroundColor: "#fff" }}>
+                                                    <p className="mb-3 text-sm font-semibold" style={{ color: "#14365C" }}>GCash</p>
+                                                    <div className="flex h-40 w-40 items-center justify-center rounded-xl text-xs" style={{ backgroundColor: "#F3F4F6", color: "#9CA3AF", border: "2px dashed #D1D5DB" }}>
+                                                        QR placeholder
+                                                    </div>
+                                                    <p className="mt-3 text-xs" style={{ color: "#6B6862" }}>Account name: <span className="font-medium" style={{ color: "#14365C" }}>GPSC Official</span></p>
+                                                    <p className="text-xs" style={{ color: "#6B6862" }}>Number: <span className="font-medium" style={{ color: "#14365C" }}>09XX-XXX-XXXX</span></p>
+                                                </div>
 
-                                        <div className="grid gap-4 sm:grid-cols-2">
-                                            <div>
-                                                <label className={labelCls}>
-                                                    Birth date <span style={{ color: "#B91C1C" }}>*</span>
-                                                </label>
-                                                <input
-                                                    required
-                                                    type="date"
-                                                    value={form.birthDate}
-                                                    className={inputCls}
-                                                    onChange={(e) => setForm((prev) => ({ ...prev, birthDate: e.target.value }))}
-                                                />
+                                                <div className="flex flex-col items-center rounded-2xl p-5" style={{ border: "1px solid #E5DDC8", backgroundColor: "#fff" }}>
+                                                    <p className="mb-3 text-sm font-semibold" style={{ color: "#14365C" }}>Maya</p>
+                                                    <div className="flex h-40 w-40 items-center justify-center rounded-xl text-xs" style={{ backgroundColor: "#F3F4F6", color: "#9CA3AF", border: "2px dashed #D1D5DB" }}>
+                                                        QR placeholder
+                                                    </div>
+                                                    <p className="mt-3 text-xs" style={{ color: "#6B6862" }}>Account name: <span className="font-medium" style={{ color: "#14365C" }}>GPSC Official</span></p>
+                                                    <p className="text-xs" style={{ color: "#6B6862" }}>Number: <span className="font-medium" style={{ color: "#14365C" }}>09XX-XXX-XXXX</span></p>
+                                                </div>
                                             </div>
+
                                             <div>
                                                 <label className={labelCls}>
-                                                    Civil status <span style={{ color: "#B91C1C" }}>*</span>
+                                                    Upload Proof of Payment <span style={{ color: "#B91C1C" }}>*</span>
                                                 </label>
-                                                <select
-                                                    required
-                                                    value={form.civilStatus}
-                                                    className={inputCls}
-                                                    onChange={(e) => setForm((prev) => ({ ...prev, civilStatus: e.target.value }))}
+                                                <p className="mb-2 mt-0.5 text-xs" style={{ color: "#6B6862" }}>
+                                                    Screenshot or photo of your transaction receipt (JPG, PNG, or PDF).
+                                                </p>
+
+                                                <label
+                                                    htmlFor="paymentProof"
+                                                    className="mt-1 flex cursor-pointer flex-col items-center justify-center rounded-xl py-8 transition-colors"
+                                                    style={{
+                                                        border: "2px dashed #E5DDC8",
+                                                        backgroundColor: paymentProofPreview ? "#F0FDF4" : "#FAF6EE",
+                                                    }}
                                                 >
-                                                    <option value="">Select Status</option>
-                                                    <option value="single">Single</option>
-                                                    <option value="married">Married</option>
-                                                    <option value="divorced">Divorced</option>
-                                                    <option value="widowed">Widowed</option>
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <div className="grid gap-4 sm:grid-cols-2">
-                                            <div>
-                                                <label className={labelCls}>
-                                                    City <span style={{ color: "#B91C1C" }}>*</span>
-                                                </label>
-                                                <input
-                                                    required
-                                                    value={form.city}
-                                                    placeholder="Davao City"
-                                                    className={inputCls}
-                                                    onChange={(e) => setForm((prev) => ({ ...prev, city: e.target.value }))}
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className={labelCls}>
-                                                    Province <span style={{ color: "#B91C1C" }}>*</span>
-                                                </label>
-                                                <input
-                                                    required
-                                                    value={form.province}
-                                                    placeholder="Davao del Sur"
-                                                    className={inputCls}
-                                                    onChange={(e) => setForm((prev) => ({ ...prev, province: e.target.value }))}
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* ════ STEP 3 — Sponsor & Beneficiaries ════ */}
-                            {step === 3 && (
-                                <div>
-                                    <h2 className="font-display mb-6 text-2xl" style={{ color: "#14365C" }}>
-                                        Step 3 · Sponsor &amp; Beneficiaries
-                                    </h2>
-                                    <div className="space-y-5">
-                                        <div>
-                                            <label className={labelCls}>
-                                                Sponsor / Referral Code <span style={{ color: "#B91C1C" }}>*</span>
-                                            </label>
-                                            <input
-                                                required
-                                                value={form.referralCode}
-                                                placeholder="e.g. MARIA-ABCD-1234"
-                                                className={inputCls}
-                                                onChange={(e) => {
-                                                    setRefCode(e.target.value);
-                                                    setForm((prev) => ({ ...prev, referralCode: e.target.value }));
-                                                }}
-                                            />
-                                        </div>
-
-                                        {selectedPlan.name !== "Basic" && (
-                                            <div className="mt-1 border-t pt-5" style={{ borderColor: "#E5DDC8" }}>
-                                                {/* only show on non-basic */}
-
-                                                <label className={labelCls}>
-                                                    Beneficiaries
-                                                    <span className="ml-1 normal-case" style={{ color: "#6B6862" }}>
-                                                        (up to {selectedPlan.name === "Family" ? 2 : 4})
-                                                    </span>
-                                                </label>
-
-                                                <div className="mt-3 space-y-3">
-                                                    {form.beneficiaries.map((b, index) => (
-                                                        <div
-                                                            key={index}
-                                                            className="space-y-3 rounded-2xl p-4"
-                                                            style={{ backgroundColor: "#FAF6EE", border: "1px solid #E5DDC8" }}
-                                                        >
-                                                            <p className="text-xs font-semibold" style={{ color: "#14365C" }}>
-                                                                Beneficiary {index + 1}
-                                                            </p>
-                                                            <input
-                                                                required
-                                                                placeholder="Full name (e.g. Maria Dela Cruz)"
-                                                                className={inputCls}
-                                                                value={b.name}
-                                                                onChange={(e) => {
-                                                                    const val = e.target.value;
-                                                                    setForm((prev) => {
-                                                                        const updated = prev.beneficiaries.map((item, i) =>
-                                                                            i === index ? { ...item, name: val } : item,
-                                                                        );
-                                                                        return { ...prev, beneficiaries: updated };
-                                                                    });
-                                                                }}
-                                                            />
-                                                            <select
-                                                                required
-                                                                className={inputCls}
-                                                                value={b.relationship}
-                                                                onChange={(e) => {
-                                                                    const val = e.target.value;
-                                                                    setForm((prev) => {
-                                                                        const updated = prev.beneficiaries.map((item, i) =>
-                                                                            i === index ? { ...item, relationship: val } : item,
-                                                                        );
-                                                                        return { ...prev, beneficiaries: updated };
-                                                                    });
-                                                                }}
-                                                            >
-                                                                <option value="">Select relationship</option>
-                                                                <option value="Parent">Parent</option>
-                                                                <option value="Sibling">Sibling</option>
-                                                                <option value="Child">Child</option>
-                                                                <option value="Spouse">Spouse</option>
-                                                            </select>
-                                                        </div>
-                                                    ))}
-                                                </div>
-
-                                                <div className="mt-3 flex gap-4">
-                                                    {form.beneficiaries.length < (selectedPlan.name === "Family" ? 2 : 4) && (
-                                                        <button
-                                                            type="button"
-                                                            className="flex items-center gap-1 text-sm font-medium hover:underline"
-                                                            style={{ color: "#4A8A2C" }}
-                                                            onClick={() =>
-                                                                setForm((prev) => ({
-                                                                    ...prev,
-                                                                    beneficiaries: [...prev.beneficiaries, { name: "", relationship: "" }],
-                                                                }))
-                                                            }
-                                                        >
-                                                            <Plus size={14} /> Add another
-                                                        </button>
+                                                    {paymentProofPreview ? (
+                                                        <img
+                                                            src={paymentProofPreview}
+                                                            alt="Proof of payment"
+                                                            className="max-h-48 rounded-lg object-contain"
+                                                        />
+                                                    ) : (
+                                                        <>
+                                                            <svg className="mb-2 h-8 w-8" fill="none" stroke="#9CA3AF" strokeWidth={1.5} viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                                                            </svg>
+                                                            <p className="text-sm" style={{ color: "#6B6862" }}>Click to upload</p>
+                                                            <p className="text-xs" style={{ color: "#9CA3AF" }}>JPG, PNG, PDF up to 10MB</p>
+                                                        </>
                                                     )}
-                                                    {form.beneficiaries.length > 1 && (
+                                                </label>
+                                                <input
+                                                    id="paymentProof"
+                                                    type="file"
+                                                    accept="image/jpeg,image/png,application/pdf"
+                                                    className="sr-only"
+                                                    onChange={(e) => {
+                                                        const file = e.target.files?.[0] ?? null;
+                                                        setPaymentProofFile(file);
+                                                        if (file && file.type.startsWith("image/")) {
+                                                            const reader = new FileReader();
+                                                            reader.onload = () => setPaymentProofPreview(reader.result as string);
+                                                            reader.readAsDataURL(file);
+                                                        } else {
+                                                            setPaymentProofPreview(null);
+                                                        }
+                                                    }}
+                                                />
+                                                {paymentProofFile && (
+                                                    <div className="mt-2 flex items-center justify-between rounded-xl px-4 py-2 text-sm" style={{ backgroundColor: "#F0FDF4", border: "1px solid #BBF7D0" }}>
+                                                        <span style={{ color: "#14365C" }}>{paymentProofFile.name}</span>
                                                         <button
                                                             type="button"
-                                                            className="text-sm hover:underline"
+                                                            className="text-xs hover:underline"
                                                             style={{ color: "#B91C1C" }}
-                                                            onClick={() =>
-                                                                setForm((prev) => ({
-                                                                    ...prev,
-                                                                    beneficiaries: prev.beneficiaries.slice(0, -1),
-                                                                }))
-                                                            }
+                                                            onClick={() => { setPaymentProofFile(null); setPaymentProofPreview(null); }}
                                                         >
-                                                            − Remove last
+                                                            Remove
                                                         </button>
-                                                    )}
-                                                </div>
+                                                    </div>
+                                                )}
                                             </div>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* ════ STEP 4 — Review ════ */}
-                            {step === 4 && (
-                                <div>
-                                    <h2 className="font-display mb-6 text-2xl" style={{ color: "#14365C" }}>
-                                        Step 4 · Review &amp; register
-                                    </h2>
-
-                                    {/* Package */}
-                                    <p className="mb-2 text-xs tracking-wider uppercase" style={{ color: "#6B6862" }}>
-                                        Membership Package
-                                    </p>
-                                    <div className="mb-5 space-y-2">
-                                        {[
-                                            { label: "Package", value: `${selectedPlan.name} Care — ₱${selectedPlan.price.toLocaleString("en-PH")}` },
-                                        ].map(({ label, value }) => (
-                                            <div
-                                                key={label}
-                                                className="flex justify-between rounded-xl px-4 py-3 text-sm"
-                                                style={{ backgroundColor: "#FAF6EE" }}
-                                            >
-                                                <span style={{ color: "#6B6862" }}>{label}</span>
-                                                <span className="font-medium" style={{ color: "#14365C" }}>
-                                                    {value}
-                                                </span>
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    {/* Personal Info */}
-                                    <p className="mb-2 text-xs tracking-wider uppercase" style={{ color: "#6B6862" }}>
-                                        Personal Information
-                                    </p>
-                                    <div className="mb-5 space-y-2">
-                                        {[
-                                            { label: "First name", value: form.firstName || "—" },
-                                            { label: "Last name", value: form.lastName || "—" },
-                                            { label: "Email", value: form.email || "—" },
-                                            { label: "Mobile", value: form.mobile || "—" },
-                                            { label: "Birth date", value: form.birthDate || "—" },
-                                            {
-                                                label: "Civil status",
-                                                value: form.civilStatus ? form.civilStatus.charAt(0).toUpperCase() + form.civilStatus.slice(1) : "—",
-                                            },
-                                            { label: "City", value: form.city || "—" },
-                                            { label: "Province", value: form.province || "—" },
-                                        ].map(({ label, value }) => (
-                                            <div
-                                                key={label}
-                                                className="flex justify-between rounded-xl px-4 py-3 text-sm"
-                                                style={{ backgroundColor: "#FAF6EE" }}
-                                            >
-                                                <span style={{ color: "#6B6862" }}>{label}</span>
-                                                <span className="text-right font-medium" style={{ color: "#14365C" }}>
-                                                    {value}
-                                                </span>
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    {/* Sponsor */}
-                                    <p className="mb-2 text-xs tracking-wider uppercase" style={{ color: "#6B6862" }}>
-                                        Sponsor
-                                    </p>
-                                    <div className="mb-5 space-y-2">
-                                        <div className="flex justify-between rounded-xl px-4 py-3 text-sm" style={{ backgroundColor: "#FAF6EE" }}>
-                                            <span style={{ color: "#6B6862" }}>Referral code</span>
-                                            <span className="font-medium" style={{ color: "#14365C" }}>
-                                                {refCode || "—"}
-                                            </span>
                                         </div>
-                                    </div>
+                                    )}
 
-                                    {/* Beneficiaries */}
-                                    {selectedPlan.name !== "Basic" && (
-                                        <>
+                                    {/* ════ STEP 5 — Review ════ */}
+                                    {step === 5 && (
+                                        <div>
+                                            <h2 className="font-display mb-6 text-2xl" style={{ color: "#14365C" }}>
+                                                Step 5 · Review &amp; register
+                                            </h2>
+
                                             <p className="mb-2 text-xs tracking-wider uppercase" style={{ color: "#6B6862" }}>
-                                                Beneficiaries
+                                                Membership Package
                                             </p>
                                             <div className="mb-5 space-y-2">
-                                                {form.beneficiaries.map((b, i) => (
-                                                    <div key={i} className="rounded-xl px-4 py-3 text-sm" style={{ backgroundColor: "#FAF6EE" }}>
-                                                        <div className="flex justify-between">
-                                                            <span style={{ color: "#6B6862" }}>Beneficiary {i + 1}</span>
-                                                            <span className="font-medium" style={{ color: "#14365C" }}>
-                                                                {b.name || "—"}
-                                                            </span>
-                                                        </div>
-                                                        <div className="mt-1 flex justify-between">
-                                                            <span style={{ color: "#6B6862" }}>Relationship</span>
-                                                            <span className="font-medium" style={{ color: "#14365C" }}>
-                                                                {b.relationship || "—"}
-                                                            </span>
-                                                        </div>
+                                                <div className="flex justify-between rounded-xl px-4 py-3 text-sm" style={{ backgroundColor: "#FAF6EE" }}>
+                                                    <span style={{ color: "#6B6862" }}>Package</span>
+                                                    <span className="font-medium" style={{ color: "#14365C" }}>
+                                                        {selectedPlan.name} Care — ₱{selectedPlan.price.toLocaleString("en-PH")}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <p className="mb-2 text-xs tracking-wider uppercase" style={{ color: "#6B6862" }}>
+                                                Personal Information
+                                            </p>
+                                            <div className="mb-5 space-y-2">
+                                                {[
+                                                    { label: "First name", value: form.firstName || "—" },
+                                                    { label: "Middle name", value: form.middleName || "—" },
+                                                    { label: "Last name", value: form.lastName || "—" },
+                                                    { label: "Suffix", value: form.suffix || "—" },
+                                                    { label: "Email", value: form.email || "—" },
+                                                    { label: "Mobile", value: form.mobile || "—" },
+                                                    { label: "Telephone", value: form.telephone || "—" },
+                                                    { label: "Birth date", value: form.birthDate || "—" },
+                                                    { label: "Birth place", value: form.birthPlace || "—" },
+                                                    { label: "Gender", value: form.gender ? form.gender.charAt(0).toUpperCase() + form.gender.slice(1) : "—" },
+                                                    {
+                                                        label: "Civil status",
+                                                        value: form.civilStatus ? form.civilStatus.charAt(0).toUpperCase() + form.civilStatus.slice(1) : "—",
+                                                    },
+                                                    { label: "Street address", value: form.streetAddress || "—" },
+                                                    { label: "Barangay", value: form.barangay || "—" },
+                                                    { label: "City", value: form.city || "—" },
+                                                    { label: "Province", value: form.province || "—" },
+                                                    { label: "Postal code", value: form.postalCode || "—" },
+                                                    { label: "Country", value: form.country || "—" },
+                                                ].map(({ label, value }) => (
+                                                    <div
+                                                        key={label}
+                                                        className="flex justify-between rounded-xl px-4 py-3 text-sm"
+                                                        style={{ backgroundColor: "#FAF6EE" }}
+                                                    >
+                                                        <span style={{ color: "#6B6862" }}>{label}</span>
+                                                        <span className="text-right font-medium" style={{ color: "#14365C" }}>
+                                                            {value}
+                                                        </span>
                                                     </div>
                                                 ))}
                                             </div>
-                                        </>
+
+                                            <p className="mb-2 text-xs tracking-wider uppercase" style={{ color: "#6B6862" }}>
+                                                Sponsor
+                                            </p>
+                                            <div className="mb-5 space-y-2">
+                                                <div className="flex justify-between rounded-xl px-4 py-3 text-sm" style={{ backgroundColor: "#FAF6EE" }}>
+                                                    <span style={{ color: "#6B6862" }}>Referral code</span>
+                                                    <span className="font-medium" style={{ color: "#14365C" }}>
+                                                        {form.referralCode || "—"}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <p className="mb-2 text-xs tracking-wider uppercase" style={{ color: "#6B6862" }}>
+                                                Payment
+                                            </p>
+                                            <div className="mb-5 space-y-2">
+                                                <div className="flex justify-between rounded-xl px-4 py-3 text-sm" style={{ backgroundColor: "#FAF6EE" }}>
+                                                    <span style={{ color: "#6B6862" }}>Proof of payment</span>
+                                                    <span className="font-medium" style={{ color: paymentProofFile ? "#4A8A2C" : "#B91C1C" }}>
+                                                        {paymentProofFile ? paymentProofFile.name : "Not uploaded"}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            {selectedPlan.name !== "Basic" && (
+                                                <>
+                                                    <p className="mb-2 text-xs tracking-wider uppercase" style={{ color: "#6B6862" }}>
+                                                        Beneficiaries
+                                                    </p>
+                                                    <div className="mb-5 space-y-2">
+                                                        {form.beneficiaries.map((b, i) => (
+                                                            <div key={i} className="rounded-xl px-4 py-3 text-sm" style={{ backgroundColor: "#FAF6EE" }}>
+                                                                <div className="flex justify-between">
+                                                                    <span style={{ color: "#6B6862" }}>Beneficiary {i + 1}</span>
+                                                                    <span className="font-medium" style={{ color: "#14365C" }}>
+                                                                        {b.name || "—"}
+                                                                    </span>
+                                                                </div>
+                                                                <div className="mt-1 flex justify-between">
+                                                                    <span style={{ color: "#6B6862" }}>Relationship</span>
+                                                                    <span className="font-medium" style={{ color: "#14365C" }}>
+                                                                        {b.relationship || "—"}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </>
+                                            )}
+
+                                            <button
+                                                type="submit"
+                                                disabled={loading || step !== totalSteps}
+                                                className="flex w-full items-center justify-center gap-2 rounded-xl py-3 text-white hover:bg-[#5DAB3A] disabled:cursor-not-allowed disabled:opacity-60"
+                                                style={{ backgroundColor: "#4A8A2C" }}
+                                            >
+                                                {loading ? (
+                                                    <>
+                                                        <svg
+                                                            className="h-4 w-4 animate-spin text-white"
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            fill="none"
+                                                            viewBox="0 0 24 24"
+                                                        >
+                                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                                            <path
+                                                                className="opacity-75"
+                                                                fill="currentColor"
+                                                                d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"
+                                                            />
+                                                        </svg>
+                                                        Creating your account...
+                                                    </>
+                                                ) : (
+                                                    "Register"
+                                                )}
+                                            </button>
+                                        </div>
                                     )}
 
-                                    <button
-                                        type="submit"
-                                        disabled={loading || step !== totalSteps}
-                                        className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-500 py-3 text-white hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-60"
-                                        style={{ backgroundColor: "#4A8A2C" }}
-                                        onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#5DAB3A")}
-                                        onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#4A8A2C")}
-                                    >
-                                        {loading ? (
-                                            <>
-                                                <svg
-                                                    className="h-4 w-4 animate-spin text-white"
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                                    <path
-                                                        className="opacity-75"
-                                                        fill="currentColor"
-                                                        d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"
-                                                    />
-                                                </svg>
-                                                Creating your account...
-                                            </>
-                                        ) : (
-                                            "Register"
+                                    {/* ── Navigation buttons ── */}
+                                    <div className="flex justify-between pt-4" style={{ borderTop: "1px solid #E5DDC8" }}>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                if (step === 1) {
+                                                    navigate("/");
+                                                } else {
+                                                    setError("");
+                                                    setStep(step - 1);
+                                                }
+                                            }}
+                                            className="flex items-center gap-2 rounded-full px-4 py-2 text-sm transition"
+                                            style={{ color: "#6B6862" }}
+                                        >
+                                            <ChevronLeft size={16} /> Back
+                                        </button>
+                                        {step < totalSteps && (
+                                            <button
+                                                type="button"
+                                                onClick={handleContinue}
+                                                className="flex items-center gap-2 rounded-full px-6 py-2 text-sm font-medium text-white transition-colors"
+                                                style={{ backgroundColor: "#14365C" }}
+                                                onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#4A8A2C")}
+                                                onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#14365C")}
+                                            >
+                                                Continue <ChevronRight size={16} />
+                                            </button>
                                         )}
-                                    </button>
-                                </div>
-                            )}
-
-                            {/* ── Navigation buttons ── */}
-                            <div className="flex justify-between pt-4" style={{ borderTop: "1px solid #E5DDC8" }}>
-                                <button
-                                    type="button"
-                                    disabled={step === 1}
-                                    onClick={() => {
-                                        setError("");
-                                        setStep(step - 1);
-                                    }}
-                                    className="flex items-center gap-2 rounded-full px-4 py-2 text-sm transition disabled:opacity-30"
-                                    style={{ color: "#6B6862" }}
-                                >
-                                    <ChevronLeft size={16} /> Back
-                                </button>
-                                {step < totalSteps && (
-                                    <button
-                                        type="button"
-                                        onClick={handleContinue}
-                                        className="flex items-center gap-2 rounded-full px-6 py-2 text-sm font-medium text-white transition-colors"
-                                        style={{ backgroundColor: "#14365C" }}
-                                        onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#4A8A2C")}
-                                        onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#14365C")}
-                                    >
-                                        Continue <ChevronRight size={16} />
-                                    </button>
-                                )}
+                                    </div>
+                                </form>
                             </div>
-                        </form>
-                    </div>
 
-                    {/* ── Footer link ── */}
-                    <p className="pt-5 text-center text-xs" style={{ color: "#6B6862" }}>
-                        Already have an account?{" "}
-                        <Link to="/signin" className="font-medium hover:underline" style={{ color: "#4A8A2C" }}>
-                            Sign in
-                        </Link>
-                    </p>
+                            {/* ── Footer link ── */}
+                            <p className="pt-5 text-center text-xs" style={{ color: "#6B6862" }}>
+                                Already have an account?{" "}
+                                <Link to="/signin" className="font-medium hover:underline" style={{ color: "#4A8A2C" }}>
+                                    Sign in
+                                </Link>
+                            </p>
+                        </>
+                    )}
                 </div>
             </div>
         </>

@@ -52,7 +52,7 @@ export const Overview: React.FC<Props> = ({ loading, onRefresh }) => {
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-                <StatCard label="Active Members" value={adminStats.activeMembers} icon={Users} />
+                <StatCard label="Active Members" value={adminStats.activeMembers} sub="From Subscriptions" icon={Users} />
                 <StatCard label="Total Revenue" value={formatCurrency(adminStats.totalRevenue)} sub="From Memberships" icon={TrendingUp} />
                 <StatCard
                     label="Pending Claims"

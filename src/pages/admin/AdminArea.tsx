@@ -8,9 +8,13 @@ import type { DashboardStats, GrowthDataPoint, PackageMixItem, TopRecruiter, Pen
 
 import { activateMember, deactivateMember } from "../../firebase/admin";
 
+import { Timestamp } from "firebase/firestore";
+
+
 // Mock data fetching functions - replace with your actual API calls
 const fetchDashboardStats = async (): Promise<DashboardStats> => {
     return {
+        // Replace with actual API call
         activeMembers: 1247,
         totalRevenue: 1250000,
         totalCommissions: 250000,
@@ -95,68 +99,15 @@ const fetchCommissionHistory = async (): Promise<CommissionRecord[]> => {
 
 export default function AdminArea() {
     const { currentUser, loading: authLoading } = useAuth();
-    const [isLoading, setIsLoading] = useState(true);
-    const [stats, setStats] = useState<DashboardStats | null>(null);
+
     const [claims, setClaims] = useState<Claim[]>([]);
     const [pendingCommissions, setPendingCommissions] = useState<PendingCommission[]>([]);
     const [commissionHistory, setCommissionHistory] = useState<CommissionRecord[]>([]);
 
-    // Compute admin user using useMemo instead of useEffect
-    const adminUser = useMemo(() => {
-        if (!currentUser) return null;
-
-        return {
-            uid: currentUser.uid,
-            firstName: currentUser.displayName?.split(" ")[0] || "Admin",
-            lastName: currentUser.displayName?.split(" ")[1] || "",
-            email: currentUser.email || "",
-            mobile: currentUser.phoneNumber || "",
-            birthDate: new Date().toISOString(),
-            civilStatus: "single" as const,
-            city: "",
-            province: "",
-            package: "basic" as const,
-            status: "active" as const,
-            referralCode: "",
-            referredBy: "",
-            beneficiaries: [],
-            isAdmin: true,
-            dateCreated: new Date(),
-            initials: (currentUser.displayName?.[0] || "A").toUpperCase(),
-        };
-    }, [currentUser]);
-
-    // Fetch all data
-    useEffect(() => {
-        const fetchAllData = async () => {
-            setIsLoading(true);
-            try {
-                const [statsData] = await Promise.all([
-                    fetchDashboardStats(),
-                    fetchGrowthData(),
-                    fetchPackageMix(),
-                    fetchTopRecruiters(),
-                    fetchRecentClaims(),
-                    fetchMembers(),
-                    fetchClaims(),
-                    fetchPendingCommissions(),
-                    fetchCommissionHistory(),
-                ]);
-                setStats(statsData);
-            } catch (error) {
-                console.error("Failed to fetch admin data:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchAllData();
-    }, []);
-
     // Handlers
     const handleRefreshStats = async () => {
-        const data = await fetchDashboardStats();
-        setStats(data);
+        //const data = await fetchDashboardStats();
+        //setStats(data);
     };
 
     const handleRefreshClaims = async () => {
@@ -175,7 +126,6 @@ export default function AdminArea() {
         if (status === "inactive") await deactivateMember(memberId);
 
         // refresh current changed member on the list
-        
     };
 
     const handleUpdateClaimStatus = async (claimId: string, status: "Approved" | "Rejected" | "Released") => {
@@ -221,27 +171,17 @@ export default function AdminArea() {
         return <Navigate to="/" />;
     }
 
-    // Loading state for data
-    if (isLoading || !stats || !adminUser) {
-        return (
-            <div className="bg-gpsc-cream flex min-h-screen items-center justify-center">
-                <div className="border-gpsc-green h-12 w-12 animate-spin rounded-full border-b-2"></div>
-            </div>
-        );
-    }
-
     return (
         <AdminDashboard
-            adminUser={adminUser}
-            stats={stats}
             claims={claims}
             pendingCommissions={pendingCommissions}
             commissionHistory={commissionHistory}
             loading={{
-                stats: isLoading,
-                members: isLoading,
-                claims: isLoading,
-                commissions: isLoading,
+                // TODO : add loading state
+                stats: false,
+                members: false,
+                claims: false,
+                commissions: false,
             }}
             onRefreshStats={handleRefreshStats}
             onRefreshClaims={handleRefreshClaims}
