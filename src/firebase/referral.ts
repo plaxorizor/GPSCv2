@@ -6,34 +6,69 @@ export interface TreeNode {
     firstName: string;
     lastName: string;
     city: string;
-    //dateCreated: Date;
     package: string;
     status: string;
     level: number;
     children: TreeNode[];
 }
 
-export const buildReferralTree = async (memberId: string, level: number = 1, maxLevel: number = 6): Promise<TreeNode[]> => {
-    if (level > maxLevel) return [];
+// Firestore "in" operator limit
+const IN_LIMIT = 30;
 
-    const q = query(collection(db, "members"), where("referredBy", "==", memberId));
-    const snap = await getDocs(q);
+function chunk<T>(arr: T[], size: number): T[][] {
+    const out: T[][] = [];
+    for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+    return out;
+}
 
-    const nodes: TreeNode[] = [];
-    for (const doc of snap.docs) {
-        const data = doc.data();
-        const children = await buildReferralTree(doc.id, level + 1, maxLevel);
-        nodes.push({
-            uid: doc.id,
-            firstName: data.firstName,
-            lastName: data.lastName,
-            city: data.city,
-            //dateCreated: data.dateCreated,
-            package: data.package,
-            status: data.status,
-            level,
-            children,
-        });
+// BFS approach: one batch query per level instead of one query per node.
+// A tree 3-wide × 6 levels deep went from ~364 sequential queries → 6 parallel batches.
+export const buildReferralTree = async (
+    rootId: string,
+    maxLevel: number = 6,
+): Promise<TreeNode[]> => {
+    const allNodes = new Map<string, TreeNode>();
+    const childrenOf = new Map<string, string[]>(); // parentId → childIds
+
+    let frontier = [rootId]; // IDs whose children we need to fetch next
+
+    for (let level = 1; level <= maxLevel && frontier.length > 0; level++) {
+        // Fire all chunk queries for this level in parallel
+        const snaps = await Promise.all(
+            chunk(frontier, IN_LIMIT).map((ids) =>
+                getDocs(query(collection(db, "members"), where("referredBy", "in", ids))),
+            ),
+        );
+
+        const nextFrontier: string[] = [];
+
+        for (const snap of snaps) {
+            for (const doc of snap.docs) {
+                const d = doc.data();
+                allNodes.set(doc.id, {
+                    uid: doc.id,
+                    firstName: d.firstName,
+                    lastName: d.lastName,
+                    city: d.city,
+                    package: d.package,
+                    status: d.status,
+                    level,
+                    children: [],
+                });
+                const parentId = d.referredBy as string;
+                childrenOf.set(parentId, [...(childrenOf.get(parentId) ?? []), doc.id]);
+                nextFrontier.push(doc.id);
+            }
+        }
+
+        frontier = nextFrontier;
     }
-    return nodes;
+
+    // Wire up children references
+    for (const [parentId, childIds] of childrenOf) {
+        const parent = allNodes.get(parentId);
+        if (parent) parent.children = childIds.map((id) => allNodes.get(id)!).filter(Boolean);
+    }
+
+    return (childrenOf.get(rootId) ?? []).map((id) => allNodes.get(id)!).filter(Boolean);
 };

@@ -15,14 +15,14 @@ export interface Commission {
     dateCreated: any; // Firestore Timestamp
 }
 
-export const useCommissions = () => {
+export const useCommissions = (enabled = false) => {
     const { currentUser } = useAuth();
     const [commissions, setCommissions] = useState<Commission[]>([]);
     const [totalEarned, setTotalEarned] = useState(0);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        if (!currentUser) return;
+        if (!currentUser || !enabled) return;
 
         const fetch = async () => {
             const q = query(collection(db, "commissions"), where("earnedBy", "==", currentUser.uid), orderBy("dateCreated", "desc"));

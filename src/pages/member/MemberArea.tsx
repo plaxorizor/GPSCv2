@@ -1,8 +1,8 @@
+import { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 
 import useMember from "../../hooks/useMember";
 import useMemberStats from "../../hooks/useMemberStats";
-
 import { useCommissions } from "../../hooks/useCommissions";
 import { useReferralTree } from "../../hooks/useReferralTree";
 import MemberDashboard from "./MemberDashboard";
@@ -24,13 +24,16 @@ import type { Member, Commission, ReferralNode, EarningsTrendPoint, Claim, Payou
 
 export default function MemberArea() {
     const navigate = useNavigate();
+    const [currentSection, setCurrentSection] = useState("overview");
+
     const { member, loading: memberLoading } = useMember();
     const { stats: memberStats, loading: statsLoading } = useMemberStats();
 
-    const { commissions: rawCommissions, loading: commLoading } = useCommissions();
-    const { tree, loading: treeLoading } = useReferralTree();
+    // Only fetch when the member actually visits that section
+    const { commissions: rawCommissions, loading: commLoading } = useCommissions(currentSection === "earnings");
+    const { tree, loading: treeLoading } = useReferralTree(currentSection === "referrals");
 
-    const isLoading = memberLoading || commLoading || treeLoading || statsLoading;
+    const isLoading = memberLoading || statsLoading;
     if (isLoading) {
         return (
             // Loading spinner
@@ -62,8 +65,12 @@ export default function MemberArea() {
         isAdmin: member.isAdmin ?? false,
     };
 
-    // 2. Package display info — look up from PACKAGE_INFO
-    const rankName = user.package ? (PACKAGE_INFO[user.package as keyof typeof PACKAGE_INFO]?.rank ?? "—") : "No Rank";
+    // 2. Package display info — normalise to lowercase before lookup so
+    //    "Basic" / "basic" / "BASIC" all resolve correctly
+    const pkgKey = (user.package?.toLowerCase() ?? "") as keyof typeof PACKAGE_INFO;
+    const pkgInfo = PACKAGE_INFO[pkgKey];
+    const rankName = pkgInfo?.rank ?? "—";
+    const packageName = pkgInfo ? pkgKey.charAt(0).toUpperCase() + pkgKey.slice(1) : (user.package ?? "—");
 
     // 3. Map commissions
     const commissions: Commission[] = rawCommissions.map((c) => ({
@@ -121,12 +128,14 @@ export default function MemberArea() {
             member={user}
             memberStats={memberStats}
             rankName={rankName}
+            packageName={packageName}
             commissions={commissions}
             directReferrals={directReferrals}
             earningsTrend={earningsTrend}
             claims={claims}
             payouts={payouts}
-            //referralLink={referralLink}
+            currentSection={currentSection}
+            onSectionChange={setCurrentSection}
             onRequestPayout={handleRequestPayout}
             onFileClaim={handleFileClaim}
             onLogout={handleLogout}

@@ -1,5 +1,5 @@
 // member/index.tsx
-import { useState } from "react";
+import React from "react";
 import { LayoutGrid, Wallet, FileText, Settings, Network } from "lucide-react";
 import { DashboardSidebar } from "./DashboardSidebar";
 import { MobileBottomNav } from "./MobileBottomNav";
@@ -17,12 +17,14 @@ interface MemberDashboardProps {
     member: Member;
     memberStats: MemberStats | null;
     rankName: string;
+    packageName: string;
     commissions: Commission[];
     directReferrals: ReferralNode[];
     earningsTrend: EarningsTrendPoint[];
     claims: Claim[];
     payouts: Payout[];
-    //referralLink: string;
+    currentSection: string;
+    onSectionChange: (section: string) => void;
     onRequestPayout: () => void;
     onFileClaim: () => void;
     onLogout: () => void;
@@ -32,17 +34,18 @@ export default function MemberDashboard({
     member,
     memberStats,
     rankName,
+    packageName,
     commissions,
     directReferrals,
     earningsTrend,
     claims,
     payouts,
-    //referralLink,
+    currentSection,
+    onSectionChange,
     onRequestPayout,
     onFileClaim,
     onLogout,
 }: MemberDashboardProps) {
-    const [currentSection, setCurrentSection] = useState("overview");
 
     // Calculate dashboard stats
     const availableToWithdraw = commissions.filter((c) => c.status === "paid").reduce((sum, c) => sum + c.amount, 0);
@@ -89,14 +92,14 @@ export default function MemberDashboard({
                 member={member}
                 rankName={rankName}
                 currentSection={currentSection}
-                onSectionChange={setCurrentSection}
+                onSectionChange={onSectionChange}
                 items={sidebarItems}
                 onLogout={onLogout}
             />
 
             <MobileBottomNav
                 current={currentSection}
-                onChange={setCurrentSection}
+                onChange={onSectionChange}
                 claimsBadge={pendingClaimsCount}
                 referralsBadge={totalReferralsCount}
             />
@@ -106,7 +109,7 @@ export default function MemberDashboard({
                     <MemberOverview
                         member={member}
                         rankName={rankName}
-                        packageName={member.package}
+                        packageName={packageName}
                         availableToWithdraw={availableToWithdraw}
                         totalEarned={totalEarned}
                         activeReferralsCount={activeReferralsCount}
