@@ -1,4 +1,7 @@
 // firebase/admin.ts
+// NOTE: activateMember / deactivateMember / upgradeMember currently write
+// directly to Firestore. Switch to Cloud Functions (httpsCallable) once the
+// Firebase project is upgraded to Blaze — functions/src/index.ts is ready.
 import {
     collection,
     getDocs,
@@ -6,12 +9,12 @@ import {
     doc,
     updateDoc,
     addDoc,
+    setDoc,
     serverTimestamp,
     query,
     where,
     orderBy,
     limit as limitQuery,
-    setDoc,
 } from "firebase/firestore";
 import { db } from "./config";
 import { triggerCommissions, type Package } from "./transactions";
@@ -23,13 +26,10 @@ export const getAllMembers = async () => {
     return snap.docs.map((d) => ({ uid: d.id, ...d.data() }));
 };
 
-export const updateMemberStatus = async (uid: string, status: "active" | "inactive" | "pending") => {
-    await updateDoc(doc(db, "members", uid), { status });
-};
-
 const generateReferralCode = (): string => {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    const segment = (len: number) => Array.from({ length: len }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+    const segment = (len: number) =>
+        Array.from({ length: len }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
     return `${segment(4)}-${segment(4)}-${segment(4)}`;
 };
 
@@ -60,13 +60,9 @@ export const activateMember = async (uid: string) => {
         });
         await setDoc(doc(db, "referralCodes", referralCode), { uid });
 
-        // Fire commissions up the referral chain — first activation only
         const pkg = memberData.package as Package | null;
-        if (pkg) {
-            await triggerCommissions(uid, pkg);
-        }
+        if (pkg) await triggerCommissions(uid, pkg);
     } else {
-        // Reactivation — no commissions
         await updateDoc(doc(db, "members", uid), {
             status: "active",
             activatedAt: serverTimestamp(),
@@ -78,9 +74,7 @@ export const activateMember = async (uid: string) => {
 };
 
 export const deactivateMember = async (uid: string) => {
-    await updateDoc(doc(db, "members", uid), {
-        status: "inactive",
-    });
+    await updateDoc(doc(db, "members", uid), { status: "inactive" });
 };
 
 export const upgradeMember = async (uid: string, newPackage: "family" | "premium") => {
@@ -88,33 +82,15 @@ export const upgradeMember = async (uid: string, newPackage: "family" | "premium
     if (!memberSnap.exists()) return;
 
     const data = memberSnap.data();
+    if (data.packageLocked) throw new Error("Package is locked. Contestability period has expired.");
 
-    if (data.packageLocked) {
-        throw new Error("Package is locked. Contestability period has expired.");
-    }
-
-    const now = new Date();
     const contestabilityEndsAt = data.contestabilityEndsAt?.toDate?.();
-    if (!contestabilityEndsAt || now > contestabilityEndsAt) {
+    if (!contestabilityEndsAt || new Date() > contestabilityEndsAt) {
         await updateDoc(doc(db, "members", uid), { packageLocked: true });
         throw new Error("Contestability period has expired.");
     }
 
     await updateDoc(doc(db, "members", uid), { package: newPackage });
-};
-
-export const checkAndLockPackage = async (uid: string) => {
-    const memberSnap = await getDoc(doc(db, "members", uid));
-    if (!memberSnap.exists()) return;
-
-    const data = memberSnap.data();
-    if (data.packageLocked) return;
-
-    const now = new Date();
-    const contestabilityEndsAt = data.contestabilityEndsAt?.toDate?.();
-    if (contestabilityEndsAt && now > contestabilityEndsAt) {
-        await updateDoc(doc(db, "members", uid), { packageLocked: true });
-    }
 };
 
 // --- CLAIMS ---

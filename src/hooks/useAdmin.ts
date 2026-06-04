@@ -14,12 +14,6 @@ export const useAdmin = () => {
         if (!currentUser) return;
 
         const check = async () => {
-            await Promise.resolve();
-            if (!cancelled) {
-                setIsAdmin(false);
-                setLoading(false);
-            }
-
             const snap = await getDoc(doc(db, "members", currentUser.uid));
             if (!cancelled) {
                 setIsAdmin(snap.exists() ? snap.data().isAdmin === true : false);

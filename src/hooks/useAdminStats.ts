@@ -32,9 +32,12 @@ export default () => {
     useEffect(() => {
         const fetch = async () => {
             const [membersSnap, claimsSnap, payoutsSnap] = await Promise.all([
-                getDocs(query(collection(db, "members"), where("isAdmin", "==", false))),
-                getDocs(query(collection(db, "claims"), where("status", "==", "pending"))),
-                getDocs(query(collection(db, "payouts"), where("status", "==", "requested"))),
+                getDocs(query(collection(db, "members"), where("isAdmin", "==", false)))
+                    .catch((e) => { console.error("members query failed:", e); throw e; }),
+                getDocs(query(collection(db, "claims"), where("status", "==", "pending")))
+                    .catch((e) => { console.error("claims query failed:", e); throw e; }),
+                getDocs(query(collection(db, "payouts"), where("status", "==", "requested")))
+                    .catch((e) => { console.error("payouts query failed:", e); throw e; }),
             ]);
 
             const members = membersSnap.docs.map((d) => ({ uid: d.id, ...d.data() }) as Member);
