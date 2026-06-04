@@ -7,8 +7,9 @@ import AdminDashboard from "./AdminDashboard";
 import type { Claim } from "../../utils/types";
 import type { DashboardStats, GrowthDataPoint, PackageMixItem, TopRecruiter } from "../../utils/types";
 
-import { activateMember, deactivateMember, releaseCommission } from "../../firebase/admin";
+import { activateMember, deactivateMember, releaseCommission, markPayoutSent } from "../../firebase/admin";
 import useAdminCommissions from "../../hooks/useAdminCommissions";
+import useAdminPayouts from "../../hooks/useAdminPayouts";
 
 
 // Mock data fetching functions - replace with your actual API calls
@@ -94,6 +95,12 @@ export default function AdminArea() {
         refetch: refetchCommissions,
     } = useAdminCommissions();
 
+    const {
+        payouts,
+        loading: payoutsLoading,
+        refetch: refetchPayouts,
+    } = useAdminPayouts();
+
     // Handlers
     const handleRefreshStats = async () => {};
 
@@ -120,6 +127,11 @@ export default function AdminArea() {
     const handleReleaseCommission = async (commissionId: string, _earnedBy: string, _amount: number, reference: string) => {
         await releaseCommission(commissionId, reference);
         await refetchCommissions();
+    };
+
+    const handleMarkPayoutSent = async (payoutId: string, reference: string) => {
+        await markPayoutSent(payoutId, reference);
+        await refetchPayouts();
     };
 
     const handleExportMembers = () => {
@@ -157,19 +169,23 @@ export default function AdminArea() {
             claims={claims}
             pendingCommissions={pendingCommissions}
             commissionHistory={commissionHistory}
+            payouts={payouts}
             loading={{
                 stats: false,
                 members: false,
                 claims: false,
                 commissions: commissionsLoading,
+                payouts: payoutsLoading,
             }}
             onRefreshStats={handleRefreshStats}
             onRefreshClaims={handleRefreshClaims}
             onRefreshCommissions={refetchCommissions}
+            onRefreshPayouts={refetchPayouts}
             onUpdateMemberStatus={handleUpdateMemberStatus}
             onUpdateClaimStatus={handleUpdateClaimStatus}
             onReviewClaim={handleReviewClaim}
             onReleaseCommission={handleReleaseCommission}
+            onMarkPayoutSent={handleMarkPayoutSent}
             onExportMembers={handleExportMembers}
             onExportClaims={handleExportClaims}
             onLogout={handleLogout}

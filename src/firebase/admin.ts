@@ -261,6 +261,14 @@ export const getAllPayouts = async () => {
     return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 };
 
+export const markPayoutSent = async (payoutId: string, reference: string) => {
+    await updateDoc(doc(db, "payouts", payoutId), {
+        status: "sent",
+        reference,
+        sentAt: serverTimestamp(),
+    });
+};
+
 export const getAllCommissions = async () => {
     const snapshot = await getDocs(collection(db, "commissions"));
     return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));

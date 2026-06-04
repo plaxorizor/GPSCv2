@@ -1,12 +1,13 @@
 import React from "react";
-import { LayoutGrid, Users, FileText, DollarSign, LogOut } from "lucide-react";
+import { LayoutGrid, Users, FileText, DollarSign, Wallet, LogOut } from "lucide-react";
 
 const tabs = [
-    { id: "overview", label: "Overview", icon: LayoutGrid },
-    { id: "members", label: "Members", icon: Users },
-    { id: "claims", label: "Claims", icon: FileText },
-    { id: "commissions", label: "Commissions", icon: DollarSign },
-    { id: "logout", label: "Logout", icon: LogOut },
+    { id: "overview",    label: "Overview",     icon: LayoutGrid },
+    { id: "members",     label: "Members",      icon: Users },
+    { id: "claims",      label: "Claims",       icon: FileText },
+    { id: "commissions", label: "Commissions",  icon: DollarSign },
+    { id: "payouts",     label: "Payouts",      icon: Wallet },
+    { id: "logout",      label: "Logout",       icon: LogOut },
 ];
 
 interface Props {
@@ -14,13 +15,14 @@ interface Props {
     onChange: (id: string) => void;
     claimsBadge?: number;
     commissionsBadge?: number;
+    payoutsBadge?: number;
     onLogout: () => void;
 }
 
-export const MobileBottomNav: React.FC<Props> = ({ current, onChange, claimsBadge, commissionsBadge, onLogout }) => (
+export const MobileBottomNav: React.FC<Props> = ({ current, onChange, claimsBadge, commissionsBadge, payoutsBadge, onLogout }) => (
     <nav className="lg:hidden fixed bottom-0 inset-x-0 bg-white border-t border-gpsc-cream-dark z-50 flex">
         {tabs.map(({ id, label, icon: Icon }) => {
-            const badge = id === "claims" ? claimsBadge : id === "commissions" ? commissionsBadge : undefined;
+            const badge = id === "claims" ? claimsBadge : id === "commissions" ? commissionsBadge : id === "payouts" ? payoutsBadge : undefined;
             const isLogout = id === "logout";
             return (
                 <button

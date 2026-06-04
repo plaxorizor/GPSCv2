@@ -86,6 +86,21 @@ export interface Payout {
     reference: string | null;
 }
 
+// Admin-side payout view — includes member name and full account details
+export interface AdminPayout {
+    id: string;
+    memberId: string;
+    memberName: string;
+    amount: number;
+    method: string;
+    accountNumber: string;
+    accountName: string;
+    status: "requested" | "sent";
+    requestedAt: string;
+    sentAt: string | null;
+    reference: string | null;
+}
+
 export interface Beneficiary {
     id?: string;
     name: string;
