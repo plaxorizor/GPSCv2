@@ -1,6 +1,6 @@
 // admin/Commissions.tsx
 import React, { useState } from "react";
-import { Send, Clock, CheckCircle, Download } from "lucide-react";
+import { Send, Clock, CheckCircle, Download, Search, X } from "lucide-react";
 import type { PendingCommission, CommissionRecord } from "../../utils/types";
 import { formatCurrency, formatDate } from "./utils";
 
@@ -15,6 +15,14 @@ interface Props {
 export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHistory, loading, onRelease, onRefresh }) => {
     const [selectedCommission, setSelectedCommission] = useState<PendingCommission | null>(null);
     const [reference, setReference] = useState("");
+
+    // Pending filters
+    const [pendingSearch, setPendingSearch] = useState("");
+    const [pendingLevelFilter, setPendingLevelFilter] = useState("all");
+
+    // History filters
+    const [historySearch, setHistorySearch] = useState("");
+    const [historyLevelFilter, setHistoryLevelFilter] = useState("all");
 
     const handleRelease = async () => {
         if (!selectedCommission) return;
@@ -40,6 +48,32 @@ export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHis
 
     const totalPending = pendingCommissions.reduce((sum, c) => sum + c.amount, 0);
     const totalHistory = commissionHistory.reduce((sum, c) => sum + c.amount, 0);
+
+    // Unique levels for filter dropdowns
+    const pendingLevels = Array.from(new Set(pendingCommissions.map((c) => c.level))).sort();
+    const historyLevels = Array.from(new Set(commissionHistory.map((c) => c.level))).sort();
+
+    const filteredPending = pendingCommissions.filter((c) => {
+        const matchesLevel = pendingLevelFilter === "all" || String(c.level) === pendingLevelFilter;
+        const q = pendingSearch.trim().toLowerCase();
+        const matchesSearch =
+            !q ||
+            c.recipientName.toLowerCase().includes(q) ||
+            c.recipientId.toLowerCase().includes(q) ||
+            c.fromMemberName.toLowerCase().includes(q);
+        return matchesLevel && matchesSearch;
+    });
+
+    const filteredHistory = commissionHistory.slice(0, 20).filter((c) => {
+        const matchesLevel = historyLevelFilter === "all" || String(c.level) === historyLevelFilter;
+        const q = historySearch.trim().toLowerCase();
+        const matchesSearch =
+            !q ||
+            (c.recipientName ?? "").toLowerCase().includes(q) ||
+            c.recipientId.toLowerCase().includes(q) ||
+            c.fromMemberName.toLowerCase().includes(q);
+        return matchesLevel && matchesSearch;
+    });
 
     return (
         <div className="space-y-6">
@@ -82,14 +116,45 @@ export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHis
 
             {/* Pending Commissions */}
             <div className="border-gpsc-cream-dark overflow-hidden rounded-2xl border bg-white">
-                <div className="border-gpsc-cream-dark flex items-center justify-between border-b p-6">
+                <div className="border-gpsc-cream-dark flex flex-wrap items-center justify-between gap-3 border-b p-4">
                     <div>
                         <h2 className="font-display text-gpsc-navy text-lg">Pending Commissions</h2>
                         <p className="text-gpsc-stone text-xs">Commissions awaiting release to consultants</p>
                     </div>
-                    <button className="text-gpsc-stone hover:text-gpsc-navy flex items-center gap-1 text-xs">
-                        <Download size={12} /> Export
-                    </button>
+                    <div className="flex flex-wrap items-center gap-2">
+                        {/* Pending search */}
+                        <div className="border-gpsc-cream-dark focus-within:ring-gpsc-green flex items-center gap-2 rounded-lg border px-3 py-2 text-sm focus-within:ring-2">
+                            <Search size={14} className="text-gpsc-stone shrink-0" />
+                            <input
+                                type="text"
+                                value={pendingSearch}
+                                onChange={(e) => setPendingSearch(e.target.value)}
+                                placeholder="Search by name…"
+                                className="w-40 bg-transparent outline-none placeholder:text-gpsc-stone/60"
+                            />
+                            {pendingSearch && (
+                                <button onClick={() => setPendingSearch("")} className="text-gpsc-stone hover:text-gpsc-navy">
+                                    <X size={12} />
+                                </button>
+                            )}
+                        </div>
+                        {/* Level filter */}
+                        {pendingLevels.length > 1 && (
+                            <select
+                                value={pendingLevelFilter}
+                                onChange={(e) => setPendingLevelFilter(e.target.value)}
+                                className="border-gpsc-cream-dark focus:ring-gpsc-green rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:outline-none"
+                            >
+                                <option value="all">All levels</option>
+                                {pendingLevels.map((l) => (
+                                    <option key={l} value={String(l)}>Level {l}</option>
+                                ))}
+                            </select>
+                        )}
+                        <button className="text-gpsc-stone hover:text-gpsc-navy flex items-center gap-1 text-xs">
+                            <Download size={12} /> Export
+                        </button>
+                    </div>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm">
@@ -104,7 +169,7 @@ export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHis
                             </tr>
                         </thead>
                         <tbody>
-                            {pendingCommissions.map((comm) => (
+                            {filteredPending.map((comm) => (
                                 <tr key={comm.id} className="border-gpsc-cream-dark hover:bg-gpsc-cream/40 border-t transition-colors">
                                     <td className="p-4">
                                         <div className="text-gpsc-navy font-medium">{comm.recipientName}</div>
@@ -124,10 +189,12 @@ export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHis
                                     </td>
                                 </tr>
                             ))}
-                            {pendingCommissions.length === 0 && (
+                            {filteredPending.length === 0 && (
                                 <tr>
                                     <td colSpan={6} className="text-gpsc-stone p-8 text-center">
-                                        No pending commissions
+                                        {pendingSearch || pendingLevelFilter !== "all"
+                                            ? "No commissions match your filters"
+                                            : "No pending commissions"}
                                     </td>
                                 </tr>
                             )}
@@ -138,9 +205,42 @@ export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHis
 
             {/* Commission History */}
             <div className="border-gpsc-cream-dark overflow-hidden rounded-2xl border bg-white">
-                <div className="border-gpsc-cream-dark border-b p-6">
-                    <h2 className="font-display text-gpsc-navy text-lg">Release History</h2>
-                    <p className="text-gpsc-stone text-xs">Recently released commissions</p>
+                <div className="border-gpsc-cream-dark flex flex-wrap items-center justify-between gap-3 border-b p-4">
+                    <div>
+                        <h2 className="font-display text-gpsc-navy text-lg">Release History</h2>
+                        <p className="text-gpsc-stone text-xs">Recently released commissions</p>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                        {/* History search */}
+                        <div className="border-gpsc-cream-dark focus-within:ring-gpsc-green flex items-center gap-2 rounded-lg border px-3 py-2 text-sm focus-within:ring-2">
+                            <Search size={14} className="text-gpsc-stone shrink-0" />
+                            <input
+                                type="text"
+                                value={historySearch}
+                                onChange={(e) => setHistorySearch(e.target.value)}
+                                placeholder="Search by name…"
+                                className="w-40 bg-transparent outline-none placeholder:text-gpsc-stone/60"
+                            />
+                            {historySearch && (
+                                <button onClick={() => setHistorySearch("")} className="text-gpsc-stone hover:text-gpsc-navy">
+                                    <X size={12} />
+                                </button>
+                            )}
+                        </div>
+                        {/* Level filter */}
+                        {historyLevels.length > 1 && (
+                            <select
+                                value={historyLevelFilter}
+                                onChange={(e) => setHistoryLevelFilter(e.target.value)}
+                                className="border-gpsc-cream-dark focus:ring-gpsc-green rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:outline-none"
+                            >
+                                <option value="all">All levels</option>
+                                {historyLevels.map((l) => (
+                                    <option key={l} value={String(l)}>Level {l}</option>
+                                ))}
+                            </select>
+                        )}
+                    </div>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm">
@@ -155,7 +255,7 @@ export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHis
                             </tr>
                         </thead>
                         <tbody>
-                            {commissionHistory.slice(0, 20).map((comm) => (
+                            {filteredHistory.map((comm) => (
                                 <tr key={comm.id} className="border-gpsc-cream-dark hover:bg-gpsc-cream/40 border-t transition-colors">
                                     <td className="p-4">
                                         <div className="text-gpsc-navy">{comm.recipientName || comm.recipientId.slice(0, 8)}</div>
@@ -167,10 +267,12 @@ export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHis
                                     <td className="text-gpsc-stone p-4 font-mono text-xs">—</td>
                                 </tr>
                             ))}
-                            {commissionHistory.length === 0 && (
+                            {filteredHistory.length === 0 && (
                                 <tr>
                                     <td colSpan={6} className="text-gpsc-stone p-8 text-center">
-                                        No release history
+                                        {historySearch || historyLevelFilter !== "all"
+                                            ? "No history matches your filters"
+                                            : "No release history"}
                                     </td>
                                 </tr>
                             )}

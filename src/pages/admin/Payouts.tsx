@@ -1,6 +1,6 @@
 // admin/Payouts.tsx
 import React, { useState } from "react";
-import { Wallet, Clock, CheckCircle, Download, Send } from "lucide-react";
+import { Wallet, Clock, CheckCircle, Download, Send, Search, X } from "lucide-react";
 import type { AdminPayout } from "../../utils/types";
 import { formatCurrency, formatDate } from "./utils";
 
@@ -28,11 +28,43 @@ export const Payouts: React.FC<Props> = ({ payouts, loading, onMarkSent, onRefre
     const [reference, setReference] = useState("");
     const [processing, setProcessing] = useState(false);
 
-    const pending = payouts.filter((p) => p.status === "requested");
-    const history = payouts.filter((p) => p.status === "sent");
+    // Pending filters
+    const [pendingSearch, setPendingSearch] = useState("");
 
-    const totalPending = pending.reduce((s, p) => s + p.amount, 0);
-    const totalSent    = history.reduce((s, p) => s + p.amount, 0);
+    // History filters
+    const [historySearch, setHistorySearch] = useState("");
+    const [methodFilter, setMethodFilter] = useState("all");
+
+    const pending = payouts.filter((p) => {
+        if (p.status !== "requested") return false;
+        const q = pendingSearch.trim().toLowerCase();
+        return (
+            !q ||
+            p.memberName.toLowerCase().includes(q) ||
+            p.memberId.toLowerCase().includes(q) ||
+            p.accountNumber.toLowerCase().includes(q)
+        );
+    });
+
+    const history = payouts.filter((p) => {
+        if (p.status !== "sent") return false;
+        const matchesMethod = methodFilter === "all" || p.method === methodFilter;
+        const q = historySearch.trim().toLowerCase();
+        const matchesSearch =
+            !q ||
+            p.memberName.toLowerCase().includes(q) ||
+            p.accountNumber.toLowerCase().includes(q) ||
+            (p.reference ?? "").toLowerCase().includes(q);
+        return matchesMethod && matchesSearch;
+    });
+
+    const allPending = payouts.filter((p) => p.status === "requested");
+    const allHistory = payouts.filter((p) => p.status === "sent");
+    const totalPending = allPending.reduce((s, p) => s + p.amount, 0);
+    const totalSent    = allHistory.reduce((s, p) => s + p.amount, 0);
+
+    // Unique methods available in history for the method filter dropdown
+    const availableMethods = Array.from(new Set(allHistory.map((p) => p.method)));
 
     const handleMarkSent = async () => {
         if (!selected || !reference.trim()) return;
@@ -82,7 +114,7 @@ export const Payouts: React.FC<Props> = ({ payouts, loading, onMarkSent, onRefre
                             <Clock size={20} className="text-amber-600" />
                         </div>
                         <div>
-                            <div className="font-display text-gpsc-navy text-2xl">{pending.length}</div>
+                            <div className="font-display text-gpsc-navy text-2xl">{allPending.length}</div>
                             <div className="text-gpsc-stone text-xs">Pending Requests</div>
                         </div>
                     </div>
@@ -94,7 +126,7 @@ export const Payouts: React.FC<Props> = ({ payouts, loading, onMarkSent, onRefre
                             <CheckCircle size={20} className="text-gpsc-green" />
                         </div>
                         <div>
-                            <div className="font-display text-gpsc-navy text-2xl">{history.length}</div>
+                            <div className="font-display text-gpsc-navy text-2xl">{allHistory.length}</div>
                             <div className="text-gpsc-stone text-xs">Processed</div>
                         </div>
                     </div>
@@ -116,14 +148,32 @@ export const Payouts: React.FC<Props> = ({ payouts, loading, onMarkSent, onRefre
 
             {/* Pending requests */}
             <div className="border-gpsc-cream-dark overflow-hidden rounded-2xl border bg-white">
-                <div className="border-gpsc-cream-dark flex items-center justify-between border-b p-6">
+                <div className="border-gpsc-cream-dark flex flex-wrap items-center justify-between gap-3 border-b p-4">
                     <div>
                         <h2 className="font-display text-gpsc-navy text-lg">Pending Requests</h2>
                         <p className="text-gpsc-stone text-xs">Members waiting to receive their payout</p>
                     </div>
-                    <button className="text-gpsc-stone hover:text-gpsc-navy flex items-center gap-1 text-xs">
-                        <Download size={12} /> Export
-                    </button>
+                    <div className="flex flex-wrap items-center gap-2">
+                        {/* Pending search */}
+                        <div className="border-gpsc-cream-dark focus-within:ring-gpsc-green flex items-center gap-2 rounded-lg border px-3 py-2 text-sm focus-within:ring-2">
+                            <Search size={14} className="text-gpsc-stone shrink-0" />
+                            <input
+                                type="text"
+                                value={pendingSearch}
+                                onChange={(e) => setPendingSearch(e.target.value)}
+                                placeholder="Search member or account…"
+                                className="w-44 bg-transparent outline-none placeholder:text-gpsc-stone/60"
+                            />
+                            {pendingSearch && (
+                                <button onClick={() => setPendingSearch("")} className="text-gpsc-stone hover:text-gpsc-navy">
+                                    <X size={12} />
+                                </button>
+                            )}
+                        </div>
+                        <button className="text-gpsc-stone hover:text-gpsc-navy flex items-center gap-1 text-xs">
+                            <Download size={12} /> Export
+                        </button>
+                    </div>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm">
@@ -165,7 +215,7 @@ export const Payouts: React.FC<Props> = ({ payouts, loading, onMarkSent, onRefre
                             {pending.length === 0 && (
                                 <tr>
                                     <td colSpan={5} className="text-gpsc-stone p-8 text-center">
-                                        No pending payout requests
+                                        {pendingSearch ? "No pending requests match your search" : "No pending payout requests"}
                                     </td>
                                 </tr>
                             )}
@@ -176,9 +226,42 @@ export const Payouts: React.FC<Props> = ({ payouts, loading, onMarkSent, onRefre
 
             {/* History */}
             <div className="border-gpsc-cream-dark overflow-hidden rounded-2xl border bg-white">
-                <div className="border-gpsc-cream-dark border-b p-6">
-                    <h2 className="font-display text-gpsc-navy text-lg">Payout History</h2>
-                    <p className="text-gpsc-stone text-xs">All processed payouts</p>
+                <div className="border-gpsc-cream-dark flex flex-wrap items-center justify-between gap-3 border-b p-4">
+                    <div>
+                        <h2 className="font-display text-gpsc-navy text-lg">Payout History</h2>
+                        <p className="text-gpsc-stone text-xs">All processed payouts</p>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                        {/* History search */}
+                        <div className="border-gpsc-cream-dark focus-within:ring-gpsc-green flex items-center gap-2 rounded-lg border px-3 py-2 text-sm focus-within:ring-2">
+                            <Search size={14} className="text-gpsc-stone shrink-0" />
+                            <input
+                                type="text"
+                                value={historySearch}
+                                onChange={(e) => setHistorySearch(e.target.value)}
+                                placeholder="Search member or reference…"
+                                className="w-44 bg-transparent outline-none placeholder:text-gpsc-stone/60"
+                            />
+                            {historySearch && (
+                                <button onClick={() => setHistorySearch("")} className="text-gpsc-stone hover:text-gpsc-navy">
+                                    <X size={12} />
+                                </button>
+                            )}
+                        </div>
+                        {/* Method filter */}
+                        {availableMethods.length > 0 && (
+                            <select
+                                value={methodFilter}
+                                onChange={(e) => setMethodFilter(e.target.value)}
+                                className="border-gpsc-cream-dark focus:ring-gpsc-green rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:outline-none"
+                            >
+                                <option value="all">All methods</option>
+                                {availableMethods.map((m) => (
+                                    <option key={m} value={m}>{methodLabel(m)}</option>
+                                ))}
+                            </select>
+                        )}
+                    </div>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm">
@@ -213,7 +296,7 @@ export const Payouts: React.FC<Props> = ({ payouts, loading, onMarkSent, onRefre
                             {history.length === 0 && (
                                 <tr>
                                     <td colSpan={5} className="text-gpsc-stone p-8 text-center">
-                                        No payout history yet
+                                        {historySearch || methodFilter !== "all" ? "No history matches your filters" : "No payout history yet"}
                                     </td>
                                 </tr>
                             )}

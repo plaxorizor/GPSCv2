@@ -1,6 +1,6 @@
 // admin/Claims.tsx
 import React, { useState } from "react";
-import { Download, Eye, CheckCircle, XCircle, Clock, FileText } from "lucide-react";
+import { Download, Eye, CheckCircle, XCircle, Clock, FileText, Search, X } from "lucide-react";
 import type { Claim } from "../../utils/types";
 import { formatCurrency, formatDate } from "./utils";
 
@@ -31,9 +31,19 @@ const statusLabels: Record<string, string> = {
 
 export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onReviewClaim, onRefresh, onExport }) => {
     const [statusFilter, setStatusFilter] = useState("all");
+    const [search, setSearch] = useState("");
     const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null);
 
-    const filtered = claims.filter((c) => statusFilter === "all" || c.status === statusFilter);
+    const filtered = claims.filter((c) => {
+        const matchesStatus = statusFilter === "all" || c.status === statusFilter;
+        const q = search.trim().toLowerCase();
+        const matchesSearch =
+            !q ||
+            c.userId.toLowerCase().includes(q) ||
+            c.id.toLowerCase().includes(q) ||
+            c.benefit.toLowerCase().includes(q);
+        return matchesStatus && matchesSearch;
+    });
 
     if (loading) {
         return (
@@ -72,7 +82,24 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
 
             <div className="border-gpsc-cream-dark overflow-hidden rounded-2xl border bg-white">
                 <div className="border-gpsc-cream-dark flex flex-wrap items-center justify-between gap-3 border-b p-4">
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                        {/* Search bar */}
+                        <div className="border-gpsc-cream-dark focus-within:ring-gpsc-green flex items-center gap-2 rounded-lg border px-3 py-2 text-sm focus-within:ring-2">
+                            <Search size={14} className="text-gpsc-stone shrink-0" />
+                            <input
+                                type="text"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                placeholder="Search by ID or benefit…"
+                                className="w-44 bg-transparent outline-none placeholder:text-gpsc-stone/60"
+                            />
+                            {search && (
+                                <button onClick={() => setSearch("")} className="text-gpsc-stone hover:text-gpsc-navy">
+                                    <X size={12} />
+                                </button>
+                            )}
+                        </div>
+                        {/* Status filter */}
                         <select
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
@@ -145,18 +172,18 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                                             {claim.status === "under_review" && (
                                                 <>
                                                     <button
-                                                        onClick={() => onUpdateStatus(claim.id, "Approved")}
-                                                        className="text-gpsc-green hover:bg-gpsc-green/10 rounded p-1 transition-colors"
-                                                        title="Approve"
-                                                    >
-                                                        <CheckCircle size={16} />
-                                                    </button>
-                                                    <button
                                                         onClick={() => onUpdateStatus(claim.id, "Rejected")}
                                                         className="rounded p-1 text-red-500 transition-colors hover:bg-red-50"
                                                         title="Reject"
                                                     >
                                                         <XCircle size={16} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => onUpdateStatus(claim.id, "Approved")}
+                                                        className="rounded p-1 text-gpsc-green transition-colors hover:bg-gpsc-green/10"
+                                                        title="Approve"
+                                                    >
+                                                        <CheckCircle size={16} />
                                                     </button>
                                                 </>
                                             )}
@@ -175,7 +202,7 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                             {filtered.length === 0 && (
                                 <tr>
                                     <td colSpan={6} className="text-gpsc-stone p-8 text-center">
-                                        No claims found
+                                        {search || statusFilter !== "all" ? "No claims match your filters" : "No claims found"}
                                     </td>
                                 </tr>
                             )}
