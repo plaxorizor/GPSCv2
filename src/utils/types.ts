@@ -78,6 +78,8 @@ export interface Payout {
     userId: string;
     amount: number;
     method: string;
+    accountNumber?: string;
+    accountName?: string;
     status: "sent" | "requested";
     requestedAt: string;
     sentAt: string | null;

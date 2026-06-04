@@ -31,6 +31,14 @@ export const triggerCommissions = async (newMemberId: string, pkg: Package) => {
     const packagePrice = PACKAGE_AMOUNTS[normPkg];
     if (!packagePrice) return; // unknown package, bail out safely
 
+    // Fetch the new member's profile once so we can denormalise name/city
+    // onto every commission doc (avoids join queries on the dashboard)
+    const newMemberSnap = await getDoc(doc(db, "members", newMemberId));
+    const newMemberData = newMemberSnap.data();
+    const fromMemberName =
+        `${newMemberData?.firstName ?? ""} ${newMemberData?.lastName ?? ""}`.trim() || "Unknown";
+    const fromMemberCity = (newMemberData?.city as string | undefined) ?? "";
+
     let currentUid = newMemberId;
 
     for (let level = 1; level <= 6; level++) {
@@ -52,6 +60,8 @@ export const triggerCommissions = async (newMemberId: string, pkg: Package) => {
             await addDoc(collection(db, "commissions"), {
                 earnedBy: referredBy,
                 fromMember: newMemberId,
+                fromMemberName,
+                fromMemberCity,
                 level,
                 amount,
                 status: "pending",

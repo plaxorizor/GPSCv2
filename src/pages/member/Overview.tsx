@@ -80,7 +80,7 @@ export const MemberOverview: React.FC<Props> = ({
                     value={formatCurrency(availableToWithdraw)}
                     sub="Cleared & ready"
                     icon={Wallet}
-                    actionLabel="Request payout"
+                    actionLabel="Request Payout"
                     onAction={onRequestPayout}
                 />
                 <StatCard label="Total Earned" value={formatCurrency(totalEarned)} sub="Lifetime Commissions" icon={TrendingUp} />
@@ -139,30 +139,37 @@ export const MemberOverview: React.FC<Props> = ({
             </div>
 
             <div className="border-gpsc-cream-dark rounded-2xl border bg-white p-6">
-                <h2 className="font-display text-gpsc-navy mb-4 text-lg">Recent Activity</h2>
-                <div className="space-y-3">
-                    {recentCommissions.map((c) => (
-                        <div key={c.id} className="border-gpsc-cream-dark flex items-center gap-4 border-b py-2 last:border-0">
-                            <div className="bg-gpsc-cream-dark text-gpsc-navy font-display flex h-8 w-8 items-center justify-center rounded-full text-xs">
-                                {c.fromMemberInitials}
-                            </div>
-                            <div className="flex-1">
-                                <div className="text-gpsc-navy text-sm">{c.fromMemberName}</div>
-                                <div className="text-gpsc-stone text-xs">
-                                    Level {c.level} commission · {formatDate(c.date)}
+                <h2 className="font-display text-gpsc-navy mb-4 text-lg">Recent Commissions</h2>
+                {recentCommissions.length === 0 ? (
+                    <div className="text-gpsc-stone py-6 text-center text-sm">
+                        No commissions yet — share your referral link to start earning.
+                    </div>
+                ) : (
+                    <div className="space-y-3">
+                        {recentCommissions.map((c) => {
+                            const isPaid = c.status === "released" || c.status === "paid";
+                            const statusLabel = isPaid ? "Paid" : "Pending";
+                            const statusClass = isPaid ? "text-gpsc-green" : "text-amber-600";
+                            return (
+                                <div key={c.id} className="border-gpsc-cream-dark flex items-center gap-4 border-b py-2 last:border-0">
+                                    <div className="bg-gpsc-cream-dark text-gpsc-navy font-display flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs">
+                                        {c.fromMemberInitials}
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="text-gpsc-navy text-sm">{c.fromMemberName}</div>
+                                        <div className="text-gpsc-stone text-xs">
+                                            Level {c.level} commission · {formatDate(c.date)}
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <div className="text-gpsc-navy font-medium">+{formatCurrency(c.amount)}</div>
+                                        <div className={`text-xs ${statusClass}`}>{statusLabel}</div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="text-right">
-                                <div className="text-gpsc-navy font-medium">+{formatCurrency(c.amount)}</div>
-                                <div
-                                    className={`text-xs ${c.status === "paid" ? "text-gpsc-green" : c.status === "pending" ? "text-amber-600" : "text-gpsc-navy-light"}`}
-                                >
-                                    {c.status}
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
         </div>
     );

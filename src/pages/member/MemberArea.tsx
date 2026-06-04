@@ -5,10 +5,12 @@ import useMember from "../../hooks/useMember";
 import useMemberStats from "../../hooks/useMemberStats";
 import { useCommissions } from "../../hooks/useCommissions";
 import { useReferralTree } from "../../hooks/useReferralTree";
+import { usePayouts } from "../../hooks/usePayouts";
 import MemberDashboard from "./MemberDashboard";
 import ChangePasswordModal from "../../components/ChangePasswordModal";
+import RequestPayoutModal from "../../components/RequestPayoutModal";
 import { PACKAGE_INFO } from "../../utils/types";
-import type { Member, Commission, ReferralNode, EarningsTrendPoint, Claim, Payout } from "../../utils/types";
+import type { Member, Commission, ReferralNode, EarningsTrendPoint, Claim } from "../../utils/types";
 
 // Rank mapping based on rank number
 // const getRankName = (rank: number): string => {
@@ -27,6 +29,7 @@ export default function MemberArea() {
     const navigate = useNavigate();
     const [currentSection, setCurrentSection] = useState("overview");
     const [showChangePassword, setShowChangePassword] = useState(false);
+    const [showRequestPayout, setShowRequestPayout] = useState(false);
 
     const { member, loading: memberLoading } = useMember();
     const { stats: memberStats, loading: statsLoading } = useMemberStats();
@@ -34,6 +37,7 @@ export default function MemberArea() {
     // Only fetch when the member actually visits that section
     const { commissions: rawCommissions, loading: commLoading } = useCommissions(currentSection === "earnings");
     const { tree, loading: treeLoading } = useReferralTree(currentSection === "referrals");
+    const { payouts, refetch: refetchPayouts } = usePayouts(currentSection === "earnings");
 
     const isLoading = memberLoading || statsLoading;
     if (isLoading) {
@@ -110,14 +114,12 @@ export default function MemberArea() {
     // 5. Referral link
     // const referralLink = `${window.location.origin}/signup?ref=${member.referralCode}`;
 
-    // 6. Typed arrays — claims/payouts/earningsTrend fetched later
+    // 6. Typed arrays — claims/earningsTrend fetched later; payouts from hook
     const earningsTrend: EarningsTrendPoint[] = [];
     const claims: Claim[] = [];
-    const payouts: Payout[] = [];
 
     // 7. Handlers
-
-    const handleRequestPayout = () => alert("Request payout – coming soon");
+    const handleRequestPayout = () => setShowRequestPayout(true);
     const handleFileClaim = () => alert("File a claim – coming soon");
     const handleLogout = async () => {
         const { getAuth, signOut } = await import("firebase/auth");
@@ -128,6 +130,14 @@ export default function MemberArea() {
     return (
         <>
             {showChangePassword && <ChangePasswordModal onClose={() => setShowChangePassword(false)} />}
+            {showRequestPayout && (
+                <RequestPayoutModal
+                    availableToWithdraw={memberStats?.availableToWithdraw ?? 0}
+                    memberName={`${user.firstName} ${user.lastName}`}
+                    onClose={() => setShowRequestPayout(false)}
+                    onSuccess={refetchPayouts}
+                />
+            )}
             <MemberDashboard
                 member={user}
                 memberStats={memberStats}

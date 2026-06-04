@@ -1,14 +1,12 @@
 import { useState, useEffect } from "react";
-import { Copy, Share2, Check, QrCode, ExternalLink, X } from "lucide-react";
+import { Copy, Share2, Check, ExternalLink, X } from "lucide-react";
 import { QRCode } from "react-qrcode-logo";
 import type { Member } from "../../utils/types";
 
 const ReferralCard: React.FC<{ member: Member }> = ({ member }) => {
     const referralLink = `${window.location.origin}/signup?ref=${member.referralCode}`;
-    const referralCode = member.referralCode ?? "";
 
     const [linkCopied, setLinkCopied] = useState(false);
-    const [codeCopied, setCodeCopied] = useState(false);
     const [modalCodeCopied, setModalCodeCopied] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
 
@@ -40,7 +38,8 @@ const ReferralCard: React.FC<{ member: Member }> = ({ member }) => {
                         <QRCode value={referralLink} qrStyle="squares" ecLevel="H" size={160} eyeRadius={6} bgColor="#ffffff" fgColor="#0E1F3D" />
                         <div className="flex w-full items-center gap-2">
                             <div className="bg-gpsc-navy/15 h-px flex-1" />
-                            <span className="text-gpsc-navy/40 text-[10px] font-bold tracking-[0.25em] uppercase">Tap to expand</span>
+                            <span className="text-gpsc-navy/40 text-[12px] font-bold tracking-widest uppercase">{member.referralCode}</span>
+
                             <div className="bg-gpsc-navy/15 h-px flex-1" />
                         </div>
                         <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
@@ -65,7 +64,6 @@ const ReferralCard: React.FC<{ member: Member }> = ({ member }) => {
                             <X size={20} />
                         </button>
                         <div className="text-center">
-                            <h3 className="font-display text-gpsc-navy text-xl font-bold">Scan to Join</h3>
                             <p className="text-gpsc-stone mt-1 text-sm">Share this QR code to invite members</p>
                         </div>
                         <div className="bg-gpsc-navy/5 flex justify-center rounded-2xl p-5">
@@ -96,10 +94,10 @@ const ReferralCard: React.FC<{ member: Member }> = ({ member }) => {
                         <div className="bg-gpsc-cream-dark/50 flex w-full items-center justify-between gap-3 rounded-2xl px-4 py-3">
                             <div>
                                 <p className="text-gpsc-stone text-[10px] font-semibold tracking-widest uppercase">Referral Code</p>
-                                <p className="text-gpsc-navy font-mono font-bold tracking-widest">{referralCode}</p>
+                                <p className="text-gpsc-navy font-mono font-bold tracking-widest">{member.referralCode}</p>
                             </div>
                             <button
-                                onClick={() => copyText(referralCode, setModalCodeCopied)}
+                                onClick={() => copyText(member.referralCode, setModalCodeCopied)}
                                 className="bg-gpsc-navy hover:bg-gpsc-navy/80 flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-2 text-xs text-white"
                             >
                                 {modalCodeCopied ? (
@@ -116,7 +114,7 @@ const ReferralCard: React.FC<{ member: Member }> = ({ member }) => {
                             </button>
                         </div>
                         <button className="bg-gpsc-green flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold text-white transition-all hover:brightness-110">
-                            <Share2 size={14} /> Share Referral
+                            <Share2 size={14} /> Share
                         </button>
                     </div>
                 </div>

@@ -66,12 +66,14 @@ export default function MemberDashboard({
 
     // Recent commissions with initials:
     const recentCommissions = (memberStats?.recentCommissions ?? []).map((c) => {
-        const name = c.fromMember ?? "Unknown";
+        const name = (c.fromMemberName as string | undefined) ?? "Unknown";
         const parts = name.trim().split(" ");
         return {
             ...c,
             fromMemberName: name,
             fromMemberInitials: `${parts[0]?.[0] ?? ""}${parts[1]?.[0] ?? ""}`.toUpperCase() || "?",
+            // Convert Firestore Timestamp → ISO string so Overview can call formatDate()
+            date: (c.dateCreated as any)?.toDate?.()?.toISOString?.() ?? "",
         };
     });
 

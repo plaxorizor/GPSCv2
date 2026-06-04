@@ -34,7 +34,7 @@ export const MemberEarnings: React.FC<Props> = ({ availableToWithdraw, pendingHo
                         <Download size={12} /> CSV
                     </button>
                     <button onClick={onRequestPayout} className="bg-gpsc-green rounded-lg px-4 py-2 text-xs font-medium text-white">
-                        Request payout
+                        Request Payout
                     </button>
                 </div>
             </div>
@@ -100,7 +100,12 @@ export const MemberEarnings: React.FC<Props> = ({ availableToWithdraw, pendingHo
                         {payouts.map((p) => (
                             <tr key={p.id} className="border-gpsc-cream-dark border-t">
                                 <td className="text-gpsc-stone p-4">{formatDate(p.requestedAt)}</td>
-                                <td className="text-gpsc-navy p-4">{p.method}</td>
+                                <td className="p-4">
+                                    <div className="text-gpsc-navy capitalize">{p.method}</div>
+                                    {p.accountNumber && (
+                                        <div className="text-gpsc-stone font-mono text-xs">{p.accountNumber}</div>
+                                    )}
+                                </td>
                                 <td className="text-gpsc-stone p-4 font-mono text-xs">{p.reference || "—"}</td>
                                 <td className="text-gpsc-navy p-4 text-right font-medium">{formatCurrency(p.amount)}</td>
                                 <td className="p-4 text-right">
