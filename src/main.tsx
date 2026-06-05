@@ -15,6 +15,7 @@ import FAQ from "./pages/visitor/nav/FAQ";
 import Contact from "./pages/visitor/nav/Contact";
 
 import ProtectedRoute from "./components/ProtectedRoute";
+import GuestRoute from "./components/GuestRoute";
 
 import { firebaseConfig } from "./firebase/config.ts";
 import { initializeApp } from "firebase/app";
@@ -31,8 +32,22 @@ createRoot(document.getElementById("root")!).render(
                 <Routes>
                     <Route path="/" element={<Home />} />
 
-                    <Route path="/signin" element={<SignIn />} />
-                    <Route path="/signup" element={<SignUp />} />
+                    <Route
+                        path="/signin"
+                        element={
+                            <GuestRoute>
+                                <SignIn />
+                            </GuestRoute>
+                        }
+                    />
+                    <Route
+                        path="/signup"
+                        element={
+                            <GuestRoute>
+                                <SignUp />
+                            </GuestRoute>
+                        }
+                    />
                     <Route path="/referral" element={<Referral />} />
                     <Route path="/faq" element={<FAQ />} />
                     <Route path="/contact" element={<Contact />} />
