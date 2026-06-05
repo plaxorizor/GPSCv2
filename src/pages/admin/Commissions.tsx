@@ -199,7 +199,9 @@ export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHis
                                 <tr key={comm.id} className="border-gpsc-cream-dark hover:bg-gpsc-cream/40 border-t transition-colors">
                                     <td className="p-4">
                                         <div className="text-gpsc-navy font-medium">{comm.recipientName}</div>
-                                        <div className="text-gpsc-stone font-mono text-xs">ID: {comm.recipientId.slice(0, 8)}</div>
+                                        {comm.recipientReferralCode && (
+                                            <div className="text-gpsc-stone font-mono text-xs">{comm.recipientReferralCode}</div>
+                                        )}
                                     </td>
                                     <td className="text-gpsc-stone p-4">{comm.fromMemberName}</td>
                                     <td className="text-gpsc-stone p-4">Level {comm.level}</td>
@@ -294,7 +296,10 @@ export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHis
                             {filteredHistory.map((comm) => (
                                 <tr key={comm.id} className="border-gpsc-cream-dark hover:bg-gpsc-cream/40 border-t transition-colors">
                                     <td className="p-4">
-                                        <div className="text-gpsc-navy">{comm.recipientName || comm.recipientId.slice(0, 8)}</div>
+                                        <div className="text-gpsc-navy">{comm.recipientName || comm.recipientReferralCode || "—"}</div>
+                                        {comm.recipientReferralCode && (
+                                            <div className="text-gpsc-stone font-mono text-xs">{comm.recipientReferralCode}</div>
+                                        )}
                                     </td>
                                     <td className="text-gpsc-stone p-4">{comm.fromMemberName}</td>
                                     <td className="text-gpsc-stone p-4">Level {comm.level}</td>

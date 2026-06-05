@@ -154,7 +154,7 @@ export default function MemberArea() {
             {showRequestPayout && (
                 <RequestPayoutModal
                     availableToWithdraw={memberStats?.availableToWithdraw ?? 0}
-                    memberName={`${user.firstName}${user.lastName}`}
+                    memberName={`${user.firstName} ${user.lastName}`.trim()}
                     onClose={() => setShowRequestPayout(false)}
                     onSuccess={refetchPayouts}
                 />

@@ -5,14 +5,10 @@ import { db } from "../firebase/config";
 import useAuth from "../context/useAuth";
 import { formatCurrency } from "../utils/formatter";
 
+// Temporary: e-wallets only until payment methods are confirmed with the client.
 const PAYMENT_METHODS = [
-    { value: "gcash",      label: "GCash" },
-    { value: "maya",       label: "Maya (PayMaya)" },
-    { value: "bdo",        label: "BDO" },
-    { value: "bpi",        label: "BPI" },
-    { value: "unionbank",  label: "UnionBank" },
-    { value: "metrobank",  label: "Metrobank" },
-    { value: "landbank",   label: "Landbank" },
+    { value: "gcash", label: "GCash" },
+    { value: "maya", label: "Maya (PayMaya)" },
 ];
 
 const MIN_PAYOUT = 100;
@@ -26,18 +22,18 @@ interface Props {
 
 export default function RequestPayoutModal({ availableToWithdraw, memberName, onClose, onSuccess }: Props) {
     const { currentUser } = useAuth();
-    const [amount, setAmount]               = useState("");
-    const [method, setMethod]               = useState("");
+    const [amount, setAmount] = useState("");
+    const [method, setMethod] = useState("");
     const [accountNumber, setAccountNumber] = useState("");
-    const [accountName, setAccountName]     = useState(memberName);
-    const [loading, setLoading]             = useState(false);
-    const [error, setError]                 = useState("");
-    const [success, setSuccess]             = useState(false);
+    const [accountName, setAccountName] = useState(memberName);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+    const [success, setSuccess] = useState(false);
     const [submittedAmount, setSubmittedAmount] = useState(0);
 
     const numAmount = parseFloat(amount) || 0;
     const amountOk = numAmount >= MIN_PAYOUT && numAmount <= availableToWithdraw;
-    const isValid  = amountOk && method && accountNumber.trim() && accountName.trim();
+    const isValid = amountOk && method && accountNumber.trim() && accountName.trim();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -46,16 +42,16 @@ export default function RequestPayoutModal({ availableToWithdraw, memberName, on
         setLoading(true);
         try {
             await addDoc(collection(db, "payouts"), {
-                memberId:      currentUser.uid,
+                memberId: currentUser.uid,
                 memberName,
-                amount:        numAmount,
+                amount: numAmount,
                 method,
                 accountNumber: accountNumber.trim(),
-                accountName:   accountName.trim(),
-                status:        "requested",
-                requestedAt:   serverTimestamp(),
-                sentAt:        null,
-                reference:     null,
+                accountName: accountName.trim(),
+                status: "requested",
+                requestedAt: serverTimestamp(),
+                sentAt: null,
+                reference: null,
             });
             setSubmittedAmount(numAmount);
             setSuccess(true);
@@ -75,12 +71,14 @@ export default function RequestPayoutModal({ availableToWithdraw, memberName, on
                     <CheckCircle className="text-gpsc-green mx-auto mb-4" size={48} />
                     <h2 className="font-display text-gpsc-navy mb-2 text-xl font-semibold">Request Submitted!</h2>
                     <p className="text-gpsc-stone mb-6 text-sm">
-                        Your payout of{" "}
-                        <span className="text-gpsc-navy font-semibold">{formatCurrency(submittedAmount)}</span> has been
-                        submitted. The admin will process it within 3–5 business days.
+                        Your payout of <span className="text-gpsc-navy font-semibold">{formatCurrency(submittedAmount)}</span> has been submitted. The
+                        admin will process it within 3–5 business days.
                     </p>
                     <button
-                        onClick={() => { onSuccess(); onClose(); }}
+                        onClick={() => {
+                            onSuccess();
+                            onClose();
+                        }}
                         className="bg-gpsc-green w-full rounded-xl py-3 font-medium text-white"
                     >
                         Done
@@ -101,15 +99,10 @@ export default function RequestPayoutModal({ availableToWithdraw, memberName, on
                         </div>
                         <div>
                             <h2 className="font-display text-gpsc-navy font-semibold">Request Payout</h2>
-                            <p className="text-gpsc-stone text-xs">
-                                Available: {formatCurrency(availableToWithdraw)}
-                            </p>
+                            <p className="text-gpsc-stone text-xs">Available: {formatCurrency(availableToWithdraw)}</p>
                         </div>
                     </div>
-                    <button
-                        onClick={onClose}
-                        className="text-gpsc-stone hover:text-gpsc-navy rounded-lg p-1 transition-colors"
-                    >
+                    <button onClick={onClose} className="text-gpsc-stone hover:text-gpsc-navy rounded-lg p-1 transition-colors">
                         <X size={20} />
                     </button>
                 </div>
@@ -137,9 +130,7 @@ export default function RequestPayoutModal({ availableToWithdraw, memberName, on
                             <p className="mt-1 text-xs text-red-500">Minimum payout is {formatCurrency(MIN_PAYOUT)}</p>
                         )}
                         {numAmount > availableToWithdraw && (
-                            <p className="mt-1 text-xs text-red-500">
-                                Exceeds available balance of {formatCurrency(availableToWithdraw)}
-                            </p>
+                            <p className="mt-1 text-xs text-red-500">Exceeds available balance of {formatCurrency(availableToWithdraw)}</p>
                         )}
                         {/* Quick-fill buttons */}
                         <div className="mt-2 flex gap-2">
@@ -171,16 +162,16 @@ export default function RequestPayoutModal({ availableToWithdraw, memberName, on
                         >
                             <option value="">Select method…</option>
                             {PAYMENT_METHODS.map((m) => (
-                                <option key={m.value} value={m.value}>{m.label}</option>
+                                <option key={m.value} value={m.value}>
+                                    {m.label}
+                                </option>
                             ))}
                         </select>
                     </div>
 
                     {/* Account number */}
                     <div>
-                        <label className="text-gpsc-navy mb-1.5 block text-sm font-medium">
-                            {isEWallet ? "Mobile Number" : "Account Number"}
-                        </label>
+                        <label className="text-gpsc-navy mb-1.5 block text-sm font-medium">{isEWallet ? "Mobile Number" : "Account Number"}</label>
                         <input
                             type="text"
                             value={accountNumber}
@@ -196,7 +187,6 @@ export default function RequestPayoutModal({ availableToWithdraw, memberName, on
                         <label className="text-gpsc-navy mb-1.5 block text-sm font-medium">Account Name</label>
                         <input
                             type="text"
-                            value={accountName}
                             onChange={(e) => setAccountName(e.target.value)}
                             placeholder="Name on account"
                             className="border-gpsc-cream-dark focus:border-gpsc-green w-full rounded-xl border px-3 py-3 text-sm focus:outline-none"

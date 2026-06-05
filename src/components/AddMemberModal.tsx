@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { X, UserPlus, CheckCircle, Copy, Check, AlertTriangle } from "lucide-react";
 import { adminCreateMember, type EncodeMemberResult } from "../firebase/adminCreateMember";
+import { useAdmin } from "../hooks/useAdmin";
 
 interface Props {
     onClose: () => void;
@@ -14,6 +15,7 @@ const PACKAGES = [
 ];
 
 export default function AddMemberModal({ onClose, onSuccess }: Props) {
+    const { isSuperAdmin } = useAdmin();
     const [form, setForm] = useState({
         package: "",
         firstName: "",
@@ -242,18 +244,20 @@ export default function AddMemberModal({ onClose, onSuccess }: Props) {
                                 required={!isRoot}
                             />
                         </Field>
-                        <label className="text-gpsc-stone mt-2 flex cursor-pointer items-center gap-2 text-xs">
-                            <input
-                                type="checkbox"
-                                checked={isRoot}
-                                onChange={(e) => {
-                                    setIsRoot(e.target.checked);
-                                    if (e.target.checked) setForm((f) => ({ ...f, referralCode: "" }));
-                                }}
-                                className="accent-gpsc-navy h-4 w-4"
-                            />
-                            Founder / root member (no referrer) — only for the very top of the tree
-                        </label>
+                        {isSuperAdmin && (
+                            <label className="text-gpsc-stone mt-2 flex cursor-pointer items-center gap-2 text-xs">
+                                <input
+                                    type="checkbox"
+                                    checked={isRoot}
+                                    onChange={(e) => {
+                                        setIsRoot(e.target.checked);
+                                        if (e.target.checked) setForm((f) => ({ ...f, referralCode: "" }));
+                                    }}
+                                    className="accent-gpsc-navy h-4 w-4"
+                                />
+                                Founder / root member (no referrer) — only for the very top of the tree
+                            </label>
+                        )}
                     </div>
 
                     {/* Address */}

@@ -168,6 +168,7 @@ export interface CommissionRecord {
     membershipId: string;
     recipientId: string;
     recipientName: string;
+    recipientReferralCode?: string;
     fromMemberName: string;
     fromMemberCity: string;
     level: number;
@@ -183,6 +184,7 @@ export interface PendingCommission {
     membershipId: string;
     recipientId: string;
     recipientName: string;
+    recipientReferralCode?: string;
     fromMemberName: string;
     level: number;
     amount: number;

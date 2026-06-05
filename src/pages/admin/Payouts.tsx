@@ -215,7 +215,6 @@ export const Payouts: React.FC<Props> = ({ payouts, loading, onMarkSent, onRefre
                                 <tr key={p.id} className="border-gpsc-cream-dark hover:bg-gpsc-cream/40 border-t transition-colors">
                                     <td className="p-4">
                                         <div className="text-gpsc-navy font-medium">{p.memberName}</div>
-                                        <div className="text-gpsc-stone font-mono text-xs">{p.memberId.slice(0, 8)}</div>
                                     </td>
                                     <td className="p-4">
                                         <div className="text-gpsc-navy">{methodLabel(p.method)}</div>

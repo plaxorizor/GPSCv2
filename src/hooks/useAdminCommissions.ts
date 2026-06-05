@@ -31,6 +31,7 @@ const useAdminCommissions = () => {
                 ),
             ];
             const memberMap = new Map<string, string>();
+            const codeMap = new Map<string, string>();
 
             for (let i = 0; i < uniqueUids.length; i += 10) {
                 const chunk = uniqueUids.slice(i, i + 10);
@@ -39,6 +40,9 @@ const useAdminCommissions = () => {
                     if (snap.exists()) {
                         const d = snap.data();
                         memberMap.set(snap.id, `${d.firstName ?? ""} ${d.lastName ?? ""}`.trim());
+                        if (typeof d.referralCode === "string" && d.referralCode.length > 0) {
+                            codeMap.set(snap.id, d.referralCode);
+                        }
                     }
                 });
             }
@@ -53,6 +57,7 @@ const useAdminCommissions = () => {
                         membershipId: "",
                         recipientId: earnedBy,
                         recipientName: memberMap.get(earnedBy) ?? earnedBy,
+                        recipientReferralCode: codeMap.get(earnedBy) ?? "",
                         fromMemberName: (data.fromMemberName as string | undefined) ?? "—",
                         level: data.level as number,
                         amount: data.amount as number,
@@ -71,6 +76,7 @@ const useAdminCommissions = () => {
                         membershipId: "",
                         recipientId: earnedBy,
                         recipientName: memberMap.get(earnedBy) ?? earnedBy,
+                        recipientReferralCode: codeMap.get(earnedBy) ?? "",
                         fromMemberName: (data.fromMemberName as string | undefined) ?? "—",
                         fromMemberCity: (data.fromMemberCity as string | undefined) ?? "",
                         level: data.level as number,
