@@ -249,9 +249,12 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                 (member) =>
                     member.firstName?.toLowerCase().includes(lowerQuery) ||
                     member.lastName?.toLowerCase().includes(lowerQuery) ||
+                    `${member.firstName ?? ""} ${member.lastName ?? ""}`.toLowerCase().includes(lowerQuery) ||
                     member.email?.toLowerCase().includes(lowerQuery) ||
                     member.city?.toLowerCase().includes(lowerQuery) ||
-                    member.mobile?.includes(lowerQuery),
+                    member.mobile?.includes(lowerQuery) ||
+                    member.referralCode?.toLowerCase().includes(lowerQuery) ||
+                    member.sponsorName?.toLowerCase().includes(lowerQuery),
             );
         }
 
@@ -394,7 +397,7 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                                 setQuery(e.target.value);
                                 setCurrentPage(1); // Reset to first page on search
                             }}
-                            placeholder="Search by name, email, city..."
+                            placeholder="Search by name, referral code, sponsor, email, mobile, city..."
                             className="border-gpsc-cream-dark focus:ring-gpsc-green w-full rounded-lg border py-2 pr-4 pl-9 text-sm focus:ring-2 focus:outline-none"
                         />
                     </div>

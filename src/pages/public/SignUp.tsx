@@ -49,6 +49,21 @@ const plans = [
 
 const STEPS = ["Package", "Your Info", "Sponsor & Beneficiaries", "Payment", "Review"];
 
+// ── Payment details shown on the signup Payment step ──────────────
+// Single source of truth — update account numbers and receipt contacts here.
+const PAYMENT_INFO = {
+    accounts: [
+        { label: "GCash", accountName: "GPSC Official", number: "09XX-XXX-XXXX" },
+        { label: "Maya", accountName: "GPSC Official", number: "09XX-XXX-XXXX" },
+    ],
+    // Where members send their proof of payment for manual verification.
+    receiptContacts: [
+        { label: "Messenger", value: "GPSC Official" },
+        { label: "Email", value: "payments@gpsc.app" },
+    ],
+    verificationDays: "1–2 business days",
+};
+
 // ── Shared input / label styles ───────────────────────────────────
 const inputCls =
     "w-full mt-1 px-4 py-3 rounded-xl border border-[#E5DDC8] bg-white text-[#14365C] placeholder-[#6B6862] focus:outline-none focus:ring-2 focus:ring-[#4A8A2C] transition";
@@ -69,8 +84,6 @@ export default function SignUpLayout() {
     const [policyTab, setPolicyTab] = useState<"privacy" | "terms" | "refund">("privacy");
 
     const [selectedPlan, setSelectedPlan] = useState(plans[0]);
-    const [paymentProofFile, setPaymentProofFile] = useState<File | null>(null);
-    const [paymentProofPreview, setPaymentProofPreview] = useState<string | null>(null);
     const [form, setForm] = useState({
         package: "",
         firstName: "",
@@ -207,12 +220,6 @@ export default function SignUpLayout() {
                 }
             }
         }
-        if (step === 4) {
-            if (!paymentProofFile) {
-                setError("Please upload your proof of payment before continuing.");
-                return false;
-            }
-        }
         return true;
     };
 
@@ -267,7 +274,6 @@ export default function SignUpLayout() {
                 country: form.country,
                 package: selectedPlan.name.toLowerCase(),
                 beneficiaries: form.beneficiaries,
-                paymentProofFileName: paymentProofFile?.name ?? null,
                 status: "pending",
                 isAdmin: false,
                 dateCreated: serverTimestamp(),
@@ -343,7 +349,7 @@ export default function SignUpLayout() {
                                     <>
                                         <p><strong style={{ color: "#14365C" }}>Last updated: June 2025</strong></p>
                                         <p>GPSC ("we", "us", or "our") is committed to protecting your personal information. This Privacy Policy explains how we collect, use, and safeguard the data you provide when registering as a member.</p>
-                                        <p><strong style={{ color: "#14365C" }}>Information We Collect</strong><br />We collect your name, email address, mobile number, birth date, civil status, location, referral code, beneficiary details, and proof of payment.</p>
+                                        <p><strong style={{ color: "#14365C" }}>Information We Collect</strong><br />We collect your name, email address, mobile number, birth date, civil status, location, referral code, and beneficiary details. Proof of payment that you send us for verification is handled separately and is not stored in your online account.</p>
                                         <p><strong style={{ color: "#14365C" }}>How We Use Your Information</strong><br />Your data is used to process your membership application, verify identity, manage your account, facilitate referral rewards, and communicate important updates.</p>
                                         <p><strong style={{ color: "#14365C" }}>Data Sharing</strong><br />We do not sell or rent your personal data. Information may be shared only with service providers necessary to operate our platform, or as required by law.</p>
                                         <p><strong style={{ color: "#14365C" }}>Data Security</strong><br />We use industry-standard security measures to protect your information. However, no online transmission is 100% secure and we cannot guarantee absolute security.</p>
@@ -981,7 +987,8 @@ export default function SignUpLayout() {
                                                 Step 4 · Payment
                                             </h2>
                                             <p className="mb-6 text-sm" style={{ color: "#6B6862" }}>
-                                                Send your payment to one of the accounts below, then upload your proof of payment.
+                                                Send your payment to one of the accounts below. After paying, send your receipt to us so we
+                                                can verify it and activate your account.
                                             </p>
 
                                             <div className="mb-6 flex items-center justify-between rounded-2xl px-5 py-4" style={{ backgroundColor: "#FAF6EE", border: "1px solid #E5DDC8" }}>
@@ -997,87 +1004,37 @@ export default function SignUpLayout() {
                                             </div>
 
                                             <div className="mb-6 grid gap-4 sm:grid-cols-2">
-                                                <div className="flex flex-col items-center rounded-2xl p-5" style={{ border: "1px solid #E5DDC8", backgroundColor: "#fff" }}>
-                                                    <p className="mb-3 text-sm font-semibold" style={{ color: "#14365C" }}>GCash</p>
-                                                    <div className="flex h-40 w-40 items-center justify-center rounded-xl text-xs" style={{ backgroundColor: "#F3F4F6", color: "#9CA3AF", border: "2px dashed #D1D5DB" }}>
-                                                        QR placeholder
+                                                {PAYMENT_INFO.accounts.map((acct) => (
+                                                    <div key={acct.label} className="flex flex-col items-center rounded-2xl p-5" style={{ border: "1px solid #E5DDC8", backgroundColor: "#fff" }}>
+                                                        <p className="mb-3 text-sm font-semibold" style={{ color: "#14365C" }}>{acct.label}</p>
+                                                        <div className="flex h-40 w-40 items-center justify-center rounded-xl text-xs" style={{ backgroundColor: "#F3F4F6", color: "#9CA3AF", border: "2px dashed #D1D5DB" }}>
+                                                            QR placeholder
+                                                        </div>
+                                                        <p className="mt-3 text-xs" style={{ color: "#6B6862" }}>Account name: <span className="font-medium" style={{ color: "#14365C" }}>{acct.accountName}</span></p>
+                                                        <p className="text-xs" style={{ color: "#6B6862" }}>Number: <span className="font-medium" style={{ color: "#14365C" }}>{acct.number}</span></p>
                                                     </div>
-                                                    <p className="mt-3 text-xs" style={{ color: "#6B6862" }}>Account name: <span className="font-medium" style={{ color: "#14365C" }}>GPSC Official</span></p>
-                                                    <p className="text-xs" style={{ color: "#6B6862" }}>Number: <span className="font-medium" style={{ color: "#14365C" }}>09XX-XXX-XXXX</span></p>
-                                                </div>
-
-                                                <div className="flex flex-col items-center rounded-2xl p-5" style={{ border: "1px solid #E5DDC8", backgroundColor: "#fff" }}>
-                                                    <p className="mb-3 text-sm font-semibold" style={{ color: "#14365C" }}>Maya</p>
-                                                    <div className="flex h-40 w-40 items-center justify-center rounded-xl text-xs" style={{ backgroundColor: "#F3F4F6", color: "#9CA3AF", border: "2px dashed #D1D5DB" }}>
-                                                        QR placeholder
-                                                    </div>
-                                                    <p className="mt-3 text-xs" style={{ color: "#6B6862" }}>Account name: <span className="font-medium" style={{ color: "#14365C" }}>GPSC Official</span></p>
-                                                    <p className="text-xs" style={{ color: "#6B6862" }}>Number: <span className="font-medium" style={{ color: "#14365C" }}>09XX-XXX-XXXX</span></p>
-                                                </div>
+                                                ))}
                                             </div>
 
-                                            <div>
-                                                <label className={labelCls}>
-                                                    Upload Proof of Payment <span style={{ color: "#B91C1C" }}>*</span>
-                                                </label>
-                                                <p className="mb-2 mt-0.5 text-xs" style={{ color: "#6B6862" }}>
-                                                    Screenshot or photo of your transaction receipt (JPG, PNG, or PDF).
+                                            {/* Offline proof-of-payment: members send their receipt to us for
+                                                manual verification. (File upload returns after the Blaze upgrade.) */}
+                                            <div className="rounded-2xl p-5" style={{ backgroundColor: "#FAF6EE", border: "1px solid #E5DDC8" }}>
+                                                <p className="text-sm font-semibold" style={{ color: "#14365C" }}>
+                                                    After paying, send your proof of payment
                                                 </p>
-
-                                                <label
-                                                    htmlFor="paymentProof"
-                                                    className="mt-1 flex cursor-pointer flex-col items-center justify-center rounded-xl py-8 transition-colors"
-                                                    style={{
-                                                        border: "2px dashed #E5DDC8",
-                                                        backgroundColor: paymentProofPreview ? "#F0FDF4" : "#FAF6EE",
-                                                    }}
-                                                >
-                                                    {paymentProofPreview ? (
-                                                        <img
-                                                            src={paymentProofPreview}
-                                                            alt="Proof of payment"
-                                                            className="max-h-48 rounded-lg object-contain"
-                                                        />
-                                                    ) : (
-                                                        <>
-                                                            <svg className="mb-2 h-8 w-8" fill="none" stroke="#9CA3AF" strokeWidth={1.5} viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
-                                                            </svg>
-                                                            <p className="text-sm" style={{ color: "#6B6862" }}>Click to upload</p>
-                                                            <p className="text-xs" style={{ color: "#9CA3AF" }}>JPG, PNG, PDF up to 10MB</p>
-                                                        </>
-                                                    )}
-                                                </label>
-                                                <input
-                                                    id="paymentProof"
-                                                    type="file"
-                                                    accept="image/jpeg,image/png,application/pdf"
-                                                    className="sr-only"
-                                                    onChange={(e) => {
-                                                        const file = e.target.files?.[0] ?? null;
-                                                        setPaymentProofFile(file);
-                                                        if (file && file.type.startsWith("image/")) {
-                                                            const reader = new FileReader();
-                                                            reader.onload = () => setPaymentProofPreview(reader.result as string);
-                                                            reader.readAsDataURL(file);
-                                                        } else {
-                                                            setPaymentProofPreview(null);
-                                                        }
-                                                    }}
-                                                />
-                                                {paymentProofFile && (
-                                                    <div className="mt-2 flex items-center justify-between rounded-xl px-4 py-2 text-sm" style={{ backgroundColor: "#F0FDF4", border: "1px solid #BBF7D0" }}>
-                                                        <span style={{ color: "#14365C" }}>{paymentProofFile.name}</span>
-                                                        <button
-                                                            type="button"
-                                                            className="text-xs hover:underline"
-                                                            style={{ color: "#B91C1C" }}
-                                                            onClick={() => { setPaymentProofFile(null); setPaymentProofPreview(null); }}
-                                                        >
-                                                            Remove
-                                                        </button>
-                                                    </div>
-                                                )}
+                                                <p className="mt-1 text-xs" style={{ color: "#6B6862" }}>
+                                                    Take a screenshot or photo of your transaction receipt and send it to us, including your full
+                                                    name, so we can match your payment and activate your account:
+                                                </p>
+                                                <ul className="mt-3 space-y-1 text-sm" style={{ color: "#14365C" }}>
+                                                    {PAYMENT_INFO.receiptContacts.map((c) => (
+                                                        <li key={c.label}>{c.label}: <span className="font-medium">{c.value}</span></li>
+                                                    ))}
+                                                </ul>
+                                                <p className="mt-3 text-xs" style={{ color: "#6B6862" }}>
+                                                    Your account stays <span className="font-medium">Pending</span> until our team verifies your
+                                                    payment, usually within {PAYMENT_INFO.verificationDays}.
+                                                </p>
                                             </div>
                                         </div>
                                     )}
@@ -1157,10 +1114,13 @@ export default function SignUpLayout() {
                                             </p>
                                             <div className="mb-5 space-y-2">
                                                 <div className="flex justify-between rounded-xl px-4 py-3 text-sm" style={{ backgroundColor: "#FAF6EE" }}>
-                                                    <span style={{ color: "#6B6862" }}>Proof of payment</span>
-                                                    <span className="font-medium" style={{ color: paymentProofFile ? "#4A8A2C" : "#B91C1C" }}>
-                                                        {paymentProofFile ? paymentProofFile.name : "Not uploaded"}
+                                                    <span style={{ color: "#6B6862" }}>Amount due</span>
+                                                    <span className="font-medium" style={{ color: "#14365C" }}>
+                                                        ₱{selectedPlan.price.toLocaleString("en-PH")} · {selectedPlan.name} Care
                                                     </span>
+                                                </div>
+                                                <div className="rounded-xl px-4 py-3 text-xs" style={{ backgroundColor: "#FAF6EE", color: "#6B6862" }}>
+                                                    Send your receipt after signing up so we can verify your payment and activate your account.
                                                 </div>
                                             </div>
 
