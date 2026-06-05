@@ -1,6 +1,20 @@
 // admin/Members.tsx
 import React, { useState, useMemo } from "react";
-import { Plus, Search, Download, RefreshCw, Copy, Check, ShieldCheck, ShieldOff, ChevronLeft, ChevronRight, Archive, RotateCcw, Trash2 } from "lucide-react";
+import {
+    Plus,
+    Search,
+    Download,
+    RefreshCw,
+    Copy,
+    Check,
+    ShieldCheck,
+    ShieldOff,
+    ChevronLeft,
+    ChevronRight,
+    Archive,
+    RotateCcw,
+    Trash2,
+} from "lucide-react";
 import { PACKAGE_INFO } from "../../utils/types";
 import AllMembers from "./AllMembers";
 import { useAllMembers } from "../../hooks/useAllMembers";
@@ -8,13 +22,7 @@ import { useAdmin } from "../../hooks/useAdmin";
 import { getEligibilityTimeline } from "../../utils/eligibility";
 import AddMemberModal from "../../components/AddMemberModal";
 import ConfirmDialog from "../../components/ConfirmDialog";
-import {
-    sendMemberPasswordReset,
-    archiveMember,
-    restoreMember,
-    hardDeleteMember,
-    getMemberDependencies,
-} from "../../firebase/admin";
+import { sendMemberPasswordReset, archiveMember, restoreMember, hardDeleteMember, getMemberDependencies } from "../../firebase/admin";
 
 export interface MemberRow {
     uid: string;
@@ -89,7 +97,9 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
         setSelectedMember(m);
         // For super admins, check whether this member is safe to hard-delete.
         if (m && isSuperAdmin) {
-            getMemberDependencies(m.uid).then(setDeps).catch(() => setDeps(null));
+            getMemberDependencies(m.uid)
+                .then(setDeps)
+                .catch(() => setDeps(null));
         }
     };
 
@@ -493,7 +503,7 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                                         ) : (
                                             <button
                                                 onClick={() => handlePageChange(page as number)}
-                                                className={`min-w-[32px] rounded-lg px-2 py-1 text-sm transition-colors ${
+                                                className={`min-w-8 rounded-lg px-2 py-1 text-sm transition-colors ${
                                                     currentPage === page
                                                         ? "bg-gpsc-navy text-white"
                                                         : "border-gpsc-cream-dark hover:bg-gpsc-cream/60 border"
@@ -732,9 +742,8 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                                             </button>
                                         ) : (
                                             <p className="text-gpsc-stone text-xs">
-                                                No email on file — this member logs in with their mobile-based
-                                                ID. Resetting their password needs the Blaze upgrade; for now,
-                                                re-encode or have them change it themselves.
+                                                No email on file — this member logs in with their mobile-based ID. Resetting their password needs the
+                                                Blaze upgrade; for now, re-encode or have them change it themselves.
                                             </p>
                                         )}
                                         {resetMsg && <p className="text-gpsc-green mt-2 text-xs">{resetMsg}</p>}
@@ -743,9 +752,7 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                                     {/* Super-admin: archive / restore / permanently delete */}
                                     {isSuperAdmin && (
                                         <div className="mt-4 space-y-2 rounded-xl border border-red-200 bg-red-50/40 p-3">
-                                            <div className="text-xs font-medium tracking-wider text-red-700/80 uppercase">
-                                                Super admin
-                                            </div>
+                                            <div className="text-xs font-medium tracking-wider text-red-700/80 uppercase">Super admin</div>
                                             {selectedMember.archived ? (
                                                 <button
                                                     onClick={handleRestoreOne}
@@ -775,11 +782,9 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                                             )}
                                             {deps && (deps.hasDownlines || deps.hasCommissions) && (
                                                 <p className="text-xs text-red-700/80">
-                                                    Can't permanently delete — this member has{" "}
-                                                    {deps.hasDownlines ? "downlines" : ""}
+                                                    Can't permanently delete — this member has {deps.hasDownlines ? "downlines" : ""}
                                                     {deps.hasDownlines && deps.hasCommissions ? " and " : ""}
-                                                    {deps.hasCommissions ? "commission history" : ""}. Archive instead to
-                                                    keep the tree intact.
+                                                    {deps.hasCommissions ? "commission history" : ""}. Archive instead to keep the tree intact.
                                                 </p>
                                             )}
                                             {!deps && <p className="text-gpsc-stone text-xs">Checking delete eligibility…</p>}
@@ -808,7 +813,7 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                                     {/* Timeline items */}
                                     <div className="relative">
                                         {/* Vertical line */}
-                                        <div className="bg-gpsc-cream-dark absolute top-0 bottom-0 left-[11px] w-0.5" />
+                                        <div className="bg-gpsc-cream-dark absolute top-0 bottom-0 left-2.75 w-0.5" />
 
                                         <div className="space-y-5">
                                             {timeline.map((item, i) => (
@@ -854,12 +859,7 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                     );
                 })()}
 
-            {showAddMember && (
-                <AddMemberModal
-                    onClose={() => setShowAddMember(false)}
-                    onSuccess={() => refetch()}
-                />
-            )}
+            {showAddMember && <AddMemberModal onClose={() => setShowAddMember(false)} onSuccess={() => refetch()} />}
 
             {confirmState && (
                 <ConfirmDialog

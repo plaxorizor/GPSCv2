@@ -26,12 +26,7 @@ export const DashboardSidebar: React.FC<Props> = ({ currentSection, onSectionCha
     const settingsItem = items.find((item) => item.id === "settings");
 
     const renderNavButton = (item: SidebarItem, i: number) => (
-        <div
-            key={item.id}
-            className="relative"
-            onMouseEnter={() => !expanded && setHoveredId(item.id)}
-            onMouseLeave={() => setHoveredId(null)}
-        >
+        <div key={item.id} className="relative" onMouseEnter={() => !expanded && setHoveredId(item.id)} onMouseLeave={() => setHoveredId(null)}>
             <button
                 onClick={() => onSectionChange(item.id)}
                 className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition-colors ${
@@ -83,7 +78,10 @@ export const DashboardSidebar: React.FC<Props> = ({ currentSection, onSectionCha
     return (
         <aside
             onMouseEnter={() => setExpanded(true)}
-            onMouseLeave={() => { setExpanded(false); setHoveredId(null); }}
+            onMouseLeave={() => {
+                setExpanded(false);
+                setHoveredId(null);
+            }}
             style={{ width: expanded ? "16rem" : "4rem", transition: "width 400ms cubic-bezier(0.4, 0, 0.2, 1)" }}
             className="border-gpsc-cream-dark fixed top-0 left-0 z-40 hidden h-screen flex-col overflow-hidden border-r bg-white lg:flex"
         >
@@ -107,21 +105,17 @@ export const DashboardSidebar: React.FC<Props> = ({ currentSection, onSectionCha
             </div>
 
             {/* Nav items (excludes settings) */}
-            <nav className="flex-1 space-y-1 overflow-y-auto p-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            <nav className="flex-1 scrollbar-none space-y-1 overflow-y-auto p-2 [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                 {navItems.map((item, i) => renderNavButton(item, i))}
             </nav>
 
             {/* Bottom section: Settings + Logout */}
-            <div className="border-gpsc-cream-dark border-t p-2 space-y-1">
+            <div className="border-gpsc-cream-dark space-y-1 border-t p-2">
                 {/* Settings pinned above Logout */}
                 {settingsItem && renderNavButton(settingsItem, navItems.length)}
 
                 {/* Logout */}
-                <div
-                    className="relative"
-                    onMouseEnter={() => !expanded && setHoveredId("__logout__")}
-                    onMouseLeave={() => setHoveredId(null)}
-                >
+                <div className="relative" onMouseEnter={() => !expanded && setHoveredId("__logout__")} onMouseLeave={() => setHoveredId(null)}>
                     <button
                         onClick={onLogout}
                         className="text-gpsc-stone hover:bg-gpsc-cream/60 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors"

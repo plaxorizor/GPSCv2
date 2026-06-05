@@ -72,10 +72,7 @@ export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHis
         const matchesLevel = pendingLevelFilter === "all" || String(c.level) === pendingLevelFilter;
         const q = pendingSearch.trim().toLowerCase();
         const matchesSearch =
-            !q ||
-            c.recipientName.toLowerCase().includes(q) ||
-            c.recipientId.toLowerCase().includes(q) ||
-            c.fromMemberName.toLowerCase().includes(q);
+            !q || c.recipientName.toLowerCase().includes(q) || c.recipientId.toLowerCase().includes(q) || c.fromMemberName.toLowerCase().includes(q);
         return matchesLevel && matchesSearch;
     });
 
@@ -149,7 +146,7 @@ export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHis
                                 value={pendingSearch}
                                 onChange={(e) => setPendingSearch(e.target.value)}
                                 placeholder="Search by name…"
-                                className="w-40 bg-transparent outline-none placeholder:text-gpsc-stone/60"
+                                className="placeholder:text-gpsc-stone/60 w-40 bg-transparent outline-none"
                             />
                             {pendingSearch && (
                                 <button onClick={() => setPendingSearch("")} className="text-gpsc-stone hover:text-gpsc-navy">
@@ -166,7 +163,9 @@ export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHis
                             >
                                 <option value="all">All levels</option>
                                 {pendingLevels.map((l) => (
-                                    <option key={l} value={String(l)}>Level {l}</option>
+                                    <option key={l} value={String(l)}>
+                                        Level {l}
+                                    </option>
                                 ))}
                             </select>
                         )}
@@ -246,7 +245,7 @@ export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHis
                                 value={historySearch}
                                 onChange={(e) => setHistorySearch(e.target.value)}
                                 placeholder="Search by name…"
-                                className="w-40 bg-transparent outline-none placeholder:text-gpsc-stone/60"
+                                className="placeholder:text-gpsc-stone/60 w-40 bg-transparent outline-none"
                             />
                             {historySearch && (
                                 <button onClick={() => setHistorySearch("")} className="text-gpsc-stone hover:text-gpsc-navy">
@@ -263,7 +262,9 @@ export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHis
                             >
                                 <option value="all">All levels</option>
                                 {historyLevels.map((l) => (
-                                    <option key={l} value={String(l)}>Level {l}</option>
+                                    <option key={l} value={String(l)}>
+                                        Level {l}
+                                    </option>
                                 ))}
                             </select>
                         )}
@@ -305,9 +306,7 @@ export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHis
                             {filteredHistory.length === 0 && (
                                 <tr>
                                     <td colSpan={6} className="text-gpsc-stone p-8 text-center">
-                                        {historySearch || historyLevelFilter !== "all"
-                                            ? "No history matches your filters"
-                                            : "No release history"}
+                                        {historySearch || historyLevelFilter !== "all" ? "No history matches your filters" : "No release history"}
                                     </td>
                                 </tr>
                             )}
@@ -322,8 +321,9 @@ export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHis
                     <div className="animate-fade-up mx-4 w-full max-w-md rounded-2xl bg-white p-6" onClick={(e) => e.stopPropagation()}>
                         <h2 className="font-display text-gpsc-navy mb-1 text-xl">Release Commission</h2>
                         <p className="text-gpsc-stone mb-4 text-xs">
-                            This marks the commission as available for the member to withdraw. No money is sent yet — the
-                            member will submit a payout request and you'll process it separately.
+                            This marks the commission as available for the member to withdraw. <br />{" "}
+                            <span className="text-red-700">No money is sent yet.</span> The member will submit a payout request and you'll process it
+                            separately.
                         </p>
                         <div className="space-y-4">
                             <div className="bg-gpsc-cream rounded-xl p-4">
@@ -345,13 +345,10 @@ export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHis
                                 </div>
                             </div>
                             <div>
-                                <label className="text-gpsc-stone mb-1 block text-xs">
-                                    Reference / notes <span className="text-gpsc-stone/60">(optional — shown in Release History)</span>
-                                </label>
                                 <input
                                     value={reference}
                                     onChange={(e) => setReference(e.target.value)}
-                                    placeholder="e.g., Batch approval Jun 2025"
+                                    placeholder="Notes (optional)"
                                     className="border-gpsc-cream-dark focus:ring-gpsc-green w-full rounded-xl border px-4 py-2 focus:ring-2 focus:outline-none"
                                     autoFocus
                                 />
