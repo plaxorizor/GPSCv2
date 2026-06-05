@@ -1,6 +1,6 @@
 // admin/Claims.tsx
 import React, { useState } from "react";
-import { Download, Eye, CheckCircle, XCircle, Clock, FileText, Search, X } from "lucide-react";
+import { Download, Eye, CheckCircle, XCircle, Clock, FileText, Search, X, RefreshCw } from "lucide-react";
 import type { Claim } from "../../utils/types";
 import { formatCurrency, formatDate } from "./utils";
 
@@ -9,7 +9,7 @@ interface Props {
     loading: boolean;
     onUpdateStatus: (claimId: string, status: "Approved" | "Rejected" | "Released") => Promise<void>;
     onReviewClaim?: (claimId: string) => Promise<void>;
-    onRefresh: () => void;
+    onRefresh: () => Promise<void>;
     onExport: () => void;
 }
 
@@ -33,6 +33,11 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
     const [statusFilter, setStatusFilter] = useState("all");
     const [search, setSearch] = useState("");
     const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null);
+
+    // TODO: implement refresh functionality
+    const handleRefresh = () => {
+        console.warn("Refresh not implemented - backend dev required");
+    };
 
     const filtered = claims.filter((c) => {
         const matchesStatus = statusFilter === "all" || c.status === statusFilter;
@@ -61,7 +66,7 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
         if (onReviewClaim) {
             onReviewClaim(claimId);
         } else {
-            onRefresh();
+            handleRefresh();
         }
     };
 
@@ -113,10 +118,12 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                             <option value="rejected">Rejected</option>
                             <option value="released">Released</option>
                         </select>
+                        {/* TODO: implement refresh button functionality */}
                         <button
-                            onClick={onRefresh}
-                            className="border-gpsc-cream-dark hover:bg-gpsc-cream/60 rounded-lg border px-3 py-2 text-sm transition-colors"
+                            onClick={handleRefresh}
+                            className="border-gpsc-cream-dark hover:bg-gpsc-cream/60 flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm transition-colors"
                         >
+                            <RefreshCw size={14} />
                             Refresh
                         </button>
                     </div>

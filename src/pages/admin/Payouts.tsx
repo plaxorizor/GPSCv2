@@ -1,6 +1,6 @@
 // admin/Payouts.tsx
 import React, { useState } from "react";
-import { Wallet, Clock, CheckCircle, Download, Send, Search, X } from "lucide-react";
+import { Wallet, Clock, CheckCircle, Download, Send, Search, X, RefreshCw } from "lucide-react";
 import type { AdminPayout } from "../../utils/types";
 import { formatCurrency, formatDate } from "./utils";
 
@@ -34,6 +34,11 @@ export const Payouts: React.FC<Props> = ({ payouts, loading, onMarkSent, onRefre
     // History filters
     const [historySearch, setHistorySearch] = useState("");
     const [methodFilter, setMethodFilter] = useState("all");
+
+    // TODO: implement refresh functionality
+    const handleRefresh = () => {
+        console.warn("Refresh not implemented - backend dev required");
+    };
 
     const pending = payouts.filter((p) => {
         if (p.status !== "requested") return false;
@@ -98,11 +103,9 @@ export const Payouts: React.FC<Props> = ({ payouts, loading, onMarkSent, onRefre
                     <div className="text-gpsc-stone text-xs tracking-wider uppercase">Payout management</div>
                     <h1 className="font-display text-gpsc-navy text-3xl">Payouts</h1>
                 </div>
-                <button
-                    onClick={onRefresh}
-                    className="text-gpsc-green flex items-center gap-1 text-xs transition-colors hover:underline"
-                >
-                    Refresh
+                {/* TODO:implement refresh button functionality */}
+                 <button onClick={onRefresh} className="text-gpsc-green flex items-center gap-1 text-xs transition-colors hover:underline">
+                                                  <RefreshCw size={16} /> Refresh
                 </button>
             </div>
 
@@ -172,6 +175,15 @@ export const Payouts: React.FC<Props> = ({ payouts, loading, onMarkSent, onRefre
                         </div>
                         <button className="text-gpsc-stone hover:text-gpsc-navy flex items-center gap-1 text-xs">
                             <Download size={12} /> Export
+                        </button>
+                        {/* TODO: implement refresh button functionality */}
+                        <button
+                            onClick={handleRefresh}
+                            disabled={loading}
+                            className="border-gpsc-cream-dark hover:bg-gpsc-cream/60 flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm transition-colors disabled:opacity-50"
+                        >
+                            <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
+                            Refresh
                         </button>
                     </div>
                 </div>
@@ -261,6 +273,15 @@ export const Payouts: React.FC<Props> = ({ payouts, loading, onMarkSent, onRefre
                                 ))}
                             </select>
                         )}
+                        {/* TODO: implement refresh button functionality */}
+                        <button
+                            onClick={handleRefresh}
+                            disabled={loading}
+                            className="border-gpsc-cream-dark hover:bg-gpsc-cream/60 flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm transition-colors disabled:opacity-50"
+                        >
+                            <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
+                            Refresh
+                        </button>
                     </div>
                 </div>
                 <div className="overflow-x-auto">

@@ -1,5 +1,5 @@
-import React from "react";
-import { Wallet, TrendingUp, Users, CheckCircle, Clock, Check, ShieldAlert } from "lucide-react";
+import React, { useState } from "react";
+import { Wallet, TrendingUp, Users, CheckCircle, Clock, Check, ShieldAlert, Rocket, Crown, X } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { StatCard } from "./StatCard";
 import { type Member, type EarningsTrendPoint } from "../../utils/types";
@@ -29,6 +29,93 @@ interface Props {
         date: string;
     }>;
 }
+
+// ─── Upgrade Banner ───────────────────────────────────────────────────────────
+
+const PACKAGES = [
+    { name: "basic",   Icon: Check  },
+    { name: "Family",  Icon: Users  },
+    { name: "Premium", Icon: Crown  },
+] as const;
+
+const UpgradeBanner: React.FC<{ packageName: string }> = ({ packageName }) => {
+    const [dismissed, setDismissed] = useState(false);
+
+    const currentIndex = PACKAGES.findIndex(
+        (p) => p.name.toLowerCase() === packageName.toLowerCase()
+    );
+
+    // Hide if already on Premium, not found, or dismissed
+    if (dismissed || currentIndex === -1 || currentIndex === PACKAGES.length - 1) return null;
+
+    const nextPackage = PACKAGES[currentIndex + 1];
+
+    return (
+        <div className="relative flex items-center gap-5 rounded-2xl border border-gpsc-cream-dark bg-gpsc-cream overflow-hidden px-6 py-5">
+            {/* Green left accent bar */}
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-gpsc-green rounded-l-2xl" />
+
+            {/* Icon */}
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-gpsc-cream-dark bg-white text-gpsc-green">
+                <Rocket size={20} />
+            </div>
+
+            {/* Body */}
+            <div className="flex-1 min-w-0">
+                <p className="font-display text-gpsc-navy text-sm font-semibold">
+                    You're on {packageName} Care — unlock more benefits
+                </p>
+                <p className="text-gpsc-stone mt-0.5 text-xs leading-relaxed">
+                    Upgrade to Family or Premium Care for higher commissions, deeper level coverage, and faster payouts.
+                </p>
+
+                {/* Package progression pills */}
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                    {PACKAGES.map(({ name, Icon: PkgIcon }, i) => (
+                        <React.Fragment key={name}>
+                            <span
+                                className={`flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium border transition-colors ${
+                                    i === currentIndex
+                                        ? "bg-gpsc-navy text-white border-gpsc-navy"
+                                        : i === currentIndex + 1
+                                        ? "bg-gpsc-green text-white border-gpsc-green"
+                                        : "bg-white text-gpsc-stone border-gpsc-cream-dark"
+                                }`}
+                            >
+                                <PkgIcon size={11} />
+                                {name}
+                            </span>
+                            {i < PACKAGES.length - 1 && (
+                                <span className="text-gpsc-stone text-xs" aria-hidden="true">›</span>
+                            )}
+                        </React.Fragment>
+                    ))}
+                </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex shrink-0 flex-col items-end gap-2">
+                <button className="rounded-xl bg-gpsc-green px-4 py-2 text-xs font-medium text-white hover:bg-gpsc-green/90 transition-colors whitespace-nowrap">
+                    Upgrade to {nextPackage.name} →
+                </button>
+                <button className="text-xs text-gpsc-stone underline underline-offset-2 hover:text-gpsc-navy transition-colors">
+                    Compare packages
+                </button>
+            </div>
+
+            {/* Dismiss */}
+            <button
+                className="absolute right-3 top-3 text-gpsc-stone hover:text-gpsc-navy transition-colors"
+                onClick={() => setDismissed(true)}
+                aria-label="Dismiss upgrade banner"
+            >
+                <X size={14} />
+            </button>
+        </div>
+    );
+};
+
+// ─── Contestability Card ──────────────────────────────────────────────────────
 
 const ContestabilityCard: React.FC = () => (
     <div className="border-gpsc-cream-dark rounded-2xl border bg-white p-6">
@@ -92,6 +179,8 @@ const ContestabilityCard: React.FC = () => (
     </div>
 );
 
+// ─── Main Overview ────────────────────────────────────────────────────────────
+
 export const MemberOverview: React.FC<Props> = ({
     member,
     packageName,
@@ -117,6 +206,7 @@ export const MemberOverview: React.FC<Props> = ({
 
     return (
         <div className="space-y-6">
+            {/* Member header */}
             <div>
                 <h1 className="font-display text-gpsc-navy text-3xl">
                     {member.firstName} {member.lastName} <span className="text-gpsc-stone text-sm">({member.status})</span>
@@ -127,6 +217,10 @@ export const MemberOverview: React.FC<Props> = ({
                 <div className="text-gpsc-stone mt-1 text-sm">Member since: {member.dateCreated?.toDate?.()?.toLocaleDateString()}</div>
             </div>
 
+            {/* Upgrade Banner — hidden automatically for Premium members */}
+            <UpgradeBanner packageName={packageName} />
+
+            {/* Stat cards */}
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <StatCard
                     label="Available to withdraw"
@@ -146,8 +240,35 @@ export const MemberOverview: React.FC<Props> = ({
                 />
             </div>
 
-            <div className="grid gap-6 lg:grid-cols-3">
-                <div className="border-gpsc-cream-dark rounded-2xl border bg-white p-6 lg:col-span-2">
+           {/* Eligibility Timeline + Referral card + Earnings Trend */}
+            <div className="space-y-6">
+                <div className="grid gap-6 lg:grid-cols-3">
+                    <div className="border-gpsc-cream-dark rounded-2xl border bg-white p-6 lg:col-span-2">
+                        <h2 className="font-display text-gpsc-navy mb-4 text-lg">Eligibility Timeline</h2>
+                        <div className="space-y-3">
+                            {eligibilityTimeline.map((item, i) => (
+                                <div key={i} className="flex items-center gap-4">
+                                    <div
+                                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${item.unlocked ? "bg-gpsc-green text-white" : "bg-gpsc-cream-dark text-gpsc-stone"}`}
+                                    >
+                                        {item.unlocked ? <Check size={14} /> : <Clock size={14} />}
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="text-gpsc-navy text-sm">{item.label}</div>
+                                        <div className="text-gpsc-stone text-xs">
+                                            After {item.months} months · {item.unlocked ? "Active" : "Unlocks Soon"}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <ReferralCard member={member} />
+                </div>
+
+                {/* Earnings Trend - placed at the bottom */}
+                <div className="border-gpsc-cream-dark rounded-2xl border bg-white p-6">
                     <h2 className="font-display text-gpsc-navy mb-1 text-lg">Earnings Trend</h2>
                     <p className="text-gpsc-stone mb-6 text-xs">Last 6 months</p>
                     <ResponsiveContainer width="100%" height={220}>
@@ -166,34 +287,12 @@ export const MemberOverview: React.FC<Props> = ({
                         </AreaChart>
                     </ResponsiveContainer>
                 </div>
-
-                <ReferralCard member={member} />
             </div>
 
             {/* Contestability Period */}
             <ContestabilityCard />
 
-            <div className="border-gpsc-cream-dark rounded-2xl border bg-white p-6">
-                <h2 className="font-display text-gpsc-navy mb-4 text-lg">Eligibility Timeline</h2>
-                <div className="space-y-3">
-                    {eligibilityTimeline.map((item, i) => (
-                        <div key={i} className="flex items-center gap-4">
-                            <div
-                                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${item.unlocked ? "bg-gpsc-green text-white" : "bg-gpsc-cream-dark text-gpsc-stone"}`}
-                            >
-                                {item.unlocked ? <Check size={14} /> : <Clock size={14} />}
-                            </div>
-                            <div className="flex-1">
-                                <div className="text-gpsc-navy text-sm">{item.label}</div>
-                                <div className="text-gpsc-stone text-xs">
-                                    After {item.months} months · {item.unlocked ? "Active" : "Unlocks Soon"}
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-
+            {/* Recent Activity */}
             <div className="border-gpsc-cream-dark rounded-2xl border bg-white p-6">
                 <h2 className="font-display text-gpsc-navy mb-4 text-lg">Recent Activity</h2>
                 <div className="space-y-3">

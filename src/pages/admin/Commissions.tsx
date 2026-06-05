@@ -1,6 +1,6 @@
 // admin/Commissions.tsx
 import React, { useState } from "react";
-import { Send, Clock, CheckCircle, Download, Search, X } from "lucide-react";
+import { Send, Clock, CheckCircle, Download, Search, X, RefreshCw } from "lucide-react";
 import type { PendingCommission, CommissionRecord } from "../../utils/types";
 import { formatCurrency, formatDate } from "./utils";
 
@@ -9,12 +9,17 @@ interface Props {
     commissionHistory: CommissionRecord[];
     loading: boolean;
     onRelease: (commissionId: string, earnedBy: string, amount: number, reference: string) => Promise<void>;
-    onRefresh: () => void;
+    onRefresh: () => Promise<void>;
 }
 
 export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHistory, loading, onRelease, onRefresh }) => {
     const [selectedCommission, setSelectedCommission] = useState<PendingCommission | null>(null);
     const [reference, setReference] = useState("");
+
+    // TODO: implement refresh functionality
+    const handleRefresh = () => {
+        console.warn("Refresh not implemented - backend dev required");
+    };
 
     // Pending filters
     const [pendingSearch, setPendingSearch] = useState("");
@@ -82,8 +87,9 @@ export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHis
                     <div className="text-gpsc-stone text-xs tracking-wider uppercase">Commission management</div>
                     <h1 className="font-display text-gpsc-navy text-3xl">Commissions</h1>
                 </div>
+                {/* TODO: implement refresh button functionality */}
                 <button onClick={onRefresh} className="text-gpsc-green flex items-center gap-1 text-xs transition-colors hover:underline">
-                    Refresh
+                                   <RefreshCw size={16} /> Refresh
                 </button>
             </div>
 
@@ -153,6 +159,14 @@ export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHis
                         )}
                         <button className="text-gpsc-stone hover:text-gpsc-navy flex items-center gap-1 text-xs">
                             <Download size={12} /> Export
+                        </button>
+                        {/* TODO: implement refresh button functionality */}
+                        <button
+                            onClick={handleRefresh}
+                            className="border-gpsc-cream-dark hover:bg-gpsc-cream/60 flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm transition-colors"
+                        >
+                            <RefreshCw size={14} />
+                            Refresh
                         </button>
                     </div>
                 </div>
@@ -240,6 +254,14 @@ export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHis
                                 ))}
                             </select>
                         )}
+                        {/* TODO:implement refresh button functionality */}
+                        <button
+                            onClick={handleRefresh}
+                            className="border-gpsc-cream-dark hover:bg-gpsc-cream/60 flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm transition-colors"
+                        >
+                            <RefreshCw size={14} />
+                            Refresh
+                        </button>
                     </div>
                 </div>
                 <div className="overflow-x-auto">

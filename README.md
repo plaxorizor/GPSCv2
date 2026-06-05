@@ -4,16 +4,13 @@
 
 ### Frontend
 
-- Fix the UI
-- Add new pages
+- TO DO
 
 ---
 
 ### Dashboards
 
-- Admin -> Members Monitoring/Overview
-- Member -> Upline/Downline/Earnings/Indicator of Current Subscription
-- Visitor -> Testimonials, Ads, Events, etc.
+- TO DO
 
 ---
 
@@ -31,10 +28,4 @@
 
 ### Backend
 
-- Choose if Flask or Django
-- Member Auth system
-- Referral/Commision Logic and Tracking
-- Configure the packages
-- File upload (death cert, med cert)
-- Claim Status Tracking
-- Database Records
+- TO DO
