@@ -6,9 +6,13 @@ import type { AdminPayout } from "../utils/types";
 const useAdminPayouts = () => {
     const [payouts, setPayouts] = useState<AdminPayout[]>([]);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
 
-    const fetchPayouts = useCallback(async () => {
-        setLoading(true);
+    // `isInitial` shows the full-page skeleton (first mount only); a manual
+    // refresh updates the data quietly while flagging `refreshing` for the spinner.
+    const fetchPayouts = useCallback(async (isInitial = false) => {
+        if (isInitial) setLoading(true);
+        else setRefreshing(true);
         try {
             const snap = await getDocs(collection(db, "payouts"));
             const docs: AdminPayout[] = snap.docs
@@ -44,14 +48,15 @@ const useAdminPayouts = () => {
             console.error("[useAdminPayouts] error:", err);
         } finally {
             setLoading(false);
+            setRefreshing(false);
         }
     }, []);
 
     useEffect(() => {
-        fetchPayouts();
+        fetchPayouts(true);
     }, [fetchPayouts]);
 
-    return { payouts, loading, refetch: fetchPayouts };
+    return { payouts, loading, refreshing, refetch: () => fetchPayouts(false) };
 };
 
 export default useAdminPayouts;

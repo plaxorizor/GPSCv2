@@ -1,5 +1,5 @@
 // admin/Payouts.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Wallet, Clock, CheckCircle, Download, Send, Search, X, RefreshCw } from "lucide-react";
 import type { AdminPayout } from "../../utils/types";
 import { formatCurrency, formatDate } from "./utils";
@@ -21,9 +21,10 @@ interface Props {
     loading: boolean;
     onMarkSent: (payoutId: string, reference: string) => Promise<void>;
     onRefresh: () => void;
+    refreshing?: boolean;
 }
 
-export const Payouts: React.FC<Props> = ({ payouts, loading, onMarkSent, onRefresh }) => {
+export const Payouts: React.FC<Props> = ({ payouts, loading, onMarkSent, onRefresh, refreshing }) => {
     const [selected, setSelected] = useState<AdminPayout | null>(null);
     const [reference, setReference] = useState("");
     const [processing, setProcessing] = useState(false);
@@ -35,10 +36,19 @@ export const Payouts: React.FC<Props> = ({ payouts, loading, onMarkSent, onRefre
     const [historySearch, setHistorySearch] = useState("");
     const [methodFilter, setMethodFilter] = useState("all");
 
-    // TODO: implement refresh functionality
-    const handleRefresh = () => {
-        console.warn("Refresh not implemented - backend dev required");
+    // Track WHICH refresh button was clicked so only that one spins.
+    const [activeRefresh, setActiveRefresh] = useState<null | "all" | "pending" | "history">(null);
+    const triggerRefresh = (key: "all" | "pending" | "history") => {
+        setActiveRefresh(key);
+        onRefresh();
     };
+    // Keep the spinner visible until the fetch finishes AND a short minimum has
+    // elapsed, so a fast refetch still registers visually.
+    useEffect(() => {
+        if (refreshing || activeRefresh === null) return;
+        const t = setTimeout(() => setActiveRefresh(null), 500);
+        return () => clearTimeout(t);
+    }, [refreshing, activeRefresh]);
 
     const pending = payouts.filter((p) => {
         if (p.status !== "requested") return false;
@@ -103,9 +113,12 @@ export const Payouts: React.FC<Props> = ({ payouts, loading, onMarkSent, onRefre
                     <div className="text-gpsc-stone text-xs tracking-wider uppercase">Payout management</div>
                     <h1 className="font-display text-gpsc-navy text-3xl">Payouts</h1>
                 </div>
-                {/* TODO:implement refresh button functionality */}
-                 <button onClick={onRefresh} className="text-gpsc-green flex items-center gap-1 text-xs transition-colors hover:underline">
-                                                  <RefreshCw size={16} /> Refresh
+                <button
+                    onClick={() => triggerRefresh("all")}
+                    disabled={activeRefresh === "all"}
+                    className="text-gpsc-green flex items-center gap-1 text-xs transition-colors hover:underline disabled:opacity-60"
+                >
+                    <RefreshCw size={16} className={activeRefresh === "all" ? "animate-spin" : ""} /> Refresh
                 </button>
             </div>
 
@@ -176,18 +189,17 @@ export const Payouts: React.FC<Props> = ({ payouts, loading, onMarkSent, onRefre
                         <button className="text-gpsc-stone hover:text-gpsc-navy flex items-center gap-1 text-xs">
                             <Download size={12} /> Export
                         </button>
-                        {/* TODO: implement refresh button functionality */}
                         <button
-                            onClick={handleRefresh}
-                            disabled={loading}
-                            className="border-gpsc-cream-dark hover:bg-gpsc-cream/60 flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm transition-colors disabled:opacity-50"
+                            onClick={() => triggerRefresh("pending")}
+                            disabled={activeRefresh === "pending"}
+                            className="border-gpsc-cream-dark hover:bg-gpsc-cream/60 flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm transition-colors disabled:opacity-60"
                         >
-                            <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
+                            <RefreshCw size={14} className={activeRefresh === "pending" ? "animate-spin" : ""} />
                             Refresh
                         </button>
                     </div>
                 </div>
-                <div className="overflow-x-auto">
+                <div className={`overflow-x-auto transition-opacity ${activeRefresh === "pending" || activeRefresh === "all" ? "opacity-40" : ""}`}>
                     <table className="w-full text-sm">
                         <thead className="bg-gpsc-cream/50 text-gpsc-stone text-xs tracking-wider uppercase">
                             <tr>
@@ -273,18 +285,17 @@ export const Payouts: React.FC<Props> = ({ payouts, loading, onMarkSent, onRefre
                                 ))}
                             </select>
                         )}
-                        {/* TODO: implement refresh button functionality */}
                         <button
-                            onClick={handleRefresh}
-                            disabled={loading}
-                            className="border-gpsc-cream-dark hover:bg-gpsc-cream/60 flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm transition-colors disabled:opacity-50"
+                            onClick={() => triggerRefresh("history")}
+                            disabled={activeRefresh === "history"}
+                            className="border-gpsc-cream-dark hover:bg-gpsc-cream/60 flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm transition-colors disabled:opacity-60"
                         >
-                            <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
+                            <RefreshCw size={14} className={activeRefresh === "history" ? "animate-spin" : ""} />
                             Refresh
                         </button>
                     </div>
                 </div>
-                <div className="overflow-x-auto">
+                <div className={`overflow-x-auto transition-opacity ${activeRefresh === "history" || activeRefresh === "all" ? "opacity-40" : ""}`}>
                     <table className="w-full text-sm">
                         <thead className="bg-gpsc-cream/50 text-gpsc-stone text-xs tracking-wider uppercase">
                             <tr>

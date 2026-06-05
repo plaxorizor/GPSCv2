@@ -7,9 +7,13 @@ const useAdminCommissions = () => {
     const [pendingCommissions, setPendingCommissions] = useState<PendingCommission[]>([]);
     const [commissionHistory, setCommissionHistory] = useState<CommissionRecord[]>([]);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
 
-    const fetchCommissions = useCallback(async () => {
-        setLoading(true);
+    // `isInitial` shows the full-page skeleton (first mount only). A manual
+    // refresh updates the data quietly without blanking the whole component.
+    const fetchCommissions = useCallback(async (isInitial = false) => {
+        if (isInitial) setLoading(true);
+        else setRefreshing(true);
         try {
             const [pendingSnap, releasedSnap] = await Promise.all([
                 getDocs(query(collection(db, "commissions"), where("status", "==", "pending"))),
@@ -74,6 +78,7 @@ const useAdminCommissions = () => {
                         amount: data.amount as number,
                         status: "paid" as const,
                         date: data.dateCreated?.toDate?.()?.toISOString?.() ?? "",
+                        reference: (data.reference as string | undefined) ?? null,
                     };
                 });
             history.sort((a, b) => (b.date > a.date ? 1 : -1));
@@ -84,14 +89,15 @@ const useAdminCommissions = () => {
             console.error("[useAdminCommissions] error:", err);
         } finally {
             setLoading(false);
+            setRefreshing(false);
         }
     }, []);
 
     useEffect(() => {
-        fetchCommissions();
+        fetchCommissions(true);
     }, [fetchCommissions]);
 
-    return { pendingCommissions, commissionHistory, loading, refetch: fetchCommissions };
+    return { pendingCommissions, commissionHistory, loading, refreshing, refetch: () => fetchCommissions(false) };
 };
 
 export default useAdminCommissions;

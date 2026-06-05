@@ -1,5 +1,5 @@
 // admin/Claims.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Download, Eye, CheckCircle, XCircle, Clock, FileText, Search, X, RefreshCw } from "lucide-react";
 import type { Claim } from "../../utils/types";
 import { formatCurrency, formatDate } from "./utils";
@@ -10,6 +10,7 @@ interface Props {
     onUpdateStatus: (claimId: string, status: "Approved" | "Rejected" | "Released") => Promise<void>;
     onReviewClaim?: (claimId: string) => Promise<void>;
     onRefresh: () => void;
+    refreshing?: boolean;
     onExport: () => void;
 }
 
@@ -29,14 +30,23 @@ const statusLabels: Record<string, string> = {
     released: "Released",
 };
 
-export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onReviewClaim, onRefresh, onExport }) => {
+export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onReviewClaim, onRefresh, refreshing, onExport }) => {
     const [statusFilter, setStatusFilter] = useState("all");
     const [search, setSearch] = useState("");
     const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null);
 
+    const [spinning, setSpinning] = useState(false);
     const handleRefresh = () => {
+        setSpinning(true);
         onRefresh();
     };
+    // Keep the spinner visible until the fetch finishes AND a short minimum has
+    // elapsed, so a fast refetch still registers visually.
+    useEffect(() => {
+        if (refreshing || !spinning) return;
+        const t = setTimeout(() => setSpinning(false), 500);
+        return () => clearTimeout(t);
+    }, [refreshing, spinning]);
 
     const filtered = claims.filter((c) => {
         const matchesStatus = statusFilter === "all" || c.status === statusFilter;
@@ -117,12 +127,12 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                             <option value="rejected">Rejected</option>
                             <option value="released">Released</option>
                         </select>
-                        {/* TODO: implement refresh button functionality */}
                         <button
                             onClick={handleRefresh}
-                            className="border-gpsc-cream-dark hover:bg-gpsc-cream/60 flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm transition-colors"
+                            disabled={spinning}
+                            className="border-gpsc-cream-dark hover:bg-gpsc-cream/60 flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm transition-colors disabled:opacity-60"
                         >
-                            <RefreshCw size={14} />
+                            <RefreshCw size={14} className={spinning ? "animate-spin" : ""} />
                             Refresh
                         </button>
                     </div>
@@ -131,7 +141,7 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                     </div>
                 </div>
 
-                <div className="overflow-x-auto">
+                <div className={`overflow-x-auto transition-opacity ${spinning ? "opacity-40" : ""}`}>
                     <table className="w-full text-sm">
                         <thead className="bg-gpsc-cream/50 text-gpsc-stone text-xs tracking-wider uppercase">
                             <tr>

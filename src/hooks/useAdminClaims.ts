@@ -7,9 +7,13 @@ import type { Claim } from "../utils/types";
 export default function useAdminClaims() {
     const [claims, setClaims] = useState<Claim[]>([]);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
 
-    const fetchClaims = useCallback(async () => {
-        setLoading(true);
+    // `isInitial` shows the full-page skeleton (first mount only); a manual
+    // refresh updates the data quietly while flagging `refreshing` for the spinner.
+    const fetchClaims = useCallback(async (isInitial = false) => {
+        if (isInitial) setLoading(true);
+        else setRefreshing(true);
         try {
             const snap = await getDocs(collection(db, "claims"));
             const docs = snap.docs
@@ -36,12 +40,13 @@ export default function useAdminClaims() {
             console.error("[useAdminClaims] error:", err);
         } finally {
             setLoading(false);
+            setRefreshing(false);
         }
     }, []);
 
     useEffect(() => {
-        fetchClaims();
+        fetchClaims(true);
     }, [fetchClaims]);
 
-    return { claims, loading, refetch: fetchClaims };
+    return { claims, loading, refreshing, refetch: () => fetchClaims(false) };
 }

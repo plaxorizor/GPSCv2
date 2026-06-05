@@ -22,18 +22,21 @@ export default function AdminArea() {
         pendingCommissions,
         commissionHistory,
         loading: commissionsLoading,
+        refreshing: commissionsRefreshing,
         refetch: refetchCommissions,
     } = useAdminCommissions();
 
     const {
         payouts,
         loading: payoutsLoading,
+        refreshing: payoutsRefreshing,
         refetch: refetchPayouts,
     } = useAdminPayouts();
 
     const {
         claims,
         loading: claimsLoading,
+        refreshing: claimsRefreshing,
         refetch: refetchClaims,
     } = useAdminClaims();
 
@@ -108,6 +111,11 @@ export default function AdminArea() {
                 claims: claimsLoading,
                 commissions: commissionsLoading,
                 payouts: payoutsLoading,
+            }}
+            refreshing={{
+                claims: claimsRefreshing,
+                commissions: commissionsRefreshing,
+                payouts: payoutsRefreshing,
             }}
             onRefreshClaims={handleRefreshClaims}
             onRefreshCommissions={refetchCommissions}

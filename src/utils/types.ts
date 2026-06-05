@@ -175,6 +175,7 @@ export interface CommissionRecord {
     amount: number;
     status: "paid" | "payable" | "pending";
     date: string;
+    reference?: string | null;
 }
 
 export interface PendingCommission {

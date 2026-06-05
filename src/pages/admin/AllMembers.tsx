@@ -90,13 +90,15 @@ const AllMembers = ({ members, loading, onSelectMember, selectedIds, onToggleSel
                         </span>
                     </td>
                     <td className="p-4 text-right" onClick={(e) => e.stopPropagation()}>
-                        <input
-                            type="checkbox"
-                            checked={selectedIds.has(m.uid)}
-                            onChange={() => onToggleSelect(m.uid)}
-                            className="accent-gpsc-navy h-4 w-4 cursor-pointer"
-                            aria-label={`Select ${m.firstName} ${m.lastName}`}
-                        />
+                        {m.status === "pending" && !m.archived && (
+                            <input
+                                type="checkbox"
+                                checked={selectedIds.has(m.uid)}
+                                onChange={() => onToggleSelect(m.uid)}
+                                className="accent-gpsc-navy h-4 w-4 cursor-pointer"
+                                aria-label={`Select ${m.firstName} ${m.lastName}`}
+                            />
+                        )}
                     </td>
                 </tr>
             ))}

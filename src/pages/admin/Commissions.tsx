@@ -1,5 +1,5 @@
 // admin/Commissions.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Send, Clock, CheckCircle, Download, Search, X, RefreshCw } from "lucide-react";
 import type { PendingCommission, CommissionRecord } from "../../utils/types";
 import { formatCurrency, formatDate } from "./utils";
@@ -10,16 +10,26 @@ interface Props {
     loading: boolean;
     onRelease: (commissionId: string, earnedBy: string, amount: number, reference: string) => Promise<void>;
     onRefresh: () => void;
+    refreshing?: boolean;
 }
 
-export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHistory, loading, onRelease, onRefresh }) => {
+export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHistory, loading, onRelease, onRefresh, refreshing }) => {
     const [selectedCommission, setSelectedCommission] = useState<PendingCommission | null>(null);
     const [reference, setReference] = useState("");
 
-    // TODO: implement refresh functionality
-    const handleRefresh = () => {
-        console.warn("Refresh not implemented - backend dev required");
+    // Track WHICH refresh button was clicked so only that one spins.
+    const [activeRefresh, setActiveRefresh] = useState<null | "all" | "pending" | "history">(null);
+    const triggerRefresh = (key: "all" | "pending" | "history") => {
+        setActiveRefresh(key);
+        onRefresh();
     };
+    // Keep the spinner visible until the fetch is done AND a short minimum has
+    // elapsed, so a fast refetch still registers visually.
+    useEffect(() => {
+        if (refreshing || activeRefresh === null) return;
+        const t = setTimeout(() => setActiveRefresh(null), 500);
+        return () => clearTimeout(t);
+    }, [refreshing, activeRefresh]);
 
     // Pending filters
     const [pendingSearch, setPendingSearch] = useState("");
@@ -87,9 +97,12 @@ export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHis
                     <div className="text-gpsc-stone text-xs tracking-wider uppercase">Commission management</div>
                     <h1 className="font-display text-gpsc-navy text-3xl">Commissions</h1>
                 </div>
-                {/* TODO: implement refresh button functionality */}
-                <button onClick={onRefresh} className="text-gpsc-green flex items-center gap-1 text-xs transition-colors hover:underline">
-                                   <RefreshCw size={16} /> Refresh
+                <button
+                    onClick={() => triggerRefresh("all")}
+                    disabled={activeRefresh === "all"}
+                    className="text-gpsc-green flex items-center gap-1 text-xs transition-colors hover:underline disabled:opacity-60"
+                >
+                    <RefreshCw size={16} className={activeRefresh === "all" ? "animate-spin" : ""} /> Refresh
                 </button>
             </div>
 
@@ -160,17 +173,17 @@ export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHis
                         <button className="text-gpsc-stone hover:text-gpsc-navy flex items-center gap-1 text-xs">
                             <Download size={12} /> Export
                         </button>
-                        {/* TODO: implement refresh button functionality */}
                         <button
-                            onClick={handleRefresh}
-                            className="border-gpsc-cream-dark hover:bg-gpsc-cream/60 flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm transition-colors"
+                            onClick={() => triggerRefresh("pending")}
+                            disabled={activeRefresh === "pending"}
+                            className="border-gpsc-cream-dark hover:bg-gpsc-cream/60 flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm transition-colors disabled:opacity-60"
                         >
-                            <RefreshCw size={14} />
+                            <RefreshCw size={14} className={activeRefresh === "pending" ? "animate-spin" : ""} />
                             Refresh
                         </button>
                     </div>
                 </div>
-                <div className="overflow-x-auto">
+                <div className={`overflow-x-auto transition-opacity ${activeRefresh === "pending" || activeRefresh === "all" ? "opacity-40" : ""}`}>
                     <table className="w-full text-sm">
                         <thead className="bg-gpsc-cream/50 text-gpsc-stone text-xs tracking-wider uppercase">
                             <tr>
@@ -254,17 +267,17 @@ export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHis
                                 ))}
                             </select>
                         )}
-                        {/* TODO:implement refresh button functionality */}
                         <button
-                            onClick={handleRefresh}
-                            className="border-gpsc-cream-dark hover:bg-gpsc-cream/60 flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm transition-colors"
+                            onClick={() => triggerRefresh("history")}
+                            disabled={activeRefresh === "history"}
+                            className="border-gpsc-cream-dark hover:bg-gpsc-cream/60 flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm transition-colors disabled:opacity-60"
                         >
-                            <RefreshCw size={14} />
+                            <RefreshCw size={14} className={activeRefresh === "history" ? "animate-spin" : ""} />
                             Refresh
                         </button>
                     </div>
                 </div>
-                <div className="overflow-x-auto">
+                <div className={`overflow-x-auto transition-opacity ${activeRefresh === "history" || activeRefresh === "all" ? "opacity-40" : ""}`}>
                     <table className="w-full text-sm">
                         <thead className="bg-gpsc-cream/50 text-gpsc-stone text-xs tracking-wider uppercase">
                             <tr>
@@ -286,7 +299,7 @@ export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHis
                                     <td className="text-gpsc-stone p-4">Level {comm.level}</td>
                                     <td className="text-gpsc-navy p-4 text-right font-medium">{formatCurrency(comm.amount)}</td>
                                     <td className="text-gpsc-stone p-4">{formatDate(comm.date)}</td>
-                                    <td className="text-gpsc-stone p-4 font-mono text-xs">—</td>
+                                    <td className="text-gpsc-stone p-4 font-mono text-xs">{comm.reference || "—"}</td>
                                 </tr>
                             ))}
                             {filteredHistory.length === 0 && (
@@ -333,7 +346,7 @@ export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHis
                             </div>
                             <div>
                                 <label className="text-gpsc-stone mb-1 block text-xs">
-                                    Notes <span className="text-gpsc-stone/60">(optional)</span>
+                                    Reference / notes <span className="text-gpsc-stone/60">(optional — shown in Release History)</span>
                                 </label>
                                 <input
                                     value={reference}

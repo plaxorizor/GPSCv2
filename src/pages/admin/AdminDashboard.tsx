@@ -24,6 +24,11 @@ interface AdminDashboardProps {
         commissions?: boolean;
         payouts?: boolean;
     };
+    refreshing?: {
+        claims?: boolean;
+        commissions?: boolean;
+        payouts?: boolean;
+    };
     onRefreshClaims: () => void;
     onRefreshCommissions: () => void;
     onRefreshPayouts: () => void;
@@ -43,6 +48,7 @@ export default function AdminDashboard({
     commissionHistory,
     payouts,
     loading,
+    refreshing,
     onRefreshClaims,
     onRefreshCommissions,
     onRefreshPayouts,
@@ -103,6 +109,7 @@ export default function AdminDashboard({
                         onUpdateStatus={onUpdateClaimStatus}
                         onReviewClaim={onReviewClaim}
                         onRefresh={onRefreshClaims}
+                        refreshing={refreshing?.claims || false}
                         onExport={onExportClaims}
                     />
                 )}
@@ -113,6 +120,7 @@ export default function AdminDashboard({
                         loading={loading.commissions || false}
                         onRelease={onReleaseCommission}
                         onRefresh={onRefreshCommissions}
+                        refreshing={refreshing?.commissions || false}
                     />
                 )}
                 {currentSection === "payouts" && (
@@ -121,6 +129,7 @@ export default function AdminDashboard({
                         loading={loading.payouts || false}
                         onMarkSent={onMarkPayoutSent}
                         onRefresh={onRefreshPayouts}
+                        refreshing={refreshing?.payouts || false}
                     />
                 )}
                 {currentSection === "settings" && <Settings />}

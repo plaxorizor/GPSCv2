@@ -270,8 +270,9 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
     const endIndex = startIndex + rowsPerPage;
     const paginatedMembers = filteredMembers.slice(startIndex, endIndex);
 
-    // Select-all toggles the current page only
-    const pageIds = paginatedMembers.map((m) => m.uid);
+    // Select-all toggles the current page only — and only pending, non-archived
+    // members are selectable (the only bulk action available to them is Activate).
+    const pageIds = paginatedMembers.filter((m) => m.status === "pending" && !m.archived).map((m) => m.uid);
     const allPageSelected = pageIds.length > 0 && pageIds.every((id) => selectedIds.has(id));
     const toggleSelectAll = () =>
         setSelectedIds((prev) => {
@@ -437,13 +438,15 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                                 <th className="p-4 text-left">Joined</th>
                                 <th className="p-4 text-left">Status</th>
                                 <th className="w-10 p-4 text-right">
-                                    <input
-                                        type="checkbox"
-                                        checked={allPageSelected}
-                                        onChange={toggleSelectAll}
-                                        className="accent-gpsc-navy h-4 w-4 cursor-pointer"
-                                        aria-label="Select all on this page"
-                                    />
+                                    {pageIds.length > 0 && (
+                                        <input
+                                            type="checkbox"
+                                            checked={allPageSelected}
+                                            onChange={toggleSelectAll}
+                                            className="accent-gpsc-navy h-4 w-4 cursor-pointer"
+                                            aria-label="Select all pending on this page"
+                                        />
+                                    )}
                                 </th>
                             </tr>
                         </thead>

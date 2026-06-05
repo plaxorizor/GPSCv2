@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
 import { getAllMembers } from "../firebase/admin";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "../firebase/config";
 import type { Member } from "../utils/types";
 
 export interface MemberWithSponsor extends Member {
@@ -20,18 +18,13 @@ export const useAllMembers = () => {
             setLoading(true);
 
             const raw = await getAllMembers();
-            const sponsorUids = [...new Set(raw.map((m: any) => m.referredBy).filter(Boolean))];
 
+            // Sponsors are already in `raw` (we fetched every member) — build the
+            // name map in memory instead of firing one getDoc per sponsor (N+1).
             const sponsorMap: Record<string, string> = {};
-            await Promise.all(
-                sponsorUids.map(async (uid: string) => {
-                    const snap = await getDoc(doc(db, "members", uid));
-                    if (snap.exists()) {
-                        const d = snap.data();
-                        sponsorMap[uid] = `${d.firstName} ${d.lastName}`;
-                    }
-                }),
-            );
+            for (const m of raw as any[]) {
+                sponsorMap[m.uid] = `${m.firstName} ${m.lastName}`;
+            }
 
             const withSponsors: MemberWithSponsor[] = raw.map((m: any) => ({
                 ...m,
