@@ -39,15 +39,24 @@ export default function AddMemberModal({ onClose, onSuccess }: Props) {
     const [result, setResult] = useState<EncodeMemberResult | null>(null);
     const [copied, setCopied] = useState<"login" | "password" | null>(null);
 
-    const set = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
-        setForm((f) => ({ ...f, [key]: e.target.value }));
+    // Fields that failed validation on the last submit attempt — highlighted red,
+    // cleared individually as the admin edits them.
+    const [invalidFields, setInvalidFields] = useState<Set<string>>(new Set());
 
-    const isValid =
-        form.package &&
-        form.firstName.trim() &&
-        form.lastName.trim() &&
-        form.mobile.trim() &&
-        (isRoot || form.referralCode.trim());
+    const clearFieldError = (key: string) =>
+        setInvalidFields((prev) => {
+            if (!prev.has(key)) return prev;
+            const next = new Set(prev);
+            next.delete(key);
+            return next;
+        });
+
+    const inputCls = (key: string) => `input ${invalidFields.has(key) ? "input-error" : ""}`;
+
+    const set = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        setForm((f) => ({ ...f, [key]: e.target.value }));
+        clearFieldError(key);
+    };
 
     const copy = (text: string, which: "login" | "password") => {
         navigator.clipboard.writeText(text);
@@ -57,7 +66,18 @@ export default function AddMemberModal({ onClose, onSuccess }: Props) {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!isValid) return;
+
+        // Validate required fields; highlight any that are missing.
+        const required = ["package", "firstName", "lastName", "mobile"];
+        if (!isRoot) required.push("referralCode");
+        const missing = required.filter((k) => !String(form[k as keyof typeof form] ?? "").trim());
+        if (missing.length > 0) {
+            setInvalidFields(new Set(missing));
+            setError("Please fill in the required fields highlighted.");
+            return;
+        }
+
+        setInvalidFields(new Set());
         setError("");
         setLoading(true);
         try {
@@ -94,13 +114,12 @@ export default function AddMemberModal({ onClose, onSuccess }: Props) {
                             {form.firstName} {form.lastName}{" "}
                             {result.activated ? (
                                 <>
-                                    is now <strong>Active</strong> — their referral code is generated and any
-                                    upline commissions have been paid.
+                                    is now <strong>Active</strong> — their referral code is generated and any upline commissions have been paid.
                                 </>
                             ) : (
                                 <>
-                                    was created but is still <strong>Pending</strong> (auto-activation failed).
-                                    Activate them manually from the members list.
+                                    was created but is still <strong>Pending</strong> (auto-activation failed). Activate them manually from the
+                                    members list.
                                 </>
                             )}
                         </p>
@@ -127,17 +146,13 @@ export default function AddMemberModal({ onClose, onSuccess }: Props) {
                     <div className="mt-3 flex items-start gap-2 rounded-xl bg-amber-50 p-3 text-xs text-amber-800">
                         <AlertTriangle size={14} className="mt-0.5 shrink-0" />
                         <span>
-                            This password is shown <strong>once</strong>. Don't write it on the form. The member
-                            should change it on first login.
+                            This password is shown <strong>once</strong>. Don't write it on the form. The member should change it on first login.
                             {result.usedSyntheticEmail &&
                                 " They have no email on file, so they log in with the Login shown above and can only reset their password with your help."}
                         </span>
                     </div>
 
-                    <button
-                        onClick={onClose}
-                        className="bg-gpsc-green mt-5 w-full rounded-xl py-3 text-sm font-medium text-white"
-                    >
+                    <button onClick={onClose} className="bg-gpsc-green mt-5 w-full rounded-xl py-3 text-sm font-medium text-white">
                         Done
                     </button>
                 </div>
@@ -168,12 +183,7 @@ export default function AddMemberModal({ onClose, onSuccess }: Props) {
                 <form onSubmit={handleSubmit} className="space-y-4 p-6">
                     {/* Package */}
                     <Field label="Package" required>
-                        <select
-                            value={form.package}
-                            onChange={set("package")}
-                            className="input"
-                            required
-                        >
+                        <select value={form.package} onChange={set("package")} className={inputCls("package")}>
                             <option value="">Select package…</option>
                             {PACKAGES.map((p) => (
                                 <option key={p.value} value={p.value}>
@@ -186,10 +196,10 @@ export default function AddMemberModal({ onClose, onSuccess }: Props) {
                     {/* Name */}
                     <div className="grid grid-cols-2 gap-3">
                         <Field label="First name" required>
-                            <input value={form.firstName} onChange={set("firstName")} className="input" required />
+                            <input value={form.firstName} onChange={set("firstName")} className={inputCls("firstName")} />
                         </Field>
                         <Field label="Last name" required>
-                            <input value={form.lastName} onChange={set("lastName")} className="input" required />
+                            <input value={form.lastName} onChange={set("lastName")} className={inputCls("lastName")} />
                         </Field>
                         <Field label="Middle name">
                             <input value={form.middleName} onChange={set("middleName")} className="input" />
@@ -202,7 +212,7 @@ export default function AddMemberModal({ onClose, onSuccess }: Props) {
                     {/* Contact */}
                     <div className="grid grid-cols-2 gap-3">
                         <Field label="Mobile" required>
-                            <input value={form.mobile} onChange={set("mobile")} className="input" placeholder="09XXXXXXXXX" required />
+                            <input value={form.mobile} onChange={set("mobile")} className={inputCls("mobile")} placeholder="09XXXXXXXXX" />
                         </Field>
                         <Field label="Email (if any)">
                             <input type="email" value={form.email} onChange={set("email")} className="input" placeholder="optional" />
@@ -238,10 +248,9 @@ export default function AddMemberModal({ onClose, onSuccess }: Props) {
                             <input
                                 value={form.referralCode}
                                 onChange={set("referralCode")}
-                                className="input"
+                                className={inputCls("referralCode")}
                                 placeholder={isRoot ? "Not needed for a founder" : "e.g. ABCD-EFGH-IJKL"}
                                 disabled={isRoot}
-                                required={!isRoot}
                             />
                         </Field>
                         {isSuperAdmin && (
@@ -251,7 +260,10 @@ export default function AddMemberModal({ onClose, onSuccess }: Props) {
                                     checked={isRoot}
                                     onChange={(e) => {
                                         setIsRoot(e.target.checked);
-                                        if (e.target.checked) setForm((f) => ({ ...f, referralCode: "" }));
+                                        if (e.target.checked) {
+                                            setForm((f) => ({ ...f, referralCode: "" }));
+                                            clearFieldError("referralCode");
+                                        }
                                     }}
                                     className="accent-gpsc-navy h-4 w-4"
                                 />
@@ -288,7 +300,7 @@ export default function AddMemberModal({ onClose, onSuccess }: Props) {
                         </button>
                         <button
                             type="submit"
-                            disabled={loading || !isValid}
+                            disabled={loading}
                             className="bg-gpsc-navy flex-1 rounded-xl py-3 text-sm font-medium text-white transition-opacity disabled:opacity-50"
                         >
                             {loading ? "Creating…" : "Create Member"}
@@ -308,6 +320,8 @@ export default function AddMemberModal({ onClose, onSuccess }: Props) {
                         background: white;
                     }
                     .input:focus { border-color: var(--color-gpsc-green, #4A8A2C); }
+                    .input-error { border-color: #ef4444; background: #fef2f2; }
+                    .input-error:focus { border-color: #ef4444; }
                 `}</style>
             </div>
         </div>
@@ -325,29 +339,13 @@ function Field({ label, required, children }: { label: string; required?: boolea
     );
 }
 
-function CredRow({
-    label,
-    value,
-    onCopy,
-    copied,
-    mono,
-}: {
-    label: string;
-    value: string;
-    onCopy: () => void;
-    copied: boolean;
-    mono?: boolean;
-}) {
+function CredRow({ label, value, onCopy, copied, mono }: { label: string; value: string; onCopy: () => void; copied: boolean; mono?: boolean }) {
     return (
         <div>
             <div className="text-gpsc-stone text-xs">{label}</div>
             <div className="flex items-center justify-between gap-2">
                 <span className={`text-gpsc-navy text-sm ${mono ? "font-mono" : ""}`}>{value}</span>
-                <button
-                    onClick={onCopy}
-                    className="text-gpsc-stone hover:text-gpsc-navy shrink-0 transition-colors"
-                    title="Copy"
-                >
+                <button onClick={onCopy} className="text-gpsc-stone hover:text-gpsc-navy shrink-0 transition-colors" title="Copy">
                     {copied ? <Check size={15} className="text-gpsc-green" /> : <Copy size={15} />}
                 </button>
             </div>
