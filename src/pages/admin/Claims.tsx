@@ -39,7 +39,8 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
         const q = search.trim().toLowerCase();
         const matchesSearch =
             !q ||
-            c.userId.toLowerCase().includes(q) ||
+            c.memberName.toLowerCase().includes(q) ||
+            c.memberId.toLowerCase().includes(q) ||
             c.id.toLowerCase().includes(q) ||
             c.benefit.toLowerCase().includes(q);
         return matchesStatus && matchesSearch;
@@ -140,7 +141,7 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                             {filtered.map((claim) => (
                                 <tr key={claim.id} className="border-gpsc-cream-dark hover:bg-gpsc-cream/40 border-t transition-colors">
                                     <td className="p-4">
-                                        <div className="text-gpsc-navy">ID: {claim.userId.slice(0, 8)}...</div>
+                                        <div className="text-gpsc-navy">{claim.memberName || "Unknown"}</div>
                                         <div className="text-gpsc-stone font-mono text-xs">Claim #{claim.id.slice(0, 8)}</div>
                                     </td>
                                     <td className="text-gpsc-stone p-4">{claim.benefit}</td>
@@ -189,7 +190,7 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                                             )}
                                             {claim.status === "approved" && (
                                                 <button
-                                                    onClick={() => onUpdateStatus(claim.id, "Rejected")}
+                                                    onClick={() => onUpdateStatus(claim.id, "Released")}
                                                     className="bg-gpsc-green hover:bg-gpsc-green-light rounded px-2 py-1 text-xs text-white transition-colors"
                                                 >
                                                     Release
@@ -234,6 +235,11 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                                 </div>
                             </div>
                             <div>
+                                <div className="text-gpsc-stone text-xs">Claimant</div>
+                                <div className="text-gpsc-navy">{selectedClaim.memberName || "Unknown"}</div>
+                                <div className="text-gpsc-stone font-mono text-xs">{selectedClaim.memberId}</div>
+                            </div>
+                            <div>
                                 <div className="text-gpsc-stone text-xs">Claim ID</div>
                                 <div className="text-gpsc-navy font-mono text-sm">{selectedClaim.id}</div>
                             </div>
@@ -241,6 +247,12 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                                 <div className="text-gpsc-stone text-xs">Benefit</div>
                                 <div className="text-gpsc-navy">{selectedClaim.benefit}</div>
                             </div>
+                            {selectedClaim.description && (
+                                <div>
+                                    <div className="text-gpsc-stone text-xs">Reason</div>
+                                    <div className="text-gpsc-navy text-sm">{selectedClaim.description}</div>
+                                </div>
+                            )}
                             <div>
                                 <div className="text-gpsc-stone text-xs">Submitted</div>
                                 <div className="text-gpsc-navy">{formatDate(selectedClaim.submitted)}</div>

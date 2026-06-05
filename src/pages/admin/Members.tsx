@@ -5,6 +5,8 @@ import { PACKAGE_INFO } from "../../utils/types";
 import AllMembers from "./AllMembers";
 import { useAllMembers } from "../../hooks/useAllMembers";
 import { getEligibilityTimeline } from "../../utils/eligibility";
+import AddMemberModal from "../../components/AddMemberModal";
+import { sendMemberPasswordReset } from "../../firebase/admin";
 
 export interface MemberRow {
     uid: string;
@@ -28,17 +30,38 @@ export interface MemberRow {
 interface Props {
     onUpdateStatus: (memberId: string, status: "active" | "inactive") => Promise<void>;
     onExport: () => void;
-    onAddMember?: () => void;
 }
 
-export const Members: React.FC<Props> = ({ onUpdateStatus, onExport, onAddMember }) => {
+export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
     const { members, loading, refetch } = useAllMembers();
+    const [showAddMember, setShowAddMember] = useState(false);
     const [query, setQuery] = useState("");
     const [packageFilter, setPackageFilter] = useState("all");
     const [statusFilter, setStatusFilter] = useState("all");
     const [selectedMember, setSelectedMember] = useState<MemberRow | null>(null);
     const [activating, setActivating] = useState(false);
     const [copied, setCopied] = useState(false);
+    const [resetting, setResetting] = useState(false);
+    const [resetMsg, setResetMsg] = useState("");
+
+    const openMember = (m: MemberRow | null) => {
+        setResetMsg("");
+        setSelectedMember(m);
+    };
+
+    const handleSendReset = async () => {
+        if (!selectedMember?.email) return;
+        setResetting(true);
+        setResetMsg("");
+        try {
+            await sendMemberPasswordReset(selectedMember.email);
+            setResetMsg(`Reset link sent to ${selectedMember.email}`);
+        } catch {
+            setResetMsg("Could not send the reset link. Please try again.");
+        } finally {
+            setResetting(false);
+        }
+    };
 
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
@@ -159,14 +182,12 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport, onAddMember
                     <h1 className="font-display text-gpsc-navy text-3xl">Members</h1>
                 </div>
                 <div className="flex gap-2">
-                    {onAddMember && (
-                        <button
-                            onClick={onAddMember}
-                            className="bg-gpsc-navy hover:bg-gpsc-green flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium text-white transition-colors"
-                        >
-                            <Plus size={14} /> Add user
-                        </button>
-                    )}
+                    <button
+                        onClick={() => setShowAddMember(true)}
+                        className="bg-gpsc-navy hover:bg-gpsc-green flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium text-white transition-colors"
+                    >
+                        <Plus size={14} /> Add Member
+                    </button>
                     <button
                         onClick={onExport}
                         className="border-gpsc-navy text-gpsc-navy hover:bg-gpsc-navy flex items-center gap-2 rounded-full border px-5 py-2.5 text-sm font-medium transition-colors hover:text-white"
@@ -247,7 +268,7 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport, onAddMember
                             query={query}
                             packageFilter={packageFilter}
                             statusFilter={statusFilter}
-                            onSelectMember={setSelectedMember}
+                            onSelectMember={openMember}
                             onUpdateStatus={onUpdateStatus}
                         />
                     </table>
@@ -474,6 +495,26 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport, onAddMember
                                             {activating ? "Please wait..." : selectedMember.status === "active" ? "Deactivate" : "Activate"}
                                         </button>
                                     </div>
+
+                                    {/* Password reset */}
+                                    <div className="border-gpsc-cream-dark mt-4 border-t pt-4">
+                                        {selectedMember.email ? (
+                                            <button
+                                                onClick={handleSendReset}
+                                                disabled={resetting}
+                                                className="border-gpsc-cream-dark text-gpsc-navy hover:bg-gpsc-cream/60 w-full rounded-lg border px-4 py-2 text-sm transition-colors disabled:opacity-60"
+                                            >
+                                                {resetting ? "Sending…" : "Send password reset link"}
+                                            </button>
+                                        ) : (
+                                            <p className="text-gpsc-stone text-xs">
+                                                No email on file — this member logs in with their mobile-based
+                                                ID. Resetting their password needs the Blaze upgrade; for now,
+                                                re-encode or have them change it themselves.
+                                            </p>
+                                        )}
+                                        {resetMsg && <p className="text-gpsc-green mt-2 text-xs">{resetMsg}</p>}
+                                    </div>
                                 </div>
 
                                 {/* ── RIGHT PANEL: Eligibility Timeline ── */}
@@ -542,6 +583,13 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport, onAddMember
                         </div>
                     );
                 })()}
+
+            {showAddMember && (
+                <AddMemberModal
+                    onClose={() => setShowAddMember(false)}
+                    onSuccess={() => refetch()}
+                />
+            )}
         </div>
     );
 };

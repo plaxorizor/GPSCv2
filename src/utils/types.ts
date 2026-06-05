@@ -64,12 +64,14 @@ export type ClaimStatus = "approved" | "under_review" | "submitted" | "rejected"
 
 export interface Claim {
     id: string;
-    userId: string;
+    memberId: string;
+    memberName: string;
     benefit: string;
     status: ClaimStatus;
     amount: number;
-    submitted: string;
-    decided: string | null;
+    description: string;
+    submitted: string; // ISO date
+    decided: string | null; // ISO date
     documents: string[];
 }
 

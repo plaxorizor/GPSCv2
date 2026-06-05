@@ -1,0 +1,82 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/members/$(request.auth.uid))
+        && get(/databases/$(database)/documents/members/$(request.auth.uid)).data.get('isAdmin', false) == true;
+    }
+
+    match /members/{uid} {
+      allow read: if request.auth != null;
+
+      // You may create ONLY your own record, and ONLY as a normal member.
+      // (Blocks self-registering as an admin. The seed script + signup both
+      //  set isAdmin: false, so they still work.)
+      allow create: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.get('isAdmin', false) == false;
+
+      // Self-edit: only your own record, and you CANNOT change isAdmin.
+      // Admins: full access (and may change isAdmin).
+      allow update: if request.auth != null && (
+        isAdmin()
+        || (
+          request.auth.uid == uid
+          && request.resource.data.get('isAdmin', false) == resource.data.get('isAdmin', false)
+        )
+      );
+
+      allow delete: if request.auth != null && (request.auth.uid == uid || isAdmin());
+    }
+
+    match /referralCodes/{code} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // NOTE: write is open to any signed-in user because triggerCommissions runs
+    // client-side during signup (writes commissions for uplines). Lock this to
+    // `if isAdmin()` once that logic moves into a Cloud Function.
+    match /commissions/{commissionId} {
+      allow get: if request.auth != null
+        && (resource.data.earnedBy == request.auth.uid || isAdmin());
+      allow list: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+
+    // NOTE: same as commissions — open write is load-bearing for client-side
+    // signup. Tighten to `if isAdmin()` after moving to Cloud Functions.
+    match /transactions/{transactionId} {
+      allow get: if request.auth != null
+        && (resource.data.memberId == request.auth.uid || isAdmin());
+      allow list: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+
+    match /claims/{claimId} {
+      allow get: if request.auth != null
+        && (resource.data.memberId == request.auth.uid || isAdmin());
+      allow list: if request.auth != null
+        && (resource.data.memberId == request.auth.uid || isAdmin());
+
+      // Members may file ONLY their own claim, and only as "submitted".
+      allow create: if request.auth != null
+        && request.resource.data.memberId == request.auth.uid
+        && request.resource.data.status == "submitted";
+
+      // Only admins can move a claim through review / approve / reject / release.
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
+
+    match /payouts/{payoutId} {
+      allow get:    if request.auth != null && (isAdmin() || resource.data.memberId == request.auth.uid);
+      allow list:   if request.auth != null && (isAdmin() || resource.data.memberId == request.auth.uid);
+      allow create: if request.auth != null && request.resource.data.memberId == request.auth.uid;
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
+  }
+}

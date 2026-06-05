@@ -1,5 +1,4 @@
 // member/index.tsx
-import React from "react";
 import { LayoutGrid, Wallet, FileText, Settings, Network } from "lucide-react";
 import { DashboardSidebar } from "./DashboardSidebar";
 import { MobileBottomNav } from "./MobileBottomNav";
@@ -59,7 +58,7 @@ export default function MemberDashboard({
 
     // These need the full commission list — only available once Earnings section is visited
     const pendingHold = commissions.filter((c) => c.status === "pending").reduce((sum, c) => sum + c.amount, 0);
-    const lifetimePaid = commissions.filter((c) => c.status === "released").reduce((sum, c) => sum + c.amount, 0);
+    const lifetimePaid = commissions.filter((c) => c.status === "paid").reduce((sum, c) => sum + c.amount, 0);
 
     // Eligibility timeline (example - you can make this dynamic based on member's join date)
     const eligibilityTimeline = getEligibilityTimeline(member.dateCreated);
@@ -73,7 +72,7 @@ export default function MemberDashboard({
             fromMemberName: name,
             fromMemberInitials: `${parts[0]?.[0] ?? ""}${parts[1]?.[0] ?? ""}`.toUpperCase() || "?",
             // Convert Firestore Timestamp → ISO string so Overview can call formatDate()
-            date: (c.dateCreated as any)?.toDate?.()?.toISOString?.() ?? "",
+            date: (c as any).dateCreated?.toDate?.()?.toISOString?.() ?? "",
         };
     });
 
@@ -110,7 +109,7 @@ export default function MemberDashboard({
                 referralsBadge={totalReferralsCount}
             />
 
-            <main className="max-w-6xl flex-1 p-6 pb-24 lg:ml-64 lg:p-10 lg:pb-10">
+            <main className="flex-1 p-6 pb-24 lg:p-10 lg:pb-10 lg:pl-24">
                 {currentSection === "overview" && (
                     <MemberOverview
                         member={member}

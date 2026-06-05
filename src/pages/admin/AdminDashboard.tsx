@@ -1,6 +1,6 @@
 // admin/index.tsx
 import { useState } from "react";
-import { LayoutGrid, Users, FileText, DollarSign, Wallet } from "lucide-react";
+import { LayoutGrid, Users, FileText, DollarSign, Wallet, Settings as SettingsIcon } from "lucide-react";
 import { DashboardSidebar } from "./DashboardSidebar";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { Overview } from "./Overview";
@@ -8,6 +8,7 @@ import { Members } from "./Members";
 import { Claims } from "./Claims";
 import { Commissions } from "./Commissions";
 import { Payouts } from "./Payouts";
+import { Settings } from "./Settings";
 import type { PendingCommission, CommissionRecord, AdminPayout } from "../../utils/types";
 import type { Claim } from "../../utils/types";
 
@@ -35,7 +36,6 @@ interface AdminDashboardProps {
     onExportMembers: () => void;
     onExportClaims: () => void;
     onLogout: () => void;
-    onChangePassword: () => void;
 }
 
 export default function AdminDashboard({
@@ -56,7 +56,6 @@ export default function AdminDashboard({
     onExportMembers,
     onExportClaims,
     onLogout,
-    onChangePassword,
 }: AdminDashboardProps) {
     const [currentSection, setCurrentSection] = useState("overview");
 
@@ -70,6 +69,7 @@ export default function AdminDashboard({
         { id: "claims",       label: "Claims",       icon: FileText,   badge: pendingClaimsCount },
         { id: "commissions",  label: "Commissions",  icon: DollarSign, badge: pendingCommissionsCount },
         { id: "payouts",      label: "Payouts",      icon: Wallet,     badge: pendingPayoutsCount },
+        { id: "settings",     label: "Settings",     icon: SettingsIcon, badge: null },
     ];
 
     return (
@@ -79,7 +79,6 @@ export default function AdminDashboard({
                 onSectionChange={setCurrentSection}
                 items={sidebarItems}
                 onLogout={onLogout}
-                onChangePassword={onChangePassword}
             />
 
             <MobileBottomNav
@@ -91,8 +90,10 @@ export default function AdminDashboard({
                 onLogout={onLogout}
             />
 
-            {/* Added padding-left to account for fixed sidebar width (w-64 = 16rem = 256px) */}
-            <main className="max-w-6xl flex-1 p-6 pb-24 lg:p-10 lg:pb-10 lg:pl-68">
+            {/* pl clears the COLLAPSED sidebar (4rem). It expands as an overlay on
+                hover, so we only reserve the collapsed width. No max-width: fill the
+                screen instead of leaving a big empty gap on wide monitors. */}
+            <main className="flex-1 p-6 pb-24 lg:p-10 lg:pb-10 lg:pl-24">
                 {currentSection === "overview" && <Overview loading={loading.stats || false} onRefresh={onRefreshStats} />}
                 {currentSection === "members" && (
                     <Members onUpdateStatus={onUpdateMemberStatus} onExport={onExportMembers} />
@@ -124,6 +125,7 @@ export default function AdminDashboard({
                         onRefresh={onRefreshPayouts}
                     />
                 )}
+                {currentSection === "settings" && <Settings />}
             </main>
 
             <style>{`

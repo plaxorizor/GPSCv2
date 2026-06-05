@@ -52,7 +52,18 @@ function assertAdmin(auth: CallableRequest["auth"]) {
 // ── triggerCommissions (internal — not exported as a callable) ────────────────
 
 async function triggerCommissions(newMemberId: string, pkg: Package) {
-    const packagePrice = PACKAGE_AMOUNTS[pkg];
+    // Normalise casing — Firestore may store "Basic", "basic", etc.
+    const normPkg = (pkg as string).toLowerCase() as Package;
+    const packagePrice = PACKAGE_AMOUNTS[normPkg];
+    if (!packagePrice) return; // unknown package, bail out safely
+
+    // Denormalise the new member's name/city onto every commission doc so the
+    // dashboards don't have to join back to members (keeps "Unknown" away).
+    const newMemberSnap = await db.doc(`members/${newMemberId}`).get();
+    const nm = newMemberSnap.data();
+    const fromMemberName = `${nm?.firstName ?? ""} ${nm?.lastName ?? ""}`.trim() || "Unknown";
+    const fromMemberCity = (nm?.city as string | undefined) ?? "";
+
     let currentUid = newMemberId;
 
     for (let level = 1; level <= 6; level++) {
@@ -65,14 +76,18 @@ async function triggerCommissions(newMemberId: string, pkg: Package) {
         const uplineSnap = await db.doc(`members/${referredBy}`).get();
         if (!uplineSnap.exists) break;
 
-        const uplinePackage = uplineSnap.data()?.package as Package | undefined;
-        if (!uplinePackage) break;
+        const uplinePackage = (uplineSnap.data()?.package as string | undefined)?.toLowerCase() as
+            | Package
+            | undefined;
+        if (!uplinePackage || !PACKAGE_MAX_LEVELS[uplinePackage]) break;
 
         if (level <= PACKAGE_MAX_LEVELS[uplinePackage]) {
             const amount = packagePrice * COMMISSION_RATES[level];
             await db.collection("commissions").add({
                 earnedBy: referredBy,
                 fromMember: newMemberId,
+                fromMemberName,
+                fromMemberCity,
                 level,
                 amount,
                 status: "pending",
@@ -228,15 +243,16 @@ export const upgradeMember = onCall(async (request) => {
 export const releaseCommission = onCall(async (request) => {
     assertAdmin(request.auth);
 
-    const { commissionId, memberId, amount, reference } = request.data as {
+    // Releasing is an APPROVAL step only — it marks the commission available to
+    // withdraw. It does NOT create a payout; members request payouts separately
+    // and an admin marks those as sent. Reference/notes are optional.
+    const { commissionId, reference } = request.data as {
         commissionId: string;
-        memberId: string;
-        amount: number;
-        reference: string;
+        reference?: string;
     };
 
-    if (!commissionId || !memberId || amount == null || !reference) {
-        throw new HttpsError("invalid-argument", "commissionId, memberId, amount, and reference are required.");
+    if (!commissionId) {
+        throw new HttpsError("invalid-argument", "commissionId is required.");
     }
 
     const commissionRef = db.doc(`commissions/${commissionId}`);
@@ -246,16 +262,11 @@ export const releaseCommission = onCall(async (request) => {
         throw new HttpsError("already-exists", "Commission already released.");
     }
 
-    // Use a batch so both writes succeed or fail together
-    const batch = db.batch();
-    batch.update(commissionRef, { status: "released" });
-    batch.set(db.collection("payouts").doc(), {
-        memberId,
-        amount,
-        reference,
+    await commissionRef.update({
+        status: "released",
+        reference: reference ?? null,
         releasedAt: FieldValue.serverTimestamp(),
     });
-    await batch.commit();
 
     return { success: true };
 });

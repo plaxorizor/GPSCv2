@@ -8,7 +8,6 @@ import {
     getDoc,
     doc,
     updateDoc,
-    addDoc,
     setDoc,
     serverTimestamp,
     query,
@@ -77,6 +76,15 @@ export const deactivateMember = async (uid: string) => {
     await updateDoc(doc(db, "members", uid), { status: "inactive" });
 };
 
+// Sends a Firebase password-reset email so the member can set a new password.
+// Only works for members with a REAL email. Members encoded with a synthetic
+// (mobile-based) login can't receive this — that needs the Blaze/Cloud Functions
+// upgrade (an Admin-SDK reset). Throws if no email.
+export const sendMemberPasswordReset = async (email: string) => {
+    const { getAuth, sendPasswordResetEmail } = await import("firebase/auth");
+    await sendPasswordResetEmail(getAuth(), email);
+};
+
 export const upgradeMember = async (uid: string, newPackage: "family" | "premium") => {
     const memberSnap = await getDoc(doc(db, "members", uid));
     if (!memberSnap.exists()) return;
@@ -99,8 +107,17 @@ export const getAllClaims = async () => {
     return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 };
 
+// Move a submitted claim into review (no decision recorded yet).
+export const setClaimUnderReview = async (claimId: string) => {
+    await updateDoc(doc(db, "claims", claimId), { status: "under_review" });
+};
+
+// Record a decision (approved/rejected/released) and stamp when it was decided.
 export const updateClaimStatus = async (claimId: string, status: "approved" | "rejected" | "released") => {
-    await updateDoc(doc(db, "claims", claimId), { status });
+    await updateDoc(doc(db, "claims", claimId), {
+        status,
+        decidedAt: serverTimestamp(),
+    });
 };
 
 // --- COMMISSIONS ---

@@ -4,9 +4,15 @@ import { X, Eye, EyeOff, CheckCircle } from "lucide-react";
 
 interface Props {
     onClose: () => void;
+    // When true, the modal can't be dismissed until the password is changed
+    // (used to force encoded members to set their own password on first login).
+    forced?: boolean;
+    // Called after the password is successfully changed (e.g. to clear the
+    // mustChangePassword flag on the member doc).
+    onChanged?: () => Promise<void> | void;
 }
 
-export default function ChangePasswordModal({ onClose }: Props) {
+export default function ChangePasswordModal({ onClose, forced = false, onChanged }: Props) {
     const [currentPassword, setCurrentPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
@@ -43,6 +49,7 @@ export default function ChangePasswordModal({ onClose }: Props) {
             const credential = EmailAuthProvider.credential(user.email, currentPassword);
             await reauthenticateWithCredential(user, credential);
             await updatePassword(user, newPassword);
+            if (onChanged) await onChanged();
             setSuccess(true);
         } catch (err: any) {
             if (err.code === "auth/wrong-password" || err.code === "auth/invalid-credential") {
@@ -64,14 +71,25 @@ export default function ChangePasswordModal({ onClose }: Props) {
             <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
                 {/* Header */}
                 <div className="mb-6 flex items-center justify-between">
-                    <h2 className="font-display text-gpsc-navy text-xl">Change Password</h2>
-                    <button
-                        onClick={onClose}
-                        className="text-gpsc-stone hover:text-gpsc-navy transition-colors"
-                        aria-label="Close"
-                    >
-                        <X size={20} />
-                    </button>
+                    <div>
+                        <h2 className="font-display text-gpsc-navy text-xl">
+                            {forced ? "Set Your Password" : "Change Password"}
+                        </h2>
+                        {forced && (
+                            <p className="text-gpsc-stone mt-1 text-sm">
+                                For your security, please replace the temporary password before continuing.
+                            </p>
+                        )}
+                    </div>
+                    {!forced && (
+                        <button
+                            onClick={onClose}
+                            className="text-gpsc-stone hover:text-gpsc-navy transition-colors"
+                            aria-label="Close"
+                        >
+                            <X size={20} />
+                        </button>
+                    )}
                 </div>
 
                 {success ? (
@@ -162,13 +180,15 @@ export default function ChangePasswordModal({ onClose }: Props) {
 
                         {/* Actions */}
                         <div className="flex gap-3 pt-2">
-                            <button
-                                type="button"
-                                onClick={onClose}
-                                className="border-gpsc-cream-dark text-gpsc-stone hover:bg-gpsc-cream/40 flex-1 rounded-xl border py-3 text-sm transition-colors"
-                            >
-                                Cancel
-                            </button>
+                            {!forced && (
+                                <button
+                                    type="button"
+                                    onClick={onClose}
+                                    className="border-gpsc-cream-dark text-gpsc-stone hover:bg-gpsc-cream/40 flex-1 rounded-xl border py-3 text-sm transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                            )}
                             <button
                                 type="submit"
                                 disabled={loading || (!!confirmPassword && newPassword !== confirmPassword)}

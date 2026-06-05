@@ -1,92 +1,22 @@
 // admin/AdminArea.tsx
-import { useState } from "react";
-import ChangePasswordModal from "../../components/ChangePasswordModal";
 import useAuth from "../../context/useAuth";
 import { Navigate } from "react-router-dom";
 import AdminDashboard from "./AdminDashboard";
-import type { Claim } from "../../utils/types";
-import type { DashboardStats, GrowthDataPoint, PackageMixItem, TopRecruiter } from "../../utils/types";
 
-import { activateMember, deactivateMember, releaseCommission, markPayoutSent } from "../../firebase/admin";
+import {
+    activateMember,
+    deactivateMember,
+    releaseCommission,
+    markPayoutSent,
+    setClaimUnderReview,
+    updateClaimStatus,
+} from "../../firebase/admin";
 import useAdminCommissions from "../../hooks/useAdminCommissions";
 import useAdminPayouts from "../../hooks/useAdminPayouts";
-
-
-// Mock data fetching functions - replace with your actual API calls
-const fetchDashboardStats = async (): Promise<DashboardStats> => {
-    return {
-        // Replace with actual API call
-        activeMembers: 1247,
-        totalRevenue: 1250000,
-        totalCommissions: 250000,
-        pendingClaims: 12,
-        pendingPayouts: 8,
-        avgClaimTimeDays: 4.2,
-        memberSatisfaction: "94%",
-    };
-};
-
-const fetchGrowthData = async (): Promise<GrowthDataPoint[]> => {
-    return [
-        { month: "Jan", members: 45 },
-        { month: "Feb", members: 52 },
-        { month: "Mar", members: 61 },
-        { month: "Apr", members: 74 },
-        { month: "May", members: 83 },
-        { month: "Jun", members: 91 },
-    ];
-};
-
-const fetchPackageMix = async (): Promise<PackageMixItem[]> => {
-    return [
-        { name: "Basic Care", value: 450, color: "#14365C" },
-        { name: "Family Care", value: 620, color: "#4A8A2C" },
-        { name: "Premium Care", value: 177, color: "#2D5A85" },
-    ];
-};
-
-const fetchTopRecruiters = async (): Promise<TopRecruiter[]> => {
-    return [
-        { id: "1", firstName: "Maria", lastName: "Dela Cruz", initials: "MD", city: "Davao City", referrals: 24 },
-        { id: "2", firstName: "Juan", lastName: "Reyes", initials: "JR", city: "Tagum City", referrals: 18 },
-        { id: "3", firstName: "Carmela", lastName: "Bautista", initials: "CB", city: "General Santos", referrals: 12 },
-    ];
-};
-
-const fetchRecentClaims = async (): Promise<Claim[]> => {
-    return [
-        {
-            id: "cl1",
-            userId: "u1",
-            benefit: "Hospital cash assistance",
-            status: "submitted",
-            amount: 11500,
-            submitted: "2025-05-20",
-            decided: null,
-            documents: ["Medical certificate", "Valid ID"],
-        },
-        {
-            id: "cl2",
-            userId: "u3",
-            benefit: "Calamity assistance",
-            status: "under_review",
-            amount: 5000,
-            submitted: "2025-05-18",
-            decided: null,
-            documents: ["Police report", "Valid ID"],
-        },
-    ];
-};
-
-const fetchClaims = async (): Promise<Claim[]> => {
-    // Replace with actual API call
-    return [];
-};
+import useAdminClaims from "../../hooks/useAdminClaims";
 
 export default function AdminArea() {
     const { currentUser, loading: authLoading } = useAuth();
-    const [showChangePassword, setShowChangePassword] = useState(false);
-    const [claims, setClaims] = useState<Claim[]>([]);
 
     const {
         pendingCommissions,
@@ -101,12 +31,17 @@ export default function AdminArea() {
         refetch: refetchPayouts,
     } = useAdminPayouts();
 
+    const {
+        claims,
+        loading: claimsLoading,
+        refetch: refetchClaims,
+    } = useAdminClaims();
+
     // Handlers
     const handleRefreshStats = async () => {};
 
     const handleRefreshClaims = async () => {
-        const data = await fetchClaims();
-        setClaims(data);
+        await refetchClaims();
     };
 
     const handleUpdateMemberStatus = async (memberId: string, status: string) => {
@@ -115,13 +50,14 @@ export default function AdminArea() {
     };
 
     const handleUpdateClaimStatus = async (claimId: string, status: "Approved" | "Rejected" | "Released") => {
-        console.log(`Update claim ${claimId} to ${status}`);
-        await handleRefreshClaims();
+        const map = { Approved: "approved", Rejected: "rejected", Released: "released" } as const;
+        await updateClaimStatus(claimId, map[status]);
+        await refetchClaims();
     };
 
     const handleReviewClaim = async (claimId: string) => {
-        console.log(`Start review for claim ${claimId}`);
-        await handleRefreshClaims();
+        await setClaimUnderReview(claimId);
+        await refetchClaims();
     };
 
     const handleReleaseCommission = async (commissionId: string, _earnedBy: string, _amount: number, reference: string) => {
@@ -163,8 +99,6 @@ export default function AdminArea() {
     }
 
     return (
-        <>
-        {showChangePassword && <ChangePasswordModal onClose={() => setShowChangePassword(false)} />}
         <AdminDashboard
             claims={claims}
             pendingCommissions={pendingCommissions}
@@ -173,7 +107,7 @@ export default function AdminArea() {
             loading={{
                 stats: false,
                 members: false,
-                claims: false,
+                claims: claimsLoading,
                 commissions: commissionsLoading,
                 payouts: payoutsLoading,
             }}
@@ -189,8 +123,6 @@ export default function AdminArea() {
             onExportMembers={handleExportMembers}
             onExportClaims={handleExportClaims}
             onLogout={handleLogout}
-            onChangePassword={() => setShowChangePassword(true)}
         />
-        </>
     );
 }

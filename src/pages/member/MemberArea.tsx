@@ -1,16 +1,20 @@
 import { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from "../../firebase/config";
 
 import useMember from "../../hooks/useMember";
 import useMemberStats from "../../hooks/useMemberStats";
 import { useCommissions } from "../../hooks/useCommissions";
 import { useReferralTree } from "../../hooks/useReferralTree";
 import { usePayouts } from "../../hooks/usePayouts";
+import { useMemberClaims } from "../../hooks/useMemberClaims";
 import MemberDashboard from "./MemberDashboard";
 import ChangePasswordModal from "../../components/ChangePasswordModal";
 import RequestPayoutModal from "../../components/RequestPayoutModal";
+import FileClaimModal from "../../components/FileClaimModal";
 import { PACKAGE_INFO } from "../../utils/types";
-import type { Member, Commission, ReferralNode, EarningsTrendPoint, Claim } from "../../utils/types";
+import type { Member, Commission, ReferralNode, EarningsTrendPoint } from "../../utils/types";
 
 // Rank mapping based on rank number
 // const getRankName = (rank: number): string => {
@@ -30,14 +34,17 @@ export default function MemberArea() {
     const [currentSection, setCurrentSection] = useState("overview");
     const [showChangePassword, setShowChangePassword] = useState(false);
     const [showRequestPayout, setShowRequestPayout] = useState(false);
+    const [showFileClaim, setShowFileClaim] = useState(false);
+    const [pwChanged, setPwChanged] = useState(false);
 
     const { member, loading: memberLoading } = useMember();
     const { stats: memberStats, loading: statsLoading } = useMemberStats();
 
     // Only fetch when the member actually visits that section
-    const { commissions: rawCommissions, loading: commLoading } = useCommissions(currentSection === "earnings");
-    const { tree, loading: treeLoading } = useReferralTree(currentSection === "referrals");
+    const { commissions: rawCommissions } = useCommissions(currentSection === "earnings");
+    const { tree } = useReferralTree(currentSection === "referrals");
     const { payouts, refetch: refetchPayouts } = usePayouts(currentSection === "earnings");
+    const { claims, refetch: refetchClaims } = useMemberClaims(currentSection === "claims");
 
     const isLoading = memberLoading || statsLoading;
     if (isLoading) {
@@ -50,6 +57,20 @@ export default function MemberArea() {
     }
 
     if (!member) return <Navigate to="/" />;
+
+    // Members encoded by an admin start with a temporary password. Block access
+    // until they replace it (forced, non-dismissable modal).
+    if ((member as { mustChangePassword?: boolean }).mustChangePassword === true && !pwChanged) {
+        return (
+            <ChangePasswordModal
+                forced
+                onChanged={async () => {
+                    await updateDoc(doc(db, "members", member.uid), { mustChangePassword: false });
+                }}
+                onClose={() => setPwChanged(true)}
+            />
+        );
+    }
 
     // 1. User object — matches Member interface exactly
     const user: Member = {
@@ -88,6 +109,7 @@ export default function MemberArea() {
         amount: c.amount,
         status: c.status === "released" ? "paid" : "pending",
         date: c.dateCreated?.toDate?.()?.toISOString?.() ?? "",
+        fromMember: c.fromMember,
         fromMemberName: c.fromMemberName ?? "—",
         fromMemberCity: c.fromMemberCity ?? "—",
     }));
@@ -114,13 +136,12 @@ export default function MemberArea() {
     // 5. Referral link
     // const referralLink = `${window.location.origin}/signup?ref=${member.referralCode}`;
 
-    // 6. Typed arrays — claims/earningsTrend fetched later; payouts from hook
+    // 6. Typed arrays — earningsTrend fetched later; claims/payouts from hooks
     const earningsTrend: EarningsTrendPoint[] = [];
-    const claims: Claim[] = [];
 
     // 7. Handlers
     const handleRequestPayout = () => setShowRequestPayout(true);
-    const handleFileClaim = () => alert("File a claim – coming soon");
+    const handleFileClaim = () => setShowFileClaim(true);
     const handleLogout = async () => {
         const { getAuth, signOut } = await import("firebase/auth");
         await signOut(getAuth());
@@ -136,6 +157,13 @@ export default function MemberArea() {
                     memberName={`${user.firstName}${user.lastName}`}
                     onClose={() => setShowRequestPayout(false)}
                     onSuccess={refetchPayouts}
+                />
+            )}
+            {showFileClaim && (
+                <FileClaimModal
+                    memberName={`${user.firstName} ${user.lastName}`.trim()}
+                    onClose={() => setShowFileClaim(false)}
+                    onSuccess={refetchClaims}
                 />
             )}
             <MemberDashboard
