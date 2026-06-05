@@ -4,7 +4,7 @@ import { Users, TrendingUp, FileText, Wallet, UserCheck, RefreshCw } from "lucid
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { StatCard } from "./StatCard";
 import type { PackageMixItem } from "../../utils/types";
-import { formatCurrency } from "./utils";
+import { formatCurrency, formatDate } from "./utils";
 
 import useAdminStats from "../../hooks/useAdminStats";
 
@@ -168,11 +168,37 @@ export const Overview: React.FC<Props> = ({ loading }) => {
                     </div>
                 </div>
 
-                {/* ── Claims Queue ── */}
+                {/* ── Claims Queue — oldest pending claims first ── */}
                 <div className="border-gpsc-cream-dark rounded-2xl border bg-white p-6">
                     <h2 className="font-display text-gpsc-navy mb-4 text-lg">Claims Queue</h2>
                     <div className="space-y-3">
-                        <div className="text-gpsc-stone py-8 text-center">No pending claims</div>
+                        {adminStats.pendingClaimsList.length > 0 ? (
+                            adminStats.pendingClaimsList.map((c) => (
+                                <div key={c.id} className="flex items-center justify-between gap-3">
+                                    <div className="min-w-0">
+                                        <div className="text-gpsc-navy truncate text-sm">{c.benefit || "Claim"}</div>
+                                        <div className="text-gpsc-stone truncate text-xs">
+                                            {c.memberName}
+                                            {c.submitted ? ` · ${formatDate(c.submitted)}` : ""}
+                                        </div>
+                                    </div>
+                                    <div className="flex shrink-0 items-center gap-3">
+                                        <span
+                                            className={`rounded-full px-2 py-0.5 text-xs ${
+                                                c.status === "under_review"
+                                                    ? "bg-amber-100 text-amber-700"
+                                                    : "bg-gpsc-navy/10 text-gpsc-navy"
+                                            }`}
+                                        >
+                                            {c.status === "under_review" ? "In review" : "New"}
+                                        </span>
+                                        <span className="text-gpsc-navy text-sm font-medium">{formatCurrency(c.amount)}</span>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="text-gpsc-stone py-8 text-center">No pending claims</div>
+                        )}
                     </div>
                 </div>
             </div>

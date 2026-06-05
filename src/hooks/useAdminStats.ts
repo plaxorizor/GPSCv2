@@ -14,6 +14,15 @@ export interface GrowthDataPoint {
     members: number;
 }
 
+export interface PendingClaimItem {
+    id: string;
+    memberName: string;
+    benefit: string;
+    amount: number;
+    status: string;
+    submitted: string; // ISO date
+}
+
 interface AdminStats {
     activeMembers: number;
     pendingAccounts: number;
@@ -23,6 +32,7 @@ interface AdminStats {
     pendingPayouts: number;
     topRecruiters: TopRecruiter[];
     growthData: GrowthDataPoint[];
+    pendingClaimsList: PendingClaimItem[];
 }
 
 export default () => {
@@ -98,6 +108,22 @@ export default () => {
                 members: count,
             }));
 
+            // Pending claims queue — oldest first (FIFO), top 5
+            const pendingClaimsList: PendingClaimItem[] = claimsSnap.docs
+                .map((d) => {
+                    const data = d.data();
+                    return {
+                        id: d.id,
+                        memberName: (data.memberName as string) ?? "Unknown",
+                        benefit: (data.benefit as string) ?? "",
+                        amount: (data.amount as number) ?? 0,
+                        status: (data.status as string) ?? "submitted",
+                        submitted: data.submittedAt?.toDate?.()?.toISOString?.() ?? "",
+                    };
+                })
+                .sort((a, b) => (a.submitted < b.submitted ? -1 : 1))
+                .slice(0, 5);
+
             const topRecruiters: TopRecruiter[] = Object.entries(referralCount)
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 3)
@@ -119,6 +145,7 @@ export default () => {
                 pendingPayouts: payoutsSnap.size,
                 topRecruiters,
                 growthData,
+                pendingClaimsList,
             });
         } catch (e) {
             console.error("[useAdminStats] error:", e);

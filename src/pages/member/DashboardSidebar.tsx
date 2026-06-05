@@ -79,7 +79,7 @@ export const DashboardSidebar: React.FC<Props> = ({ member, rankName, currentSec
 
             {/* Nav items */}
             <nav className="flex-1 [scrollbar-width:none] space-y-1 overflow-y-auto p-2 [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-                {items.map((item, i) => (
+                {items.filter(item => item.id !== "profile").map((item, i) => (
                     <div
                         key={item.id}
                         className="relative"
@@ -137,6 +137,45 @@ export const DashboardSidebar: React.FC<Props> = ({ member, rankName, currentSec
                     </div>
                 ))}
             </nav>
+
+            {/* Profile — pinned above logout */}
+            {items.find(item => item.id === "profile") && (() => {
+                const item = items.find(item => item.id === "profile")!;
+                return (
+                    <div
+                        className="relative"
+                        onMouseEnter={() => !expanded && setHoveredId(item.id)}
+                        onMouseLeave={() => setHoveredId(null)}
+                    >
+                        <button
+                            onClick={() => onSectionChange(item.id)}
+                            className={`m-2 flex w-[calc(100%-1rem)] items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition-colors ${
+                                currentSection === item.id ? "bg-gpsc-cream text-gpsc-navy font-medium" : "text-gpsc-stone hover:bg-gpsc-cream/60"
+                            }`}
+                        >
+                            <item.icon size={16} className="shrink-0" />
+                            <span
+                                style={{
+                                    opacity: expanded ? 1 : 0,
+                                    transform: expanded ? "translateX(0)" : "translateX(-6px)",
+                                    transition: "opacity 250ms ease, transform 250ms ease",
+                                    transitionDelay: expanded ? "140ms" : "0ms",
+                                    whiteSpace: "nowrap",
+                                    overflow: "hidden",
+                                    flex: 1,
+                                }}
+                            >
+                                {item.label}
+                            </span>
+                        </button>
+                        {!expanded && hoveredId === item.id && (
+                            <div style={{ pointerEvents: "none" }} className="absolute top-1/2 left-full z-50 ml-2 flex -translate-y-1/2 items-center">
+                                <div className="bg-gpsc-navy rounded-lg px-2.5 py-1.5 text-xs whitespace-nowrap text-white shadow-sm">{item.label}</div>
+                            </div>
+                        )}
+                    </div>
+                );
+            })()}
 
             {/* Logout */}
             <div className="relative" onMouseEnter={() => !expanded && setHoveredId("__logout__")} onMouseLeave={() => setHoveredId(null)}>

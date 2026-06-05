@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase/config";
 import useAuth from "../context/useAuth";
-import type { MemberStats } from "../utils/types";
+import type { MemberStats, EarningsTrendPoint } from "../utils/types";
 
 const useMemberStats = () => {
     const { currentUser } = useAuth();
@@ -56,6 +56,24 @@ const useMemberStats = () => {
             // Recent 5 commissions sorted by date
             const recentCommissions = [...commissions].sort((a, b) => b.dateCreated?.toMillis?.() - a.dateCreated?.toMillis?.()).slice(0, 5);
 
+            // Earnings trend — total commissions earned per month, last 6 months
+            const now = new Date();
+            const trendBuckets: { key: string; month: string; amount: number }[] = [];
+            const trendIndex: Record<string, number> = {};
+            for (let i = 5; i >= 0; i--) {
+                const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                const key = `${d.getFullYear()}-${d.getMonth()}`;
+                trendIndex[key] = trendBuckets.length;
+                trendBuckets.push({ key, month: d.toLocaleString("default", { month: "short" }), amount: 0 });
+            }
+            for (const c of commissions) {
+                const dt: Date | undefined = c.dateCreated?.toDate?.();
+                if (!dt) continue;
+                const idx = trendIndex[`${dt.getFullYear()}-${dt.getMonth()}`];
+                if (idx !== undefined) trendBuckets[idx].amount += c.amount ?? 0;
+            }
+            const earningsTrend: EarningsTrendPoint[] = trendBuckets.map((b) => ({ month: b.month, amount: b.amount }));
+
             setStats({
                 availableToWithdraw: Math.max(0, availableToWithdraw),
                 totalEarned,
@@ -64,6 +82,7 @@ const useMemberStats = () => {
                 approvedClaimsCount: approvedClaims.length,
                 approvedClaimsTotal: approvedClaims.reduce((sum, c) => sum + (c.amount ?? 0), 0),
                 recentCommissions,
+                earningsTrend,
             });
             setLoading(false);
         };

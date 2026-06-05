@@ -21,6 +21,65 @@ export const DashboardSidebar: React.FC<Props> = ({ currentSection, onSectionCha
     const [expanded, setExpanded] = useState(false);
     const [hoveredId, setHoveredId] = useState<string | null>(null);
 
+    // Split settings out so it can be pinned above Logout
+    const navItems = items.filter((item) => item.id !== "settings");
+    const settingsItem = items.find((item) => item.id === "settings");
+
+    const renderNavButton = (item: SidebarItem, i: number) => (
+        <div
+            key={item.id}
+            className="relative"
+            onMouseEnter={() => !expanded && setHoveredId(item.id)}
+            onMouseLeave={() => setHoveredId(null)}
+        >
+            <button
+                onClick={() => onSectionChange(item.id)}
+                className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition-colors ${
+                    currentSection === item.id ? "bg-gpsc-cream text-gpsc-navy font-medium" : "text-gpsc-stone hover:bg-gpsc-cream/60"
+                }`}
+            >
+                <item.icon size={16} className="shrink-0" />
+                <span
+                    style={{
+                        opacity: expanded ? 1 : 0,
+                        transform: expanded ? "translateX(0)" : "translateX(-6px)",
+                        transition: "opacity 250ms ease, transform 250ms ease",
+                        transitionDelay: expanded ? `${120 + i * 20}ms` : "0ms",
+                        flex: 1,
+                        overflow: "hidden",
+                        whiteSpace: "nowrap",
+                    }}
+                >
+                    {item.label}
+                </span>
+                {item.badge !== undefined && item.badge !== null && item.badge > 0 && (
+                    <span
+                        style={{
+                            opacity: expanded ? 1 : 0,
+                            transition: "opacity 200ms ease",
+                            transitionDelay: expanded ? `${160 + i * 20}ms` : "0ms",
+                        }}
+                        className="bg-gpsc-green shrink-0 rounded-full px-2 py-0.5 text-xs text-white"
+                    >
+                        {item.badge}
+                    </span>
+                )}
+            </button>
+
+            {/* Tooltip — only mounts when collapsed AND this item is hovered */}
+            {!expanded && hoveredId === item.id && (
+                <div style={{ pointerEvents: "none" }} className="absolute top-1/2 left-full z-50 ml-2 flex -translate-y-1/2 items-center">
+                    <div className="bg-gpsc-navy rounded-lg px-2.5 py-1.5 text-xs whitespace-nowrap text-white shadow-sm">
+                        {item.label}
+                        {item.badge !== undefined && item.badge !== null && item.badge > 0 && (
+                            <span className="bg-gpsc-green ml-1.5 rounded-full px-1.5 py-0.5 text-xs">{item.badge}</span>
+                        )}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+
     return (
         <aside
             onMouseEnter={() => setExpanded(true)}
@@ -47,93 +106,46 @@ export const DashboardSidebar: React.FC<Props> = ({ currentSection, onSectionCha
                 </div>
             </div>
 
-            {/* Nav items */}
+            {/* Nav items (excludes settings) */}
             <nav className="flex-1 space-y-1 overflow-y-auto p-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                {items.map((item, i) => (
-                    <div
-                        key={item.id}
-                        className="relative"
-                        onMouseEnter={() => !expanded && setHoveredId(item.id)}
-                        onMouseLeave={() => setHoveredId(null)}
-                    >
-                        <button
-                            onClick={() => onSectionChange(item.id)}
-                            className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition-colors ${
-                                currentSection === item.id ? "bg-gpsc-cream text-gpsc-navy font-medium" : "text-gpsc-stone hover:bg-gpsc-cream/60"
-                            }`}
-                        >
-                            <item.icon size={16} className="shrink-0" />
-                            <span
-                                style={{
-                                    opacity: expanded ? 1 : 0,
-                                    transform: expanded ? "translateX(0)" : "translateX(-6px)",
-                                    transition: "opacity 250ms ease, transform 250ms ease",
-                                    transitionDelay: expanded ? `${120 + i * 20}ms` : "0ms",
-                                    flex: 1,
-                                    overflow: "hidden",
-                                    whiteSpace: "nowrap",
-                                }}
-                            >
-                                {item.label}
-                            </span>
-                            {item.badge !== undefined && item.badge !== null && item.badge > 0 && (
-                                <span
-                                    style={{
-                                        opacity: expanded ? 1 : 0,
-                                        transition: "opacity 200ms ease",
-                                        transitionDelay: expanded ? `${160 + i * 20}ms` : "0ms",
-                                    }}
-                                    className="bg-gpsc-green shrink-0 rounded-full px-2 py-0.5 text-xs text-white"
-                                >
-                                    {item.badge}
-                                </span>
-                            )}
-                        </button>
-
-                        {/* Tooltip — only mounts when collapsed AND this item is hovered */}
-                        {!expanded && hoveredId === item.id && (
-                            <div style={{ pointerEvents: "none" }} className="absolute top-1/2 left-full z-50 ml-2 flex -translate-y-1/2 items-center">
-                                <div className="bg-gpsc-navy rounded-lg px-2.5 py-1.5 text-xs whitespace-nowrap text-white shadow-sm">
-                                    {item.label}
-                                    {item.badge !== undefined && item.badge !== null && item.badge > 0 && (
-                                        <span className="bg-gpsc-green ml-1.5 rounded-full px-1.5 py-0.5 text-xs">{item.badge}</span>
-                                    )}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                ))}
+                {navItems.map((item, i) => renderNavButton(item, i))}
             </nav>
 
-            {/* Logout */}
-            <div
-                className="relative"
-                onMouseEnter={() => !expanded && setHoveredId("__logout__")}
-                onMouseLeave={() => setHoveredId(null)}
-            >
-                <button
-                    onClick={onLogout}
-                    className="text-gpsc-stone hover:bg-gpsc-cream/60 m-2 flex w-[calc(100%-1rem)] items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors"
+            {/* Bottom section: Settings + Logout */}
+            <div className="border-gpsc-cream-dark border-t p-2 space-y-1">
+                {/* Settings pinned above Logout */}
+                {settingsItem && renderNavButton(settingsItem, navItems.length)}
+
+                {/* Logout */}
+                <div
+                    className="relative"
+                    onMouseEnter={() => !expanded && setHoveredId("__logout__")}
+                    onMouseLeave={() => setHoveredId(null)}
                 >
-                    <LogOut size={16} className="shrink-0" />
-                    <span
-                        style={{
-                            opacity: expanded ? 1 : 0,
-                            transform: expanded ? "translateX(0)" : "translateX(-6px)",
-                            transition: "opacity 250ms ease, transform 250ms ease",
-                            transitionDelay: expanded ? "150ms" : "0ms",
-                            whiteSpace: "nowrap",
-                            overflow: "hidden",
-                        }}
+                    <button
+                        onClick={onLogout}
+                        className="text-gpsc-stone hover:bg-gpsc-cream/60 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors"
                     >
-                        Logout
-                    </span>
-                </button>
-                {!expanded && hoveredId === "__logout__" && (
-                    <div style={{ pointerEvents: "none" }} className="absolute top-1/2 left-full z-50 ml-2 flex -translate-y-1/2 items-center">
-                        <div className="bg-gpsc-navy rounded-lg px-2.5 py-1.5 text-xs whitespace-nowrap text-white shadow-sm">Logout</div>
-                    </div>
-                )}
+                        <LogOut size={16} className="shrink-0" />
+                        <span
+                            style={{
+                                opacity: expanded ? 1 : 0,
+                                transform: expanded ? "translateX(0)" : "translateX(-6px)",
+                                transition: "opacity 250ms ease, transform 250ms ease",
+                                transitionDelay: expanded ? "150ms" : "0ms",
+                                whiteSpace: "nowrap",
+                                overflow: "hidden",
+                            }}
+                        >
+                            Logout
+                        </span>
+                    </button>
+                    {!expanded && hoveredId === "__logout__" && (
+                        <div style={{ pointerEvents: "none" }} className="absolute top-1/2 left-full z-50 ml-2 flex -translate-y-1/2 items-center">
+                            <div className="bg-gpsc-navy rounded-lg px-2.5 py-1.5 text-xs whitespace-nowrap text-white shadow-sm">Logout</div>
+                        </div>
+                    )}
+                </div>
             </div>
         </aside>
     );

@@ -36,7 +36,7 @@ export function Settings() {
         : "—";
 
     return (
-        <div className="animate-fade-up max-w-3xl">
+        <div className="animate-fade-up w-full">
             {showChangePassword && <ChangePasswordModal onClose={() => setShowChangePassword(false)} />}
 
             {/* Header */}
@@ -63,7 +63,7 @@ export function Settings() {
                     </div>
                 </div>
 
-                <div className="border-gpsc-cream-dark mt-6 grid gap-4 border-t pt-6 sm:grid-cols-2">
+                <div className="border-gpsc-cream-dark mt-6 grid gap-4 border-t pt-6 sm:grid-cols-2 lg:grid-cols-3">
                     <InfoRow icon={<Mail size={15} />} label="Email" value={email} />
                     <InfoRow icon={<Calendar size={15} />} label="Admin since" value={joined} />
                     <InfoRow

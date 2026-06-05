@@ -45,6 +45,7 @@ export interface MemberStats {
     approvedClaimsCount: number;
     approvedClaimsTotal: number;
     recentCommissions: Commission[];
+    earningsTrend: EarningsTrendPoint[];
 }
 
 export type CommissionStatus = "pending" | "paid";

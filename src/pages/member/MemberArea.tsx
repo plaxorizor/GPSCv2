@@ -14,7 +14,7 @@ import ChangePasswordModal from "../../components/ChangePasswordModal";
 import RequestPayoutModal from "../../components/RequestPayoutModal";
 import FileClaimModal from "../../components/FileClaimModal";
 import { PACKAGE_INFO } from "../../utils/types";
-import type { Member, Commission, ReferralNode, EarningsTrendPoint } from "../../utils/types";
+import type { Member, Commission, ReferralNode } from "../../utils/types";
 
 // Rank mapping based on rank number
 // const getRankName = (rank: number): string => {
@@ -136,8 +136,8 @@ export default function MemberArea() {
     // 5. Referral link
     // const referralLink = `${window.location.origin}/signup?ref=${member.referralCode}`;
 
-    // 6. Typed arrays — earningsTrend fetched later; claims/payouts from hooks
-    const earningsTrend: EarningsTrendPoint[] = [];
+    // 6. Earnings trend comes from memberStats (loaded on mount); claims/payouts from hooks
+    const earningsTrend = memberStats?.earningsTrend ?? [];
 
     // 7. Handlers
     const handleRequestPayout = () => setShowRequestPayout(true);
