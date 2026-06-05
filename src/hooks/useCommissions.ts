@@ -27,12 +27,8 @@ export const useCommissions = (enabled = false) => {
         const fetch = async () => {
             setLoading(true);
             try {
-                const q = query(
-                    collection(db, "commissions"),
-                    where("earnedBy", "==", currentUser.uid),
-                );
+                const q = query(collection(db, "commissions"), where("earnedBy", "==", currentUser.uid));
                 const snap = await getDocs(q);
-                console.log(`[useCommissions] fetched ${snap.size} docs for uid=${currentUser.uid}`);
                 // Sort client-side — avoids needing a composite Firestore index
                 const raw = snap.docs
                     .map((d) => ({ id: d.id, ...d.data() }))

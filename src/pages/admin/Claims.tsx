@@ -9,7 +9,7 @@ interface Props {
     loading: boolean;
     onUpdateStatus: (claimId: string, status: "Approved" | "Rejected" | "Released") => Promise<void>;
     onReviewClaim?: (claimId: string) => Promise<void>;
-    onRefresh: () => Promise<void>;
+    onRefresh: () => void;
     onExport: () => void;
 }
 
@@ -34,9 +34,8 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
     const [search, setSearch] = useState("");
     const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null);
 
-    // TODO: implement refresh functionality
     const handleRefresh = () => {
-        console.warn("Refresh not implemented - backend dev required");
+        onRefresh();
     };
 
     const filtered = claims.filter((c) => {

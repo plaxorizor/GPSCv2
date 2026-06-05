@@ -28,12 +28,10 @@ export default function SignIn() {
         e.preventDefault();
         setError("");
         signInWithEmailAndPassword(auth, email, password)
-            .then((userCredential) => {
-                console.log(userCredential);
+            .then(() => {
                 navigate("/");
             })
             .catch((err) => {
-                console.log(err);
                 setError(err.message);
             });
     }

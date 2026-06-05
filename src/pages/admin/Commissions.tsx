@@ -9,7 +9,7 @@ interface Props {
     commissionHistory: CommissionRecord[];
     loading: boolean;
     onRelease: (commissionId: string, earnedBy: string, amount: number, reference: string) => Promise<void>;
-    onRefresh: () => Promise<void>;
+    onRefresh: () => void;
 }
 
 export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHistory, loading, onRelease, onRefresh }) => {
