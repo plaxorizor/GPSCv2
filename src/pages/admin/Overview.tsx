@@ -10,11 +10,10 @@ import useAdminStats from "../../hooks/useAdminStats";
 
 interface Props {
     loading: boolean;
-    onRefresh: () => void;
 }
 
-export const Overview: React.FC<Props> = ({ loading, onRefresh }) => {
-    const { stats: adminStats, loading: adminStatsLoading } = useAdminStats();
+export const Overview: React.FC<Props> = ({ loading }) => {
+    const { stats: adminStats, loading: adminStatsLoading, refetch } = useAdminStats();
 
     if (loading || adminStatsLoading || !adminStats) {
         return (
@@ -46,7 +45,7 @@ export const Overview: React.FC<Props> = ({ loading, onRefresh }) => {
                 <div>
                     <h1 className="font-display text-gpsc-navy text-3xl">Operations Dashboard</h1>
                 </div>
-                <button onClick={onRefresh} className="text-gpsc-green flex items-center gap-1 text-xs transition-colors hover:underline">
+                <button onClick={refetch} className="text-gpsc-green flex items-center gap-1 text-xs transition-colors hover:underline">
                     <RefreshCw size={16} /> Refresh
                 </button>
             </div>

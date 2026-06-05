@@ -8,6 +8,13 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/members/$(request.auth.uid)).data.get('isAdmin', false) == true;
     }
 
+    // Super admins are a tier above admins — only they may delete member records.
+    function isSuperAdmin() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/members/$(request.auth.uid))
+        && get(/databases/$(database)/documents/members/$(request.auth.uid)).data.get('isSuperAdmin', false) == true;
+    }
+
     match /members/{uid} {
       allow read: if request.auth != null;
 
@@ -28,7 +35,8 @@ service cloud.firestore {
         )
       );
 
-      allow delete: if request.auth != null && (request.auth.uid == uid || isAdmin());
+      // Only super admins may permanently delete a member record.
+      allow delete: if isSuperAdmin();
     }
 
     match /referralCodes/{code} {

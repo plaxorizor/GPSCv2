@@ -9,6 +9,7 @@ import {
     doc,
     updateDoc,
     setDoc,
+    deleteDoc,
     serverTimestamp,
     query,
     where,
@@ -74,6 +75,44 @@ export const activateMember = async (uid: string) => {
 
 export const deactivateMember = async (uid: string) => {
     await updateDoc(doc(db, "members", uid), { status: "inactive" });
+};
+
+// --- ARCHIVE / DELETE (super-admin actions) ---
+
+// Soft delete: hide the member from lists but keep tree + commission history.
+// Reversible via restoreMember.
+export const archiveMember = async (uid: string) => {
+    await updateDoc(doc(db, "members", uid), { archived: true, archivedAt: serverTimestamp() });
+};
+
+export const restoreMember = async (uid: string) => {
+    await updateDoc(doc(db, "members", uid), { archived: false, archivedAt: null });
+};
+
+// Checks whether a member is safe to hard-delete (no downlines, no commissions).
+export const getMemberDependencies = async (uid: string) => {
+    const [downlineSnap, earnedSnap, fromSnap] = await Promise.all([
+        getDocs(query(collection(db, "members"), where("referredBy", "==", uid), limitQuery(1))),
+        getDocs(query(collection(db, "commissions"), where("earnedBy", "==", uid), limitQuery(1))),
+        getDocs(query(collection(db, "commissions"), where("fromMember", "==", uid), limitQuery(1))),
+    ]);
+    return {
+        hasDownlines: !downlineSnap.empty,
+        hasCommissions: !earnedSnap.empty || !fromSnap.empty,
+    };
+};
+
+// Hard delete: permanently removes the member doc (+ their referral-code mapping).
+// Caller MUST verify there are no dependents first (getMemberDependencies).
+// NOTE: the Firebase Auth login itself can't be removed client-side on Spark —
+// that needs the Admin SDK (Blaze).
+export const hardDeleteMember = async (uid: string) => {
+    const snap = await getDoc(doc(db, "members", uid));
+    const code = snap.exists() ? (snap.data().referralCode as string | undefined) : undefined;
+    if (code) {
+        await deleteDoc(doc(db, "referralCodes", code)).catch(() => {});
+    }
+    await deleteDoc(doc(db, "members", uid));
 };
 
 // Sends a Firebase password-reset email so the member can set a new password.

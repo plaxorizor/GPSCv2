@@ -38,8 +38,6 @@ export default function AdminArea() {
     } = useAdminClaims();
 
     // Handlers
-    const handleRefreshStats = async () => {};
-
     const handleRefreshClaims = async () => {
         await refetchClaims();
     };
@@ -111,7 +109,6 @@ export default function AdminArea() {
                 commissions: commissionsLoading,
                 payouts: payoutsLoading,
             }}
-            onRefreshStats={handleRefreshStats}
             onRefreshClaims={handleRefreshClaims}
             onRefreshCommissions={refetchCommissions}
             onRefreshPayouts={refetchPayouts}

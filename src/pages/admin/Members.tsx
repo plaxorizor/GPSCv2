@@ -1,12 +1,20 @@
 // admin/Members.tsx
 import React, { useState, useMemo } from "react";
-import { Plus, Search, Download, RefreshCw, Copy, Check, ShieldCheck, ShieldOff, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Search, Download, RefreshCw, Copy, Check, ShieldCheck, ShieldOff, ChevronLeft, ChevronRight, Archive, RotateCcw, Trash2 } from "lucide-react";
 import { PACKAGE_INFO } from "../../utils/types";
 import AllMembers from "./AllMembers";
 import { useAllMembers } from "../../hooks/useAllMembers";
+import { useAdmin } from "../../hooks/useAdmin";
 import { getEligibilityTimeline } from "../../utils/eligibility";
 import AddMemberModal from "../../components/AddMemberModal";
-import { sendMemberPasswordReset } from "../../firebase/admin";
+import ConfirmDialog from "../../components/ConfirmDialog";
+import {
+    sendMemberPasswordReset,
+    archiveMember,
+    restoreMember,
+    hardDeleteMember,
+    getMemberDependencies,
+} from "../../firebase/admin";
 
 export interface MemberRow {
     uid: string;
@@ -23,6 +31,7 @@ export interface MemberRow {
     civilStatus?: string;
     birthDate?: string;
     status: string;
+    archived?: boolean;
     dateCreated?: { toDate?: () => Date };
     beneficiaries?: { name: string; relationship: string }[];
 }
@@ -34,6 +43,7 @@ interface Props {
 
 export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
     const { members, loading, refetch } = useAllMembers();
+    const { isSuperAdmin } = useAdmin();
     const [showAddMember, setShowAddMember] = useState(false);
     const [query, setQuery] = useState("");
     const [packageFilter, setPackageFilter] = useState("all");
@@ -44,9 +54,159 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
     const [resetting, setResetting] = useState(false);
     const [resetMsg, setResetMsg] = useState("");
 
+    // Selection + bulk ops
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [bulkMsg, setBulkMsg] = useState("");
+
+    // Super-admin per-member actions
+    const [deps, setDeps] = useState<{ hasDownlines: boolean; hasCommissions: boolean } | null>(null);
+    const [memberActionBusy, setMemberActionBusy] = useState(false);
+
+    // Confirmation dialog (replaces window.confirm)
+    const [confirmState, setConfirmState] = useState<{
+        title: string;
+        message: string;
+        confirmLabel: string;
+        danger?: boolean;
+        action: () => Promise<void>;
+    } | null>(null);
+    const [confirmBusy, setConfirmBusy] = useState(false);
+
+    const runConfirm = async () => {
+        if (!confirmState) return;
+        setConfirmBusy(true);
+        try {
+            await confirmState.action();
+        } finally {
+            setConfirmBusy(false);
+            setConfirmState(null);
+        }
+    };
+
     const openMember = (m: MemberRow | null) => {
         setResetMsg("");
+        setDeps(null);
         setSelectedMember(m);
+        // For super admins, check whether this member is safe to hard-delete.
+        if (m && isSuperAdmin) {
+            getMemberDependencies(m.uid).then(setDeps).catch(() => setDeps(null));
+        }
+    };
+
+    const toggleSelect = (uid: string) =>
+        setSelectedIds((prev) => {
+            const next = new Set(prev);
+            if (next.has(uid)) next.delete(uid);
+            else next.add(uid);
+            return next;
+        });
+
+    const requestBulkActivate = () => {
+        const targets = members.filter((m) => selectedIds.has(m.uid) && m.status === "pending" && !m.archived);
+        const skipped = selectedIds.size - targets.length;
+        if (targets.length === 0) {
+            setBulkMsg("No pending members in the selection.");
+            return;
+        }
+        setBulkMsg("");
+        setConfirmState({
+            title: "Activate members",
+            message: `Activate ${targets.length} pending member(s)? This generates their referral codes and pays upline commissions.${
+                skipped ? ` ${skipped} non-pending member(s) will be skipped.` : ""
+            }`,
+            confirmLabel: "Activate",
+            action: async () => {
+                let ok = 0;
+                let fail = 0;
+                for (const m of targets) {
+                    try {
+                        await onUpdateStatus(m.uid, "active");
+                        ok++;
+                    } catch {
+                        fail++;
+                    }
+                }
+                await refetch();
+                setSelectedIds(new Set());
+                setBulkMsg(`Activated ${ok}${fail ? `, ${fail} failed` : ""}${skipped ? `, skipped ${skipped} non-pending` : ""}.`);
+            },
+        });
+    };
+
+    const requestBulkArchive = () => {
+        const targets = members.filter((m) => selectedIds.has(m.uid) && !m.archived);
+        if (targets.length === 0) {
+            setBulkMsg("Nothing to archive in the selection.");
+            return;
+        }
+        setBulkMsg("");
+        setConfirmState({
+            title: "Archive members",
+            message: `Archive ${targets.length} member(s)? They'll be hidden from the lists but their data is kept and can be restored.`,
+            confirmLabel: "Archive",
+            action: async () => {
+                let ok = 0;
+                let fail = 0;
+                for (const m of targets) {
+                    try {
+                        await archiveMember(m.uid);
+                        ok++;
+                    } catch {
+                        fail++;
+                    }
+                }
+                await refetch();
+                setSelectedIds(new Set());
+                setBulkMsg(`Archived ${ok}${fail ? `, ${fail} failed` : ""}.`);
+            },
+        });
+    };
+
+    const requestArchiveOne = () => {
+        if (!selectedMember) return;
+        const m = selectedMember;
+        setConfirmState({
+            title: "Archive member",
+            message: `Archive ${m.firstName} ${m.lastName}? They'll be hidden but their data is kept and can be restored.`,
+            confirmLabel: "Archive",
+            action: async () => {
+                await archiveMember(m.uid);
+                await refetch();
+                setSelectedMember(null);
+            },
+        });
+    };
+
+    const handleRestoreOne = async () => {
+        if (!selectedMember) return;
+        setMemberActionBusy(true);
+        try {
+            await restoreMember(selectedMember.uid);
+            await refetch();
+            setSelectedMember(null);
+        } finally {
+            setMemberActionBusy(false);
+        }
+    };
+
+    const requestHardDelete = () => {
+        if (!selectedMember) return;
+        const m = selectedMember;
+        setConfirmState({
+            title: "Permanently delete member",
+            message: `Permanently delete ${m.firstName} ${m.lastName}? This cannot be undone. Their login account will remain until the Blaze upgrade.`,
+            confirmLabel: "Delete forever",
+            danger: true,
+            action: async () => {
+                try {
+                    await hardDeleteMember(m.uid);
+                    await refetch();
+                    setSelectedMember(null);
+                } catch {
+                    window.alert("Delete failed. Make sure you're a super admin and the updated rules are published.");
+                }
+            },
+        });
     };
 
     const handleSendReset = async () => {
@@ -90,9 +250,14 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
             filtered = filtered.filter((member) => member.package === packageFilter);
         }
 
-        // Apply status filter
-        if (statusFilter !== "all") {
-            filtered = filtered.filter((member) => member.status === statusFilter);
+        // Archived members are hidden unless you explicitly view the Archived filter
+        if (statusFilter === "archived") {
+            filtered = filtered.filter((m) => m.archived === true);
+        } else {
+            filtered = filtered.filter((m) => !m.archived);
+            if (statusFilter !== "all") {
+                filtered = filtered.filter((member) => member.status === statusFilter);
+            }
         }
 
         return filtered;
@@ -104,6 +269,17 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
     const startIndex = (currentPage - 1) * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;
     const paginatedMembers = filteredMembers.slice(startIndex, endIndex);
+
+    // Select-all toggles the current page only
+    const pageIds = paginatedMembers.map((m) => m.uid);
+    const allPageSelected = pageIds.length > 0 && pageIds.every((id) => selectedIds.has(id));
+    const toggleSelectAll = () =>
+        setSelectedIds((prev) => {
+            const next = new Set(prev);
+            if (allPageSelected) pageIds.forEach((id) => next.delete(id));
+            else pageIds.forEach((id) => next.add(id));
+            return next;
+        });
 
     // Generate page numbers to display
     const getPageNumbers = () => {
@@ -236,6 +412,7 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                         <option value="active">Active</option>
                         <option value="inactive">Inactive</option>
                         <option value="pending">Pending</option>
+                        <option value="archived">Archived</option>
                     </select>
                     <button
                         onClick={() => {
@@ -259,6 +436,15 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                                 <th className="p-4 text-left">Sponsor</th>
                                 <th className="p-4 text-left">Joined</th>
                                 <th className="p-4 text-left">Status</th>
+                                <th className="w-10 p-4 text-right">
+                                    <input
+                                        type="checkbox"
+                                        checked={allPageSelected}
+                                        onChange={toggleSelectAll}
+                                        className="accent-gpsc-navy h-4 w-4 cursor-pointer"
+                                        aria-label="Select all on this page"
+                                    />
+                                </th>
                             </tr>
                         </thead>
 
@@ -270,6 +456,8 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                             statusFilter={statusFilter}
                             onSelectMember={openMember}
                             onUpdateStatus={onUpdateStatus}
+                            selectedIds={selectedIds}
+                            onToggleSelect={toggleSelect}
                         />
                     </table>
                 </div>
@@ -277,8 +465,11 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                 {/* Pagination Controls */}
                 {totalRecords > 0 && (
                     <div className="border-gpsc-cream-dark flex flex-wrap items-center justify-between gap-4 border-t px-4 py-3">
-                        <div className="text-gpsc-stone text-xs">
-                            Showing {startIndex + 1} to {Math.min(endIndex, totalRecords)} of {totalRecords} records
+                        <div className="text-gpsc-stone flex items-center gap-3 text-xs">
+                            <span>
+                                Showing {startIndex + 1} to {Math.min(endIndex, totalRecords)} of {totalRecords} records
+                            </span>
+                            {bulkMsg && <span className="text-gpsc-green">{bulkMsg}</span>}
                         </div>
 
                         <div className="flex flex-wrap items-center gap-4">
@@ -359,6 +550,36 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                                     GO
                                 </button>
                             </div>
+
+                            {/* Bulk actions — to the right of Go, only when rows are selected */}
+                            {selectedIds.size > 0 && (
+                                <div className="border-gpsc-cream-dark flex flex-wrap items-center gap-2 sm:border-l sm:pl-4">
+                                    <span className="text-gpsc-navy text-sm font-medium">{selectedIds.size} selected</span>
+                                    <button
+                                        onClick={requestBulkActivate}
+                                        className="bg-gpsc-green flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-white transition-opacity hover:opacity-90"
+                                    >
+                                        <Check size={14} /> Activate
+                                    </button>
+                                    {isSuperAdmin && (
+                                        <button
+                                            onClick={requestBulkArchive}
+                                            className="border-gpsc-cream-dark text-gpsc-navy hover:bg-gpsc-cream flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm transition-colors"
+                                        >
+                                            <Archive size={14} /> Archive
+                                        </button>
+                                    )}
+                                    <button
+                                        onClick={() => {
+                                            setSelectedIds(new Set());
+                                            setBulkMsg("");
+                                        }}
+                                        className="text-gpsc-stone hover:text-gpsc-navy text-sm"
+                                    >
+                                        Clear
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}
@@ -515,6 +736,52 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                                         )}
                                         {resetMsg && <p className="text-gpsc-green mt-2 text-xs">{resetMsg}</p>}
                                     </div>
+
+                                    {/* Super-admin: archive / restore / permanently delete */}
+                                    {isSuperAdmin && (
+                                        <div className="mt-4 space-y-2 rounded-xl border border-red-200 bg-red-50/40 p-3">
+                                            <div className="text-xs font-medium tracking-wider text-red-700/80 uppercase">
+                                                Super admin
+                                            </div>
+                                            {selectedMember.archived ? (
+                                                <button
+                                                    onClick={handleRestoreOne}
+                                                    disabled={memberActionBusy}
+                                                    className="border-gpsc-cream-dark text-gpsc-navy hover:bg-gpsc-cream/60 flex w-full items-center justify-center gap-1.5 rounded-lg border bg-white px-4 py-2 text-sm transition-colors disabled:opacity-50"
+                                                >
+                                                    <RotateCcw size={14} /> Restore member
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    onClick={requestArchiveOne}
+                                                    disabled={memberActionBusy}
+                                                    className="border-gpsc-cream-dark text-gpsc-navy hover:bg-gpsc-cream/60 flex w-full items-center justify-center gap-1.5 rounded-lg border bg-white px-4 py-2 text-sm transition-colors disabled:opacity-50"
+                                                >
+                                                    <Archive size={14} /> Archive member
+                                                </button>
+                                            )}
+
+                                            {deps && !deps.hasDownlines && !deps.hasCommissions && (
+                                                <button
+                                                    onClick={requestHardDelete}
+                                                    disabled={memberActionBusy}
+                                                    className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:opacity-50"
+                                                >
+                                                    <Trash2 size={14} /> Permanently delete
+                                                </button>
+                                            )}
+                                            {deps && (deps.hasDownlines || deps.hasCommissions) && (
+                                                <p className="text-xs text-red-700/80">
+                                                    Can't permanently delete — this member has{" "}
+                                                    {deps.hasDownlines ? "downlines" : ""}
+                                                    {deps.hasDownlines && deps.hasCommissions ? " and " : ""}
+                                                    {deps.hasCommissions ? "commission history" : ""}. Archive instead to
+                                                    keep the tree intact.
+                                                </p>
+                                            )}
+                                            {!deps && <p className="text-gpsc-stone text-xs">Checking delete eligibility…</p>}
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* ── RIGHT PANEL: Eligibility Timeline ── */}
@@ -588,6 +855,18 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                 <AddMemberModal
                     onClose={() => setShowAddMember(false)}
                     onSuccess={() => refetch()}
+                />
+            )}
+
+            {confirmState && (
+                <ConfirmDialog
+                    title={confirmState.title}
+                    message={confirmState.message}
+                    confirmLabel={confirmState.confirmLabel}
+                    danger={confirmState.danger}
+                    busy={confirmBusy}
+                    onConfirm={runConfirm}
+                    onCancel={() => setConfirmState(null)}
                 />
             )}
         </div>

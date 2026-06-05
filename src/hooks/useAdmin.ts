@@ -6,6 +6,7 @@ import useAuth from "../context/useAuth";
 export const useAdmin = () => {
     const { currentUser } = useAuth();
     const [isAdmin, setIsAdmin] = useState(false);
+    const [isSuperAdmin, setIsSuperAdmin] = useState(false);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -16,7 +17,10 @@ export const useAdmin = () => {
         const check = async () => {
             const snap = await getDoc(doc(db, "members", currentUser.uid));
             if (!cancelled) {
-                setIsAdmin(snap.exists() ? snap.data().isAdmin === true : false);
+                const data = snap.exists() ? snap.data() : null;
+                setIsAdmin(data?.isAdmin === true);
+                // Super admins are a tier above admins (can archive/delete members).
+                setIsSuperAdmin(data?.isSuperAdmin === true);
                 setLoading(false);
             }
         };
@@ -27,5 +31,5 @@ export const useAdmin = () => {
         };
     }, [currentUser]);
 
-    return { isAdmin, loading };
+    return { isAdmin, isSuperAdmin, loading };
 };

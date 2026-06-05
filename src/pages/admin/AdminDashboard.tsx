@@ -24,7 +24,6 @@ interface AdminDashboardProps {
         commissions?: boolean;
         payouts?: boolean;
     };
-    onRefreshStats: () => void;
     onRefreshClaims: () => void;
     onRefreshCommissions: () => void;
     onRefreshPayouts: () => void;
@@ -44,7 +43,6 @@ export default function AdminDashboard({
     commissionHistory,
     payouts,
     loading,
-    onRefreshStats,
     onRefreshClaims,
     onRefreshCommissions,
     onRefreshPayouts,
@@ -94,7 +92,7 @@ export default function AdminDashboard({
                 hover, so we only reserve the collapsed width. No max-width: fill the
                 screen instead of leaving a big empty gap on wide monitors. */}
             <main className="flex-1 p-6 pb-24 lg:p-10 lg:pb-10 lg:pl-24">
-                {currentSection === "overview" && <Overview loading={loading.stats || false} onRefresh={onRefreshStats} />}
+                {currentSection === "overview" && <Overview loading={loading.stats || false} />}
                 {currentSection === "members" && (
                     <Members onUpdateStatus={onUpdateMemberStatus} onExport={onExportMembers} />
                 )}

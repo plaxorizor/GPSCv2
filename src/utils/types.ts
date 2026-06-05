@@ -27,6 +27,9 @@ export interface Member {
     referredBy: string;
     beneficiaries: Beneficiary[];
     isAdmin: boolean;
+    isSuperAdmin?: boolean;
+    archived?: boolean;
+    archivedAt?: Timestamp | null;
     dateCreated: Timestamp;
     activatedAt?: Timestamp;
     expiresAt?: Timestamp;

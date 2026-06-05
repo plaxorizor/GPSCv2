@@ -117,6 +117,8 @@ async function main() {
                 "     1. Firestore Database → members → open doc id:\n" +
                 `        ${uid}\n` +
                 "     2. Set field  isAdmin  to  true  (boolean) → Update.\n" +
+                "     3. (Owner only) also add  isSuperAdmin  =  true  (boolean)\n" +
+                "        to allow archiving / deleting members.\n" +
                 "   Then log in and you'll land in the admin dashboard.\n",
         );
     }

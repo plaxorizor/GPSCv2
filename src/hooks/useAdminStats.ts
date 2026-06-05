@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../firebase/config";
 import type { Member } from "../utils/types";
@@ -29,12 +29,14 @@ export default () => {
     const [stats, setStats] = useState<AdminStats | null>(null);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const fetch = async () => {
+    const refetch = useCallback(async () => {
+        setLoading(true);
+        try {
             const [membersSnap, claimsSnap, payoutsSnap] = await Promise.all([
                 getDocs(query(collection(db, "members"), where("isAdmin", "==", false)))
                     .catch((e) => { console.error("members query failed:", e); throw e; }),
-                getDocs(query(collection(db, "claims"), where("status", "==", "pending")))
+                // Pending claims = submitted or under_review (there is no "pending" status)
+                getDocs(query(collection(db, "claims"), where("status", "in", ["submitted", "under_review"])))
                     .catch((e) => { console.error("claims query failed:", e); throw e; }),
                 getDocs(query(collection(db, "payouts"), where("status", "==", "requested")))
                     .catch((e) => { console.error("payouts query failed:", e); throw e; }),
@@ -118,10 +120,16 @@ export default () => {
                 topRecruiters,
                 growthData,
             });
+        } catch (e) {
+            console.error("[useAdminStats] error:", e);
+        } finally {
             setLoading(false);
-        };
-        fetch();
+        }
     }, []);
 
-    return { stats, loading };
+    useEffect(() => {
+        refetch();
+    }, [refetch]);
+
+    return { stats, loading, refetch };
 };
