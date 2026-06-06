@@ -22,7 +22,7 @@ import { useAdmin } from "../../hooks/useAdmin";
 import { getEligibilityTimeline } from "../../utils/eligibility";
 import AddMemberModal from "../../components/AddMemberModal";
 import ConfirmDialog from "../../components/ConfirmDialog";
-import { sendMemberPasswordReset, archiveMember, restoreMember, hardDeleteMember, getMemberDependencies } from "../../firebase/admin";
+import { sendMemberPasswordReset, archiveMember, restoreMember, hardDeleteMember, forceDeleteMember, getMemberDependencies } from "../../firebase/admin";
 
 export interface MemberRow {
     uid: string;
@@ -172,6 +172,82 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
         });
     };
 
+    const requestBulkDelete = () => {
+        const targets = members.filter((m) => selectedIds.has(m.uid));
+        if (targets.length === 0) {
+            setBulkMsg("Nothing selected to delete.");
+            return;
+        }
+        setBulkMsg("");
+        setConfirmState({
+            title: "Permanently delete members",
+            message: `Permanently delete ${targets.length} selected member(s)? This cannot be undone. Anyone who still has downlines or commission history will be skipped — archive those instead. Their login accounts remain until the Blaze upgrade.`,
+            confirmLabel: "Delete forever",
+            danger: true,
+            action: async () => {
+                let ok = 0;
+                let skipped = 0;
+                let fail = 0;
+                for (const m of targets) {
+                    try {
+                        const d = await getMemberDependencies(m.uid);
+                        if (d.hasDownlines || d.hasCommissions) {
+                            skipped++;
+                            continue;
+                        }
+                        await hardDeleteMember(m.uid);
+                        ok++;
+                    } catch {
+                        fail++;
+                    }
+                }
+                await refetch();
+                setSelectedIds(new Set());
+                setBulkMsg(
+                    `Deleted ${ok}${skipped ? `, skipped ${skipped} with dependencies` : ""}${fail ? `, ${fail} failed` : ""}.`,
+                );
+            },
+        });
+    };
+
+    const requestBulkForceDelete = () => {
+        const targets = members.filter((m) => selectedIds.has(m.uid));
+        if (targets.length === 0) {
+            setBulkMsg("Nothing selected to delete.");
+            return;
+        }
+        setBulkMsg("");
+        setConfirmState({
+            title: "Force delete members",
+            message: `Force delete ${targets.length} selected member(s)? This permanently removes them AND their commission records — it cannot be undone. Anyone who still has downlines is skipped to avoid orphaning the tree. Login accounts remain until the Blaze upgrade.`,
+            confirmLabel: "Force delete",
+            danger: true,
+            action: async () => {
+                let ok = 0;
+                let skipped = 0;
+                let fail = 0;
+                for (const m of targets) {
+                    try {
+                        const d = await getMemberDependencies(m.uid);
+                        if (d.hasDownlines) {
+                            skipped++;
+                            continue;
+                        }
+                        await forceDeleteMember(m.uid);
+                        ok++;
+                    } catch {
+                        fail++;
+                    }
+                }
+                await refetch();
+                setSelectedIds(new Set());
+                setBulkMsg(
+                    `Force deleted ${ok}${skipped ? `, skipped ${skipped} with downlines` : ""}${fail ? `, ${fail} failed` : ""}.`,
+                );
+            },
+        });
+    };
+
     const requestArchiveOne = () => {
         if (!selectedMember) return;
         const m = selectedMember;
@@ -283,9 +359,13 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
     const endIndex = startIndex + rowsPerPage;
     const paginatedMembers = filteredMembers.slice(startIndex, endIndex);
 
-    // Select-all toggles the current page only — and only pending, non-archived
-    // members are selectable (the only bulk action available to them is Activate).
-    const pageIds = paginatedMembers.filter((m) => m.status === "pending" && !m.archived).map((m) => m.uid);
+    // Which rows can be selected for bulk actions:
+    // - Regular admins only get bulk Activate, so only pending (non-archived) rows.
+    // - Super admins also get bulk Archive/Delete, so any row is selectable.
+    const isSelectable = (m: MemberRow) => (isSuperAdmin ? true : m.status === "pending" && !m.archived);
+
+    // Select-all toggles the current page only.
+    const pageIds = paginatedMembers.filter(isSelectable).map((m) => m.uid);
     const allPageSelected = pageIds.length > 0 && pageIds.every((id) => selectedIds.has(id));
     const toggleSelectAll = () =>
         setSelectedIds((prev) => {
@@ -474,6 +554,7 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                             onUpdateStatus={onUpdateStatus}
                             selectedIds={selectedIds}
                             onToggleSelect={toggleSelect}
+                            canSelectActive={isSuperAdmin}
                         />
                     </table>
                 </div>
@@ -578,12 +659,26 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                                         <Check size={14} /> Activate
                                     </button>
                                     {isSuperAdmin && (
-                                        <button
-                                            onClick={requestBulkArchive}
-                                            className="border-gpsc-cream-dark text-gpsc-navy hover:bg-gpsc-cream flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm transition-colors"
-                                        >
-                                            <Archive size={14} /> Archive
-                                        </button>
+                                        <>
+                                            <button
+                                                onClick={requestBulkArchive}
+                                                className="border-gpsc-cream-dark text-gpsc-navy hover:bg-gpsc-cream flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm transition-colors"
+                                            >
+                                                <Archive size={14} /> Archive
+                                            </button>
+                                            <button
+                                                onClick={requestBulkDelete}
+                                                className="flex items-center gap-1.5 rounded-lg border border-red-200 px-3 py-1.5 text-sm text-red-600 transition-colors hover:bg-red-50"
+                                            >
+                                                <Trash2 size={14} /> Delete
+                                            </button>
+                                            <button
+                                                onClick={requestBulkForceDelete}
+                                                className="flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-1.5 text-sm text-white transition-colors hover:bg-red-700"
+                                            >
+                                                <Trash2 size={14} /> Force delete
+                                            </button>
+                                        </>
                                     )}
                                     <button
                                         onClick={() => {

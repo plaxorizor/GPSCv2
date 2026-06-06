@@ -1,5 +1,5 @@
 import { getDoc, setDoc, doc, serverTimestamp } from "firebase/firestore";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { registerUser } from "../../firebase/auth";
 import { db } from "../../firebase/config";
 
@@ -52,9 +52,11 @@ const STEPS = ["Package", "Your Info", "Sponsor & Beneficiaries", "Payment", "Re
 // ── Payment details shown on the signup Payment step ──────────────
 // Single source of truth — update account numbers and receipt contacts here.
 const PAYMENT_INFO = {
+    // `qr` is an optional image path (e.g. "/qr/gcash.png" in /public, or an
+    // imported asset URL). Leave empty to show the "QR placeholder" box.
     accounts: [
-        { label: "GCash", accountName: "GPSC Official", number: "09XX-XXX-XXXX" },
-        { label: "Maya", accountName: "GPSC Official", number: "09XX-XXX-XXXX" },
+        { label: "GCash", accountName: "GPSC Official", number: "09XX-XXX-XXXX", qr: "" },
+        { label: "Maya", accountName: "GPSC Official", number: "09XX-XXX-XXXX", qr: "" },
     ],
     // Where members send their proof of payment for manual verification.
     receiptContacts: [
@@ -110,6 +112,31 @@ export default function SignUpLayout() {
         beneficiaries: [{ name: "", relationship: "" }],
     });
 
+    // Required fields that failed validation on the last "Continue" — highlighted
+    // red. Top-level keys match `form`; beneficiary keys are "ben-{index}-name" etc.
+    const [invalidFields, setInvalidFields] = useState<Set<string>>(new Set());
+    const isInvalid = (key: string) => invalidFields.has(key);
+    const fieldCls = (key: string) => `${inputCls}${isInvalid(key) ? " border-red-500 ring-2 ring-red-500" : ""}`;
+
+    // Clear a field's red highlight as soon as it has a value again.
+    useEffect(() => {
+        setInvalidFields((prev) => {
+            if (prev.size === 0) return prev;
+            const next = new Set(prev);
+            for (const key of prev) {
+                if (key.startsWith("ben-")) {
+                    const [, idxStr, sub] = key.split("-");
+                    const b = form.beneficiaries[Number(idxStr)];
+                    if (b && String((b as Record<string, string>)[sub] ?? "").trim()) next.delete(key);
+                } else {
+                    const v = (form as Record<string, unknown>)[key];
+                    if (typeof v === "string" ? v.trim() !== "" : Boolean(v)) next.delete(key);
+                }
+            }
+            return next.size === prev.size ? prev : next;
+        });
+    }, [form]);
+
     // Password strength
     const getPasswordStrength = (pwd: string): { score: number; label: string; color: string } => {
         if (!pwd) return { score: 0, label: "", color: "#E5DDC8" };
@@ -128,41 +155,37 @@ export default function SignUpLayout() {
 
     const validateStep = async (): Promise<boolean> => {
         setError("");
+        setInvalidFields(new Set());
+
         if (step === 2) {
-            if (!form.firstName.trim()) {
-                setError("First name is required.");
+            // First, flag every empty required field so they all light up red at once.
+            const missing = new Set<string>();
+            if (!form.firstName.trim()) missing.add("firstName");
+            if (!form.lastName.trim()) missing.add("lastName");
+            if (!form.email.trim()) missing.add("email");
+            if (!form.password) missing.add("password");
+            if (!form.confirmPassword) missing.add("confirmPassword");
+            if (!form.mobile.trim()) missing.add("mobile");
+            if (!form.birthDate) missing.add("birthDate");
+            if (!form.gender) missing.add("gender");
+            if (!form.civilStatus) missing.add("civilStatus");
+            if (!form.city.trim()) missing.add("city");
+            if (!form.province.trim()) missing.add("province");
+            if (missing.size > 0) {
+                setInvalidFields(missing);
+                setError("Please fill in the required fields highlighted.");
                 return false;
             }
-            if (!form.lastName.trim()) {
-                setError("Last name is required.");
-                return false;
-            }
-            if (!form.email.trim()) {
-                setError("Email is required.");
-                return false;
-            }
+
+            // Then the logical checks (fields are present but inconsistent).
             if (form.email !== form.confirmEmail) {
+                setInvalidFields(new Set(["confirmEmail"]));
                 setError("Emails do not match.");
                 return false;
             }
-            if (!form.password) {
-                setError("Password is required.");
-                return false;
-            }
-            if (!form.confirmPassword) {
-                setError("Please confirm your password.");
-                return false;
-            }
             if (form.password !== form.confirmPassword) {
+                setInvalidFields(new Set(["confirmPassword"]));
                 setError("Passwords do not match.");
-                return false;
-            }
-            if (!form.mobile.trim()) {
-                setError("Mobile number is required.");
-                return false;
-            }
-            if (!form.birthDate) {
-                setError("Birth date is required.");
                 return false;
             }
             // Check age (must be 18+)
@@ -174,28 +197,14 @@ export default function SignUpLayout() {
                 age--;
             }
             if (age < 18) {
+                setInvalidFields(new Set(["birthDate"]));
                 setError("You must be at least 18 years old to register.");
-                return false;
-            }
-            if (!form.gender) {
-                setError("Gender is required.");
-                return false;
-            }
-            if (!form.civilStatus) {
-                setError("Civil status is required.");
-                return false;
-            }
-            if (!form.city.trim()) {
-                setError("City is required.");
-                return false;
-            }
-            if (!form.province.trim()) {
-                setError("Province is required.");
                 return false;
             }
         }
         if (step === 3) {
             if (!form.referralCode.trim()) {
+                setInvalidFields(new Set(["referralCode"]));
                 setError("Referral code is required.");
                 return false;
             }
@@ -203,20 +212,21 @@ export default function SignUpLayout() {
             const snap = await getDoc(doc(db, "referralCodes", form.referralCode));
 
             if (!snap.exists()) {
+                setInvalidFields(new Set(["referralCode"]));
                 setError("Invalid referral code.");
                 return false;
             }
 
             if (selectedPlan.name !== "Basic") {
+                const missing = new Set<string>();
                 for (let i = 0; i < form.beneficiaries.length; i++) {
-                    if (!form.beneficiaries[i].name.trim()) {
-                        setError(`Beneficiary ${i + 1} name is required.`);
-                        return false;
-                    }
-                    if (!form.beneficiaries[i].relationship) {
-                        setError(`Beneficiary ${i + 1} relationship is required.`);
-                        return false;
-                    }
+                    if (!form.beneficiaries[i].name.trim()) missing.add(`ben-${i}-name`);
+                    if (!form.beneficiaries[i].relationship) missing.add(`ben-${i}-relationship`);
+                }
+                if (missing.size > 0) {
+                    setInvalidFields(missing);
+                    setError("Please complete the beneficiary details highlighted.");
+                    return false;
                 }
             }
         }
@@ -518,7 +528,7 @@ export default function SignUpLayout() {
                                                             required
                                                             value={form.firstName}
                                                             placeholder="Juan"
-                                                            className={inputCls}
+                                                            className={fieldCls("firstName")}
                                                             onChange={(e) => setForm((prev) => ({ ...prev, firstName: e.target.value }))}
                                                         />
                                                     </div>
@@ -530,7 +540,7 @@ export default function SignUpLayout() {
                                                             required
                                                             value={form.lastName}
                                                             placeholder="Dela Cruz"
-                                                            className={inputCls}
+                                                            className={fieldCls("lastName")}
                                                             onChange={(e) => setForm((prev) => ({ ...prev, lastName: e.target.value }))}
                                                         />
                                                     </div>
@@ -579,7 +589,7 @@ export default function SignUpLayout() {
                                                             type="email"
                                                             value={form.email}
                                                             placeholder="juandelacruz@example.com"
-                                                            className={inputCls}
+                                                            className={fieldCls("email")}
                                                             onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
                                                         />
                                                     </div>
@@ -592,7 +602,7 @@ export default function SignUpLayout() {
                                                             type="email"
                                                             value={form.confirmEmail}
                                                             placeholder="juandelacruz@example.com"
-                                                            className={inputCls}
+                                                            className={fieldCls("confirmEmail")}
                                                             onChange={(e) => setForm((prev) => ({ ...prev, confirmEmail: e.target.value }))}
                                                         />
                                                         {form.confirmEmail && form.email !== form.confirmEmail && (
@@ -613,7 +623,7 @@ export default function SignUpLayout() {
                                                             required
                                                             value={form.mobile}
                                                             placeholder="09XXXXXXXXX"
-                                                            className={inputCls}
+                                                            className={fieldCls("mobile")}
                                                             onChange={(e) => setForm((prev) => ({ ...prev, mobile: e.target.value }))}
                                                         />
                                                         <p className="mt-1 text-xs" style={{ color: "#6B6862" }}>
@@ -644,7 +654,7 @@ export default function SignUpLayout() {
                                                                 required
                                                                 type={showPassword ? "text" : "password"}
                                                                 value={form.password}
-                                                                className={inputCls}
+                                                                className={fieldCls("password")}
                                                                 style={{ paddingRight: "2.75rem" }}
                                                                 onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
                                                             />
@@ -690,7 +700,7 @@ export default function SignUpLayout() {
                                                                 required
                                                                 type={showConfirmPassword ? "text" : "password"}
                                                                 value={form.confirmPassword}
-                                                                className={inputCls}
+                                                                className={fieldCls("confirmPassword")}
                                                                 style={{ paddingRight: "2.75rem" }}
                                                                 onChange={(e) => setForm((prev) => ({ ...prev, confirmPassword: e.target.value }))}
                                                             />
@@ -722,7 +732,7 @@ export default function SignUpLayout() {
                                                             required
                                                             type="date"
                                                             value={form.birthDate}
-                                                            className={inputCls}
+                                                            className={fieldCls("birthDate")}
                                                             onChange={(e) => setForm((prev) => ({ ...prev, birthDate: e.target.value }))}
                                                         />
                                                         <p className="mt-1 text-xs" style={{ color: "#6B6862" }}>
@@ -751,7 +761,7 @@ export default function SignUpLayout() {
                                                         <select
                                                             required
                                                             value={form.gender}
-                                                            className={inputCls}
+                                                            className={fieldCls("gender")}
                                                             onChange={(e) => setForm((prev) => ({ ...prev, gender: e.target.value }))}
                                                         >
                                                             <option value="">Select Gender</option>
@@ -768,7 +778,7 @@ export default function SignUpLayout() {
                                                         <select
                                                             required
                                                             value={form.civilStatus}
-                                                            className={inputCls}
+                                                            className={fieldCls("civilStatus")}
                                                             onChange={(e) => setForm((prev) => ({ ...prev, civilStatus: e.target.value }))}
                                                         >
                                                             <option value="">Select Status</option>
@@ -816,7 +826,7 @@ export default function SignUpLayout() {
                                                             required
                                                             value={form.city}
                                                             placeholder="Davao City"
-                                                            className={inputCls}
+                                                            className={fieldCls("city")}
                                                             onChange={(e) => setForm((prev) => ({ ...prev, city: e.target.value }))}
                                                         />
                                                     </div>
@@ -828,7 +838,7 @@ export default function SignUpLayout() {
                                                             required
                                                             value={form.province}
                                                             placeholder="Davao del Sur"
-                                                            className={inputCls}
+                                                            className={fieldCls("province")}
                                                             onChange={(e) => setForm((prev) => ({ ...prev, province: e.target.value }))}
                                                         />
                                                     </div>
@@ -876,7 +886,7 @@ export default function SignUpLayout() {
                                                         required
                                                         value={form.referralCode}
                                                         placeholder="e.g. MARIA-ABCD-1234"
-                                                        className={inputCls}
+                                                        className={fieldCls("referralCode")}
                                                         onChange={(e) => {
                                                             setRefCode(e.target.value);
                                                             setForm((prev) => ({ ...prev, referralCode: e.target.value }));
@@ -906,7 +916,7 @@ export default function SignUpLayout() {
                                                                     <input
                                                                         required
                                                                         placeholder="Full name (e.g. Maria Dela Cruz)"
-                                                                        className={inputCls}
+                                                                        className={fieldCls(`ben-${index}-name`)}
                                                                         value={b.name}
                                                                         onChange={(e) => {
                                                                             const val = e.target.value;
@@ -920,7 +930,7 @@ export default function SignUpLayout() {
                                                                     />
                                                                     <select
                                                                         required
-                                                                        className={inputCls}
+                                                                        className={fieldCls(`ben-${index}-relationship`)}
                                                                         value={b.relationship}
                                                                         onChange={(e) => {
                                                                             const val = e.target.value;
@@ -1007,9 +1017,18 @@ export default function SignUpLayout() {
                                                 {PAYMENT_INFO.accounts.map((acct) => (
                                                     <div key={acct.label} className="flex flex-col items-center rounded-2xl p-5" style={{ border: "1px solid #E5DDC8", backgroundColor: "#fff" }}>
                                                         <p className="mb-3 text-sm font-semibold" style={{ color: "#14365C" }}>{acct.label}</p>
-                                                        <div className="flex h-40 w-40 items-center justify-center rounded-xl text-xs" style={{ backgroundColor: "#F3F4F6", color: "#9CA3AF", border: "2px dashed #D1D5DB" }}>
-                                                            QR placeholder
-                                                        </div>
+                                                        {acct.qr ? (
+                                                            <img
+                                                                src={acct.qr}
+                                                                alt={`${acct.label} QR code`}
+                                                                className="h-40 w-40 rounded-xl object-contain"
+                                                                style={{ border: "1px solid #E5DDC8" }}
+                                                            />
+                                                        ) : (
+                                                            <div className="flex h-40 w-40 items-center justify-center rounded-xl text-xs" style={{ backgroundColor: "#F3F4F6", color: "#9CA3AF", border: "2px dashed #D1D5DB" }}>
+                                                                QR placeholder
+                                                            </div>
+                                                        )}
                                                         <p className="mt-3 text-xs" style={{ color: "#6B6862" }}>Account name: <span className="font-medium" style={{ color: "#14365C" }}>{acct.accountName}</span></p>
                                                         <p className="text-xs" style={{ color: "#6B6862" }}>Number: <span className="font-medium" style={{ color: "#14365C" }}>{acct.number}</span></p>
                                                     </div>

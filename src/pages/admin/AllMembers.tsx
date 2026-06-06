@@ -11,11 +11,12 @@ interface Props {
     onUpdateStatus: (uid: string, status: "active" | "inactive") => Promise<void>;
     selectedIds: Set<string>;
     onToggleSelect: (uid: string) => void;
+    canSelectActive?: boolean;
 }
 
 const COL_SPAN = 6;
 
-const AllMembers = ({ members, loading, onSelectMember, selectedIds, onToggleSelect }: Props) => {
+const AllMembers = ({ members, loading, onSelectMember, selectedIds, onToggleSelect, canSelectActive }: Props) => {
     if (loading)
         return (
             <tbody>
@@ -90,7 +91,7 @@ const AllMembers = ({ members, loading, onSelectMember, selectedIds, onToggleSel
                         </span>
                     </td>
                     <td className="p-4 text-right" onClick={(e) => e.stopPropagation()}>
-                        {m.status === "pending" && !m.archived && (
+                        {(canSelectActive || (m.status === "pending" && !m.archived)) && (
                             <input
                                 type="checkbox"
                                 checked={selectedIds.has(m.uid)}
