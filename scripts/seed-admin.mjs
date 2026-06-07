@@ -25,7 +25,7 @@ const getArg = (name, fallback) => {
     return i !== -1 && args[i + 1] ? args[i + 1] : fallback;
 };
 
-const email = getArg("email", "admin@faithshieldcare.com");
+const email = getArg("email", "admin@faithshield.care");
 const password = getArg("password", "Admin12345!");
 const firstName = getArg("first", "Admin");
 const lastName = getArg("last", "Admin");
