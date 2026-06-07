@@ -1,5 +1,5 @@
 // admin/Members.tsx
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
     Plus,
     Search,
@@ -15,11 +15,12 @@ import {
     RotateCcw,
     Trash2,
 } from "lucide-react";
-import { PACKAGE_INFO } from "../../utils/types";
 import AllMembers from "./AllMembers";
 import { useAllMembers } from "../../hooks/useAllMembers";
 import { useAdmin } from "../../hooks/useAdmin";
 import { getEligibilityTimeline } from "../../utils/eligibility";
+import { computeRankFromTree, rankName } from "../../utils/rank";
+import { buildReferralTree } from "../../firebase/referral";
 import AddMemberModal from "../../components/AddMemberModal";
 import ConfirmDialog from "../../components/ConfirmDialog";
 import { sendMemberPasswordReset, archiveMember, restoreMember, hardDeleteMember, forceDeleteMember, getMemberDependencies } from "../../firebase/admin";
@@ -57,6 +58,7 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
     const [packageFilter, setPackageFilter] = useState("all");
     const [statusFilter, setStatusFilter] = useState("all");
     const [selectedMember, setSelectedMember] = useState<MemberRow | null>(null);
+    const [selectedRank, setSelectedRank] = useState<string>("—");
     const [activating, setActivating] = useState(false);
     const [copied, setCopied] = useState(false);
     const [resetting, setResetting] = useState(false);
@@ -79,6 +81,27 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
         action: () => Promise<void>;
     } | null>(null);
     const [confirmBusy, setConfirmBusy] = useState(false);
+
+    // Compute the selected member's recognition rank from their downline.
+    // (Rank is derived, never stored — see utils/rank.ts.)
+    useEffect(() => {
+        if (!selectedMember) {
+            setSelectedRank("—");
+            return;
+        }
+        let cancelled = false;
+        setSelectedRank("…");
+        buildReferralTree(selectedMember.uid)
+            .then((tree) => {
+                if (!cancelled) setSelectedRank(rankName(computeRankFromTree(tree)));
+            })
+            .catch(() => {
+                if (!cancelled) setSelectedRank("—");
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, [selectedMember]);
 
     const runConfirm = async () => {
         if (!confirmState) return;
@@ -753,12 +776,7 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                                     <div className="grid grid-cols-2 gap-4">
                                         {[
                                             { label: "Package", value: selectedMember.package ? `${selectedMember.package} Care` : "—" },
-                                            {
-                                                label: "Rank",
-                                                value: selectedMember.package
-                                                    ? (PACKAGE_INFO[selectedMember.package as keyof typeof PACKAGE_INFO]?.rank ?? "—")
-                                                    : "—",
-                                            },
+                                            { label: "Rank", value: selectedRank },
                                             { label: "Sponsor", value: selectedMember.sponsorName ?? "—" },
                                             { label: "Referral Code", value: selectedMember.referralCode ?? "—" },
                                             { label: "City", value: selectedMember.city ?? "—" },

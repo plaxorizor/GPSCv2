@@ -2,9 +2,12 @@ import { Timestamp } from "firebase/firestore";
 
 // Package is just for display/UI use, NOT stored as object in Firestore
 export const PACKAGE_INFO = {
-    basic: { price: 698, level: 1, rank: "Sales Consultant", rate: 0.2 },
-    family: { price: 1698, level: 3, rank: "Team Consultant", rate: 0.05 },
-    premium: { price: 4998, level: 6, rank: "Sales Manager", rate: 0.03 },
+    // `level` = how many downline levels this package can earn commissions from
+    // (basic 1 / family 3 / premium 6). Rank is NOT package-based — it's the
+    // recognition rank computed from referrals (see utils/rank.ts).
+    basic: { price: 698, level: 1, rate: 0.2 },
+    family: { price: 1698, level: 3, rate: 0.05 },
+    premium: { price: 4998, level: 6, rate: 0.03 },
 } as const;
 
 export type PackageName = "basic" | "family" | "premium";
@@ -125,6 +128,8 @@ export interface ReferralNode {
     status: string;
     level: number;
     commissionRate: number;
+    rank: number; // 0..6 computed rank (see utils/rank.ts)
+    rankName: string; // human-readable rank label
     downline: ReferralNode[];
 }
 

@@ -14,6 +14,7 @@ import ChangePasswordModal from "../../components/ChangePasswordModal";
 import RequestPayoutModal from "../../components/RequestPayoutModal";
 import FileClaimModal from "../../components/FileClaimModal";
 import { PACKAGE_INFO } from "../../utils/types";
+import { rankFromChildren, rankName } from "../../utils/rank";
 import type { Member, Commission, ReferralNode } from "../../utils/types";
 
 // Rank mapping based on rank number
@@ -96,16 +97,45 @@ export default function MemberArea() {
     //    "Basic" / "basic" / "BASIC" all resolve correctly
     const pkgKey = (user.package?.toLowerCase() ?? "") as keyof typeof PACKAGE_INFO;
     const pkgInfo = PACKAGE_INFO[pkgKey];
-    const rankName = pkgInfo?.rank ?? "—";
     const packageName = pkgInfo ? pkgKey.charAt(0).toUpperCase() + pkgKey.slice(1) : (user.package ?? "—");
 
-    // 3. Map commissions — use the enriched fields from useCommissions
+    // 3. Map tree — compute each node's rank bottom-up (children first, then the
+    //    parent's rank from its active direct children). Recognition only.
+    const commissionRates = [20, 5, 3, 2, 1, 1];
+    const mapTreeToReferralNodes = (nodes: typeof tree, depth: number = 0): ReferralNode[] =>
+        nodes.map((node) => {
+            const downline = mapTreeToReferralNodes(node.children ?? [], depth + 1);
+            const rank = rankFromChildren(downline);
+            return {
+                id: node.uid,
+                firstName: node.firstName,
+                lastName: node.lastName,
+                initials: `${node.firstName[0] ?? ""}${node.lastName[0] ?? ""}`.toUpperCase() || "?",
+                packageName: node.package ?? "",
+                city: node.city,
+                memberSince: "",
+                status: node.status ?? "active",
+                level: depth,
+                commissionRate: commissionRates[depth] ?? 0,
+                rank,
+                rankName: rankName(rank),
+                downline,
+            };
+        });
+
+    const directReferrals: ReferralNode[] = mapTreeToReferralNodes(tree);
+
+    // The member's own rank comes from their active direct referrals.
+    const memberRank = rankFromChildren(directReferrals);
+    const memberRankName = rankName(memberRank);
+
+    // 4. Map commissions — use the enriched fields from useCommissions
     const commissions: Commission[] = rawCommissions.map((c) => ({
         id: c.id,
         membershipId: "",
         recipientId: member.uid,
         level: c.level,
-        role: rankName,
+        role: memberRankName,
         amount: c.amount,
         status: c.status === "released" ? "paid" : "pending",
         date: c.dateCreated?.toDate?.()?.toISOString?.() ?? "",
@@ -113,25 +143,6 @@ export default function MemberArea() {
         fromMemberName: c.fromMemberName ?? "—",
         fromMemberCity: c.fromMemberCity ?? "—",
     }));
-
-    // 4. Map tree — use firstName/lastName directly (no more fullName split)
-    const commissionRates = [20, 5, 3, 2, 1, 1];
-    const mapTreeToReferralNodes = (nodes: typeof tree, depth: number = 0): ReferralNode[] =>
-        nodes.map((node) => ({
-            id: node.uid,
-            firstName: node.firstName,
-            lastName: node.lastName,
-            initials: `${node.firstName[0] ?? ""}${node.lastName[0] ?? ""}`.toUpperCase() || "?",
-            packageName: node.package ?? "",
-            city: node.city,
-            memberSince: "",
-            status: node.status ?? "active",
-            level: depth,
-            commissionRate: commissionRates[depth] ?? 0,
-            downline: mapTreeToReferralNodes(node.children ?? [], depth + 1),
-        }));
-
-    const directReferrals: ReferralNode[] = mapTreeToReferralNodes(tree);
 
     // 5. Referral link
     // const referralLink = `${window.location.origin}/signup?ref=${member.referralCode}`;
@@ -169,7 +180,7 @@ export default function MemberArea() {
             <MemberDashboard
                 member={user}
                 memberStats={memberStats}
-                rankName={rankName}
+                rankName={memberRankName}
                 packageName={packageName}
                 commissions={commissions}
                 directReferrals={directReferrals}

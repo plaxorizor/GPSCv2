@@ -1,6 +1,5 @@
 import React, { useRef, useState } from "react";
 import { Edit, Lock, Shield, LogOut, Mail, Phone, MapPin, Package, Calendar, Hash, Activity, Camera } from "lucide-react";
-import { PACKAGE_INFO } from "../../utils/types";
 import type { Member } from "../../utils/types";
 
 interface Props {
@@ -15,12 +14,12 @@ interface Props {
 
 export const MemberProfile: React.FC<Props> = ({
     user,
+    rankName,
     onEditProfile,
     onChangePassword,
     onEnable2FA,
     onLogout,
 }) => {
-    const pkgInfo = user.package ? PACKAGE_INFO[user.package] : null;
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
@@ -106,7 +105,7 @@ export const MemberProfile: React.FC<Props> = ({
                     />
                     <InfoRow icon={<Calendar size={15} />} label="Member since" value={joined} />
                     <InfoRow icon={<Package size={15} />} label="Package" value={user.package ?? "—"} />
-                    <InfoRow icon={<Hash size={15} />} label="Rank" value={pkgInfo?.rank ?? "—"} />
+                    <InfoRow icon={<Hash size={15} />} label="Rank" value={rankName ?? "—"} />
                 </div>
 
                 <div className="border-fsc-cream-dark mt-5 border-t pt-5">

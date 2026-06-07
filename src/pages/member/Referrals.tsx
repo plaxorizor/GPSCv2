@@ -3,6 +3,7 @@ import Tree from "react-d3-tree";
 import type { CustomNodeElementProps, RawNodeDatum } from "react-d3-tree";
 import { PACKAGE_INFO } from "../../utils/types";
 import type { Member, ReferralNode } from "../../utils/types";
+import { rankFromChildren, rankName } from "../../utils/rank";
 import ReferralCard from "./ReferralCard";
 
 interface Props {
@@ -31,7 +32,7 @@ const toDatum = (node: ReferralNode): RawNodeDatum => ({
     name: `${node.firstName} ${node.lastName}`.trim(),
     attributes: {
         initials: node.initials,
-        subtitle: `${node.packageName} Care · ${node.city}`,
+        subtitle: `${node.packageName ? node.packageName.charAt(0).toUpperCase() + node.packageName.slice(1) + " Care · " : ""}${node.rankName}`,
         status: node.status,
         meta: `Level ${node.level + 1} · ${node.commissionRate}%`,
     },
@@ -110,12 +111,14 @@ export const MemberReferrals: React.FC<Props> = ({ user, referralTree }) => {
         return () => window.removeEventListener("resize", recenter);
     }, [recenter]);
 
-    // Root subtitle: "Package Care · Rank" derived from the viewer's own package.
-    const pkgKey = user.package as keyof typeof PACKAGE_INFO;
+    // Root subtitle: "Package Care · Rank". Package from the viewer's own plan;
+    // rank computed from their active direct referrals.
+    const pkgKey = (user.package?.toLowerCase() ?? "") as keyof typeof PACKAGE_INFO;
     const pkgInfo = PACKAGE_INFO[pkgKey];
+    const memberRankName = rankName(rankFromChildren(referralTree));
     const rootSubtitle = pkgInfo
-        ? `${pkgKey.charAt(0).toUpperCase() + pkgKey.slice(1)} Care · ${pkgInfo.rank}`
-        : "You · Root";
+        ? `${pkgKey.charAt(0).toUpperCase() + pkgKey.slice(1)} Care · ${memberRankName}`
+        : memberRankName;
 
     const data: RawNodeDatum = {
         name: `${user.firstName} ${user.lastName}`.trim(),

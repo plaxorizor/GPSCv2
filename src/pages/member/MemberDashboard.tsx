@@ -151,7 +151,7 @@ export default function MemberDashboard({
                 {currentSection === "plan" && <MemberPlan packageName={packageName} />}
                 {currentSection === "claims" && <MemberClaims claims={claims} onFileClaim={onFileClaim} />}
                 {currentSection === "beneficiaries" && <MemberBeneficiaries member={member} />}
-                {currentSection === "profile" && <MemberProfile onLogout={onLogout} user={member} onChangePassword={onChangePassword} />}
+                {currentSection === "profile" && <MemberProfile onLogout={onLogout} user={member} rankName={rankName} onChangePassword={onChangePassword} />}
             </main>
         </div>
     );

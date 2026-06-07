@@ -6,12 +6,13 @@ import { peso } from "../utils/types";
 // ── Payment details (mirrors SignUp.tsx PAYMENT_INFO) ─────────────────────────
 const PAYMENT_INFO = {
     accounts: [
-        { label: "GCash", accountName: "Faith Shield Care Official", number: "09XX-XXX-XXXX", qr: "" },
-        { label: "Maya", accountName: "Faith Shield Care Official", number: "09XX-XXX-XXXX", qr: "" },
+        { label: "GCash",   accountName: "Faith Shield Care Official", number: "09XX-XXX-XXXX", qr: "" },
+        { label: "Maya",    accountName: "Faith Shield Care Official", number: "09XX-XXX-XXXX", qr: "" },
+        { label: "GoTyme",  accountName: "Faith Shield Care Official", number: "09XX-XXX-XXXX", qr: "" },
     ],
     receiptContacts: [
         { label: "Messenger", value: "Faith Shield Care Official" },
-        { label: "Email", value: "payments@faithshieldcare.com" },
+        { label: "Email",     value: "payments@faithshieldcare.com" },
     ],
     verificationDays: "1–2 business days",
 };
@@ -89,8 +90,14 @@ type Plan = (typeof PLANS)[number];
 function PlanCard({ plan, isCurrent, isUpgrade, onChoose }: { plan: Plan; isCurrent: boolean; isUpgrade: boolean; onChoose: () => void }) {
     const [hovered, setHovered] = useState(false);
 
-    const transform = plan.popular ? (hovered ? "scale(1.05) translateY(-6px)" : "scale(1.03)") : hovered ? "translateY(-4px)" : "translateY(0)";
-    const boxShadow = hovered ? "0 20px 48px rgba(0,0,0,0.12)" : plan.popular ? "0 8px 32px rgba(0,0,0,0.10)" : "0 2px 12px rgba(0,0,0,0.06)";
+    const transform = plan.popular
+        ? hovered ? "scale(1.05) translateY(-6px)" : "scale(1.03)"
+        : hovered ? "translateY(-4px)" : "translateY(0)";
+    const boxShadow = hovered
+        ? "0 20px 48px rgba(0,0,0,0.12)"
+        : plan.popular
+        ? "0 8px 32px rgba(0,0,0,0.10)"
+        : "0 2px 12px rgba(0,0,0,0.06)";
 
     return (
         <div className="relative">
@@ -103,7 +110,7 @@ function PlanCard({ plan, isCurrent, isUpgrade, onChoose }: { plan: Plan; isCurr
                 </div>
             )}
             <div
-                className={`tier-${plan.tier} flex flex-col rounded-2xl p-7`}
+                className={`tier-${plan.tier} rounded-2xl p-7 flex flex-col`}
                 style={{ transform, boxShadow, transition: "transform 0.25s ease, box-shadow 0.25s ease" }}
                 onMouseEnter={() => setHovered(true)}
                 onMouseLeave={() => setHovered(false)}
@@ -130,9 +137,7 @@ function PlanCard({ plan, isCurrent, isUpgrade, onChoose }: { plan: Plan; isCurr
                 <div className="tier-divider mb-3 h-px" />
                 <div className="tier-more mb-2 text-xs font-medium tracking-[0.15em] uppercase">Required documents</div>
                 {plan.docs.map((d, di) => (
-                    <div key={di} className="tier-benefit-amt text-xs">
-                        • {d}
-                    </div>
+                    <div key={di} className="tier-benefit-amt text-xs">• {d}</div>
                 ))}
 
                 <div className="mt-5">
@@ -144,7 +149,10 @@ function PlanCard({ plan, isCurrent, isUpgrade, onChoose }: { plan: Plan; isCurr
                             Your current plan
                         </div>
                     ) : isUpgrade ? (
-                        <button onClick={onChoose} className="tier-btn w-full rounded-xl py-2.5 text-sm font-medium transition-colors">
+                        <button
+                            onClick={onChoose}
+                            className="tier-btn w-full rounded-xl py-2.5 text-sm font-medium transition-colors"
+                        >
                             Choose {plan.name} →
                         </button>
                     ) : null}
@@ -169,6 +177,7 @@ export default function PackageComparison({ currentPackage, initialTarget = null
 
     const validInitial = initialTarget && PLANS.findIndex((p) => p.id === initialTarget) > currentIndex ? initialTarget : null;
     const [target, setTarget] = useState<string | null>(validInitial);
+    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(PAYMENT_INFO.accounts[0].label);
 
     const targetPlan = PLANS.find((p) => p.id === target) ?? null;
     const priceDiff = targetPlan && currentPlan ? Math.max(targetPlan.price - currentPlan.price, 0) : 0;
@@ -176,7 +185,7 @@ export default function PackageComparison({ currentPackage, initialTarget = null
     // ── Compare grid ──────────────────────────────────────────────────────────
     const grid = (
         <div className="space-y-6">
-            <div className="grid items-start gap-6 md:grid-cols-3">
+            <div className="grid gap-6 md:grid-cols-3 items-start">
                 {PLANS.map((plan, i) => (
                     <PlanCard
                         key={plan.id}
@@ -187,11 +196,8 @@ export default function PackageComparison({ currentPackage, initialTarget = null
                     />
                 ))}
             </div>
-            <p className="border-fsc-cream-dark text-fsc-stone border-t pt-4 text-xs leading-relaxed">
-                <span className="text-fsc-navy font-medium">Disclaimer:</span> The benefits presented, including coverage for natural calamity,
-                accidental incidents, natural death, maternity-related assistance, and hospitalization, are governed by official policy contracts,
-                benefit limitations, and company guidelines. Availability of benefits and claims approval are subject to plan provisions and
-                evaluation.
+            <p className="border-t border-fsc-cream-dark pt-4 text-xs leading-relaxed text-fsc-stone">
+                <span className="font-medium text-fsc-navy">Disclaimer:</span> The benefits presented, including coverage for natural calamity, accidental incidents, natural death, maternity-related assistance, and hospitalization, are governed by official policy contracts, benefit limitations, and company guidelines. Availability of benefits and claims approval are subject to plan provisions and evaluation.
             </p>
         </div>
     );
@@ -207,14 +213,9 @@ export default function PackageComparison({ currentPackage, initialTarget = null
             </button>
 
             {/* Upgrade summary */}
-            <div
-                className="flex items-center justify-between rounded-2xl px-5 py-4"
-                style={{ backgroundColor: "#F2F3F5", border: "1px solid #D0D2D8" }}
-            >
+            <div className="flex items-center justify-between rounded-2xl px-5 py-4" style={{ backgroundColor: "#F2F3F5", border: "1px solid #D0D2D8" }}>
                 <div>
-                    <p className="text-xs tracking-wider uppercase" style={{ color: "#6B6862" }}>
-                        Your upgrade
-                    </p>
+                    <p className="text-xs uppercase tracking-wider" style={{ color: "#6B6862" }}>Your upgrade</p>
                     <p className="font-display flex items-center gap-2 text-xl" style={{ color: "#1B2D6B" }}>
                         {currentPlan?.name ?? "Current"}
                         <ArrowRight size={16} style={{ color: "#C9922A" }} />
@@ -222,76 +223,65 @@ export default function PackageComparison({ currentPackage, initialTarget = null
                     </p>
                 </div>
                 <div className="text-right">
-                    <p className="text-xs tracking-wider uppercase" style={{ color: "#6B6862" }}>
-                        Amount due
-                    </p>
-                    <p className="font-display text-2xl font-semibold" style={{ color: "#1B2D6B" }}>
-                        {peso(priceDiff)}
-                    </p>
+                    <p className="text-xs uppercase tracking-wider" style={{ color: "#6B6862" }}>Amount due</p>
+                    <p className="font-display text-2xl font-semibold" style={{ color: "#1B2D6B" }}>{peso(priceDiff)}</p>
                 </div>
             </div>
 
-            {/* Payment accounts */}
-            <div className="grid gap-4 sm:grid-cols-2">
-                {PAYMENT_INFO.accounts.map((acct) => (
-                    <div
-                        key={acct.label}
-                        className="flex flex-col items-center rounded-2xl p-5"
-                        style={{ border: "1px solid #D0D2D8", backgroundColor: "#fff" }}
-                    >
-                        <p className="mb-3 text-sm font-semibold" style={{ color: "#1B2D6B" }}>
+            {/* Payment method selector */}
+            <div className="flex gap-2">
+                {PAYMENT_INFO.accounts.map((acct) => {
+                    const active = selectedPaymentMethod === acct.label;
+                    return (
+                        <button
+                            key={acct.label}
+                            type="button"
+                            onClick={() => setSelectedPaymentMethod(acct.label)}
+                            className="flex-1 rounded-xl py-2.5 text-sm font-medium transition-colors"
+                            style={{
+                                backgroundColor: active ? "#1B2D6B" : "#F2F3F5",
+                                color: active ? "#fff" : "#6B6862",
+                                border: `1px solid ${active ? "#1B2D6B" : "#D0D2D8"}`,
+                            }}
+                        >
                             {acct.label}
-                        </p>
-                        {acct.qr ? (
-                            <img
-                                src={acct.qr}
-                                alt={`${acct.label} QR code`}
-                                className="h-36 w-36 rounded-xl object-contain"
-                                style={{ border: "1px solid #D0D2D8" }}
-                            />
-                        ) : (
-                            <div
-                                className="flex h-36 w-36 items-center justify-center rounded-xl text-xs"
-                                style={{ backgroundColor: "#F3F4F6", color: "#9CA3AF", border: "2px dashed #D1D5DB" }}
-                            >
-                                QR placeholder
-                            </div>
-                        )}
-                        <p className="mt-3 text-xs" style={{ color: "#6B6862" }}>
-                            Account name:{" "}
-                            <span className="font-medium" style={{ color: "#1B2D6B" }}>
-                                {acct.accountName}
-                            </span>
-                        </p>
-                        <p className="text-xs" style={{ color: "#6B6862" }}>
-                            Number:{" "}
-                            <span className="font-medium" style={{ color: "#1B2D6B" }}>
-                                {acct.number}
-                            </span>
-                        </p>
-                    </div>
-                ))}
+                        </button>
+                    );
+                })}
             </div>
+
+            {/* Selected payment method card */}
+            {PAYMENT_INFO.accounts.filter((a) => a.label === selectedPaymentMethod).map((acct) => (
+                <div key={acct.label} className="flex flex-col items-center rounded-2xl p-6" style={{ border: "1px solid #D0D2D8", backgroundColor: "#fff" }}>
+                    {acct.qr ? (
+                        <img src={acct.qr} alt={`${acct.label} QR code`} className="h-64 w-64 rounded-xl object-contain" style={{ border: "1px solid #D0D2D8" }} />
+                    ) : (
+                        <div className="flex h-64 w-64 items-center justify-center rounded-xl text-xs" style={{ backgroundColor: "#F3F4F6", color: "#9CA3AF", border: "2px dashed #D1D5DB" }}>
+                            QR placeholder
+                        </div>
+                    )}
+                    <p className="mt-3 text-xs" style={{ color: "#6B6862" }}>
+                        Account name: <span className="font-medium" style={{ color: "#1B2D6B" }}>{acct.accountName}</span>
+                    </p>
+                    <p className="text-xs" style={{ color: "#6B6862" }}>
+                        Number: <span className="font-medium" style={{ color: "#1B2D6B" }}>{acct.number}</span>
+                    </p>
+                </div>
+            ))}
 
             {/* After paying instructions */}
             <div className="rounded-2xl p-5" style={{ backgroundColor: "#F2F3F5", border: "1px solid #D0D2D8" }}>
-                <p className="text-sm font-semibold" style={{ color: "#1B2D6B" }}>
-                    After paying, send your proof of payment
-                </p>
+                <p className="text-sm font-semibold" style={{ color: "#1B2D6B" }}>After paying, send your proof of payment</p>
                 <p className="mt-1 text-xs" style={{ color: "#6B6862" }}>
-                    Take a screenshot or photo of your transaction receipt and send it to us, including your full name, so we can match your payment
-                    and upgrade your account:
+                    Take a screenshot or photo of your transaction receipt and send it to us, including your full name, so we can match your payment and upgrade your account:
                 </p>
                 <ul className="mt-3 space-y-1 text-sm" style={{ color: "#1B2D6B" }}>
                     {PAYMENT_INFO.receiptContacts.map((c) => (
-                        <li key={c.label}>
-                            {c.label}: <span className="font-medium">{c.value}</span>
-                        </li>
+                        <li key={c.label}>{c.label}: <span className="font-medium">{c.value}</span></li>
                     ))}
                 </ul>
                 <p className="mt-3 text-xs" style={{ color: "#6B6862" }}>
-                    Your plan stays on <span className="font-medium">{currentPlan?.name ?? "your current tier"}</span> until our team confirms your
-                    payment, usually within {PAYMENT_INFO.verificationDays}.
+                    Your plan stays on <span className="font-medium">{currentPlan?.name ?? "your current tier"}</span> until our team confirms your payment, usually within {PAYMENT_INFO.verificationDays}.
                 </p>
             </div>
 
@@ -317,7 +307,9 @@ export default function PackageComparison({ currentPackage, initialTarget = null
                 >
                     <div className="border-fsc-cream-dark flex items-start justify-between border-b px-6 py-4">
                         <div>
-                            <h2 className="font-display text-fsc-navy text-xl">{target ? `Upgrade to ${targetPlan?.name}` : "Compare packages"}</h2>
+                            <h2 className="font-display text-fsc-navy text-xl">
+                                {target ? `Upgrade to ${targetPlan?.name}` : "Compare packages"}
+                            </h2>
                             <p className="text-fsc-stone mt-0.5 text-sm">
                                 {target ? "Send payment to upgrade your plan" : "Choose a higher tier to see payment details"}
                             </p>

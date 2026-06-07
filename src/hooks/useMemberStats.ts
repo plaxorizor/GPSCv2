@@ -46,7 +46,11 @@ const useMemberStats = () => {
                 });
             }
 
-            const totalEarned = commissions.reduce((sum: number, c: any) => sum + c.amount, 0);
+            // "Earned" = commissions an admin has RELEASED (approved). Pending
+            // commissions are not yet earned — they show under "Pending hold".
+            const totalEarned = commissions
+                .filter((c: any) => c.status === "released")
+                .reduce((sum: number, c: any) => sum + c.amount, 0);
             const totalSentPayouts = payoutsSnap.docs.reduce((sum, d) => sum + (d.data().amount ?? 0), 0);
             const availableToWithdraw =
                 commissions.filter((c: any) => c.status === "released").reduce((sum: number, c: any) => sum + c.amount, 0) - totalSentPayouts;

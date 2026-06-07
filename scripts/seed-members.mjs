@@ -26,6 +26,11 @@
 //   --depth 3            how many levels deep        (default 3)
 //   --active-ratio 0.7   fraction of members active  (default 0.7)
 //   --password Test12345! login password for all seeded members (default Test12345!)
+//   --rank-demo 2        build the minimal ALL-ACTIVE tree that lifts the root to
+//                        a rank tier (1=Consultant, 2=District, 3=Municipal…).
+//                        Overrides breadth/depth. Count = Σ10^k, so tier 2 = 110
+//                        members, tier 3 = 1110 — keep it small. Great for seeing
+//                        the higher rank badges in the tree.
 
 import { initializeApp, deleteApp } from "firebase/app";
 import {
@@ -50,6 +55,13 @@ const memberPassword = getArg("password", "Test12345!");
 const breadth = Number(getArg("breadth", "2"));
 const depth = Number(getArg("depth", "3"));
 const activeRatio = Number(getArg("active-ratio", "0.7"));
+// --rank-demo <tier> builds the MINIMAL all-active tree that lifts the root to
+// the given rank tier (1=Consultant, 2=District, 3=Municipal/City…). Overrides
+// breadth/depth. Each tier multiplies the member count by 10, so keep it small.
+const rankDemo = getArg("rank-demo", null) !== null ? Number(getArg("rank-demo", "2")) : null;
+
+// Referrals needed to climb one rank tier — must match utils/rank.ts.
+const RANK_THRESHOLD = 10;
 
 if (!adminEmail || !adminPassword) {
     console.error(
@@ -123,12 +135,14 @@ let created = 0;
 let activeCount = 0;
 
 // Create one fake member whose sponsor is `parentUid`; returns the new uid.
-async function createMember(parentUid) {
+// `forceActive` guarantees an active member (used by --rank-demo so every node
+// counts toward rank).
+async function createMember(parentUid, forceActive = false) {
     const firstName = rand(FIRST);
     const lastName = rand(LAST);
     const place = rand(PLACES);
     const email = `seed-${randId()}@fsc.test`;
-    const isActive = Math.random() < activeRatio;
+    const isActive = forceActive || Math.random() < activeRatio;
     const status = isActive ? "active" : "pending";
 
     // 1) Create the auth user on the SECONDARY app (signs us in as them there).
@@ -193,19 +207,41 @@ async function buildDownline(parentUid, levels) {
     }
 }
 
+// Build the MINIMAL all-active tree that makes `parentUid` reach rank `tier`.
+// A node reaches tier T by having RANK_THRESHOLD active directs at tier T-1.
+// tier 0 means "just an active member" (a leaf that still counts as a direct).
+async function buildRankDemo(parentUid, tier, indent = 0) {
+    if (tier <= 0) return; // parent is already satisfied by its active children
+    for (let i = 0; i < RANK_THRESHOLD; i++) {
+        const child = await createMember(parentUid, true); // force active
+        console.log(`  ${"  ".repeat(indent)}↳ ${child.uid} · needs tier ${tier - 1}`);
+        await buildRankDemo(child.uid, tier - 1, indent + 1);
+    }
+}
+
 async function main() {
     console.log(`\n→ Signing in as admin ${adminEmail}…`);
     const adminCred = await signInWithEmailAndPassword(adminAuth, adminEmail, adminPassword);
     const rootUid = rootUidArg || adminCred.user.uid;
     console.log(`→ Tree root uid: ${rootUid}${rootUidArg ? "" : " (admin's own account)"}`);
 
-    const maxTotal = breadth === 1 ? depth : (Math.pow(breadth, depth + 1) - breadth) / (breadth - 1);
-    console.log(
-        `→ Seeding up to ~${maxTotal} members (breadth ${breadth} × depth ${depth}, ~${Math.round(activeRatio * 100)}% active).` +
-            `\n  Pending members are childless leaves, so the real total will be a bit lower.\n`,
-    );
-
-    await buildDownline(rootUid, depth);
+    if (rankDemo !== null) {
+        // Σ 10^k for k=1..tier  →  total all-active members created.
+        const demoTotal = Array.from({ length: rankDemo }, (_, k) => Math.pow(RANK_THRESHOLD, k + 1)).reduce((a, b) => a + b, 0);
+        console.log(
+            `→ Rank-demo: building the minimal all-active tree to make the root a tier-${rankDemo} rank ` +
+                `(${["", "Consultant", "District", "Municipal/City", "Provincial", "Regional", "National"][rankDemo] ?? "?"}).`,
+        );
+        console.log(`  This creates ${demoTotal} active members. Each higher tier ×10 — be patient.\n`);
+        await buildRankDemo(rootUid, rankDemo);
+    } else {
+        const maxTotal = breadth === 1 ? depth : (Math.pow(breadth, depth + 1) - breadth) / (breadth - 1);
+        console.log(
+            `→ Seeding up to ~${maxTotal} members (breadth ${breadth} × depth ${depth}, ~${Math.round(activeRatio * 100)}% active).` +
+                `\n  Pending members are childless leaves, so the real total will be a bit lower.\n`,
+        );
+        await buildDownline(rootUid, depth);
+    }
 
     console.log(`\n✅ Done. Created ${created} test members (${activeCount} active, ${created - activeCount} pending).`);
     console.log(`   Log in as the root account and open "My Referrals" to see the tree.`);

@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { X, UserPlus, CheckCircle, Copy, Check, AlertTriangle } from "lucide-react";
 import { adminCreateMember, type EncodeMemberResult } from "../firebase/adminCreateMember";
 import { useAdmin } from "../hooks/useAdmin";
+import { provinces, citiesByProvince, barangaysByCity, type Barangay } from "../data/ph/phAddress";
 
 interface Props {
     onClose: () => void;
@@ -14,6 +15,11 @@ const PACKAGES = [
     { value: "premium", label: "Premium Care" },
 ];
 
+const MONTHS = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
+];
+
 export default function AddMemberModal({ onClose, onSuccess }: Props) {
     const { isSuperAdmin } = useAdmin();
     const [form, setForm] = useState({
@@ -23,16 +29,18 @@ export default function AddMemberModal({ onClose, onSuccess }: Props) {
         lastName: "",
         suffix: "",
         email: "",
-        mobile: "",
-        birthDate: "",
+        mobile: "", // local 10-digit part (the "+63" prefix is fixed in the UI)
         gender: "",
         civilStatus: "",
         streetAddress: "",
         barangay: "",
         city: "",
+        cityCode: "",
         province: "",
+        provinceCode: "",
         referralCode: "",
     });
+    const [birth, setBirth] = useState({ y: "", m: "", d: "" });
     const [isRoot, setIsRoot] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
@@ -58,6 +66,50 @@ export default function AddMemberModal({ onClose, onSuccess }: Props) {
         clearFieldError(key);
     };
 
+    // ── PH mobile: digits only, formatted "9XX XXX XXXX", capped at 10 ──
+    const handleMobileChange = (raw: string) => {
+        const digits = raw.replace(/\D/g, "").slice(0, 10);
+        setForm((f) => ({ ...f, mobile: digits }));
+        clearFieldError("mobile");
+    };
+    const formatPHMobile = (d: string) => [d.slice(0, 3), d.slice(3, 6), d.slice(6, 10)].filter(Boolean).join(" ");
+    const isValidPHMobile = (m: string) => /^9\d{9}$/.test(m.replace(/\D/g, ""));
+
+    // ── Birth date: Month / Day / Year dropdowns combined into YYYY-MM-DD ──
+    const handleBirthChange = (part: "y" | "m" | "d", value: string) => {
+        setBirth((p) => ({ ...p, [part]: value }));
+        clearFieldError("birthDate");
+    };
+    const currentYear = new Date().getFullYear();
+    const birthYears = Array.from({ length: 100 }, (_, i) => currentYear - 18 - i); // 18..117 yrs old
+    const daysInMonth = birth.y && birth.m ? new Date(Number(birth.y), Number(birth.m), 0).getDate() : 31;
+    const birthDays = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+    const birthDate = birth.y && birth.m && birth.d ? `${birth.y}-${birth.m}-${birth.d}` : "";
+
+    // ── Cascading address: Province → City → Barangay ──
+    const handleProvinceChange = (provinceCode: string) => {
+        const p = provinces.find((x) => x.province_code === provinceCode);
+        setForm((f) => ({ ...f, provinceCode, province: p?.province_name ?? "", cityCode: "", city: "", barangay: "" }));
+    };
+    const handleCityChange = (cityCode: string) => {
+        const c = citiesByProvince(form.provinceCode).find((x) => x.city_code === cityCode);
+        setForm((f) => ({ ...f, cityCode, city: c?.city_name ?? "", barangay: "" }));
+    };
+    // Barangays lazy-loaded + tagged with their city (derived options, no sync setState).
+    const [barangayData, setBarangayData] = useState<{ cityCode: string; list: Barangay[] }>({ cityCode: "", list: [] });
+    useEffect(() => {
+        if (!form.cityCode) return;
+        let cancelled = false;
+        barangaysByCity(form.cityCode).then((list) => {
+            if (!cancelled) setBarangayData({ cityCode: form.cityCode, list });
+        });
+        return () => {
+            cancelled = true;
+        };
+    }, [form.cityCode]);
+    const barangayOptions = barangayData.cityCode === form.cityCode ? barangayData.list : [];
+    const loadingBarangays = !!form.cityCode && barangayData.cityCode !== form.cityCode;
+
     const copy = (text: string, which: "login" | "password") => {
         navigator.clipboard.writeText(text);
         setCopied(which);
@@ -76,12 +128,35 @@ export default function AddMemberModal({ onClose, onSuccess }: Props) {
             setError("Please fill in the required fields highlighted.");
             return;
         }
+        if (!isValidPHMobile(form.mobile)) {
+            setInvalidFields(new Set(["mobile"]));
+            setError("Enter a valid PH mobile number (9XX XXX XXXX).");
+            return;
+        }
 
         setInvalidFields(new Set());
         setError("");
         setLoading(true);
         try {
-            const res = await adminCreateMember({ ...form, isRoot });
+            const res = await adminCreateMember({
+                package: form.package,
+                firstName: form.firstName,
+                middleName: form.middleName,
+                lastName: form.lastName,
+                suffix: form.suffix,
+                email: form.email,
+                mobile: `+63${form.mobile}`,
+                birthDate,
+                gender: form.gender,
+                civilStatus: form.civilStatus,
+                streetAddress: form.streetAddress,
+                barangay: form.barangay,
+                city: form.city,
+                province: form.province,
+                country: "Philippines",
+                referralCode: form.referralCode,
+                isRoot,
+            });
             setResult(res);
             onSuccess(); // refresh list in the background
         } catch (err: unknown) {
@@ -165,7 +240,7 @@ export default function AddMemberModal({ onClose, onSuccess }: Props) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
             <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white shadow-xl">
                 {/* Header */}
-                <div className="border-fsc-cream-dark sticky top-0 flex items-center justify-between border-b bg-white p-6">
+                <div className="border-fsc-cream-dark sticky top-0 z-10 flex items-center justify-between border-b bg-white p-6">
                     <div className="flex items-center gap-3">
                         <div className="bg-fsc-navy/10 flex h-9 w-9 items-center justify-center rounded-xl">
                             <UserPlus className="text-fsc-navy" size={18} />
@@ -212,7 +287,23 @@ export default function AddMemberModal({ onClose, onSuccess }: Props) {
                     {/* Contact */}
                     <div className="grid grid-cols-2 gap-3">
                         <Field label="Mobile" required>
-                            <input value={form.mobile} onChange={set("mobile")} className={inputCls("mobile")} placeholder="09XXXXXXXXX" />
+                            <div
+                                className={`flex items-stretch overflow-hidden rounded-xl border bg-white focus-within:border-fsc-green ${
+                                    invalidFields.has("mobile") ? "border-[#ef4444] bg-[#fef2f2]" : "border-fsc-cream-dark"
+                                }`}
+                            >
+                                <span className="bg-fsc-cream/50 text-fsc-navy flex select-none items-center gap-1 border-r border-[#e5ddc8] px-2.5 text-sm">
+                                    +63
+                                </span>
+                                <input
+                                    type="tel"
+                                    inputMode="numeric"
+                                    value={formatPHMobile(form.mobile)}
+                                    onChange={(e) => handleMobileChange(e.target.value)}
+                                    placeholder="9XX XXX XXXX"
+                                    className="w-full bg-transparent px-3 py-2.5 text-sm outline-none"
+                                />
+                            </div>
                         </Field>
                         <Field label="Email (if any)">
                             <input type="email" value={form.email} onChange={set("email")} className="input" placeholder="optional" />
@@ -220,10 +311,36 @@ export default function AddMemberModal({ onClose, onSuccess }: Props) {
                     </div>
 
                     {/* Personal */}
+                    <Field label="Birth date">
+                        <div className="grid grid-cols-12 gap-2">
+                            <select value={birth.m} onChange={(e) => handleBirthChange("m", e.target.value)} className="input col-span-5">
+                                <option value="">Month</option>
+                                {MONTHS.map((name, i) => (
+                                    <option key={name} value={String(i + 1).padStart(2, "0")}>
+                                        {name}
+                                    </option>
+                                ))}
+                            </select>
+                            <select value={birth.d} onChange={(e) => handleBirthChange("d", e.target.value)} className="input col-span-3">
+                                <option value="">Day</option>
+                                {birthDays.map((d) => (
+                                    <option key={d} value={String(d).padStart(2, "0")}>
+                                        {d}
+                                    </option>
+                                ))}
+                            </select>
+                            <select value={birth.y} onChange={(e) => handleBirthChange("y", e.target.value)} className="input col-span-4">
+                                <option value="">Year</option>
+                                {birthYears.map((y) => (
+                                    <option key={y} value={String(y)}>
+                                        {y}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    </Field>
+
                     <div className="grid grid-cols-2 gap-3">
-                        <Field label="Birth date">
-                            <input type="date" value={form.birthDate} onChange={set("birthDate")} className="input" />
-                        </Field>
                         <Field label="Gender">
                             <select value={form.gender} onChange={set("gender")} className="input">
                                 <option value="">—</option>
@@ -272,19 +389,61 @@ export default function AddMemberModal({ onClose, onSuccess }: Props) {
                         )}
                     </div>
 
-                    {/* Address */}
+                    {/* Address — cascading PH dropdowns (Philippines only) */}
                     <div className="grid grid-cols-2 gap-3">
-                        <Field label="Street">
-                            <input value={form.streetAddress} onChange={set("streetAddress")} className="input" />
-                        </Field>
-                        <Field label="Barangay">
-                            <input value={form.barangay} onChange={set("barangay")} className="input" />
-                        </Field>
-                        <Field label="City">
-                            <input value={form.city} onChange={set("city")} className="input" />
+                        <Field label="Country">
+                            <input value="Philippines" readOnly disabled className="input" />
                         </Field>
                         <Field label="Province">
-                            <input value={form.province} onChange={set("province")} className="input" />
+                            <select value={form.provinceCode} onChange={(e) => handleProvinceChange(e.target.value)} className="input">
+                                <option value="">Select province…</option>
+                                {provinces.map((p) => (
+                                    <option key={p.province_code} value={p.province_code}>
+                                        {p.province_name}
+                                    </option>
+                                ))}
+                            </select>
+                        </Field>
+                        <Field label="City / Municipality">
+                            <select
+                                value={form.cityCode}
+                                onChange={(e) => handleCityChange(e.target.value)}
+                                disabled={!form.provinceCode}
+                                className="input"
+                            >
+                                <option value="">{form.provinceCode ? "Select city…" : "Select a province first"}</option>
+                                {citiesByProvince(form.provinceCode).map((c) => (
+                                    <option key={c.city_code} value={c.city_code}>
+                                        {c.city_name}
+                                    </option>
+                                ))}
+                            </select>
+                        </Field>
+                        <Field label="Barangay">
+                            <select
+                                value={form.barangay}
+                                onChange={set("barangay")}
+                                disabled={!form.cityCode || loadingBarangays}
+                                className="input"
+                            >
+                                <option value="">
+                                    {!form.cityCode ? "Select a city first" : loadingBarangays ? "Loading…" : "Select barangay…"}
+                                </option>
+                                {barangayOptions.map((b) => (
+                                    <option key={b.brgy_code} value={b.brgy_name}>
+                                        {b.brgy_name}
+                                    </option>
+                                ))}
+                            </select>
+                        </Field>
+                        <Field label="Street address">
+                            <input
+                                value={form.streetAddress}
+                                onChange={set("streetAddress")}
+                                maxLength={100}
+                                className="input"
+                                placeholder="House no., street"
+                            />
                         </Field>
                     </div>
 
@@ -320,6 +479,7 @@ export default function AddMemberModal({ onClose, onSuccess }: Props) {
                         background: white;
                     }
                     .input:focus { border-color: var(--color-fsc-green, #4A8A2C); }
+                    .input:disabled { background: #f6f5f0; color: #9b968c; cursor: not-allowed; }
                     .input-error { border-color: #ef4444; background: #fef2f2; }
                     .input-error:focus { border-color: #ef4444; }
                 `}</style>
