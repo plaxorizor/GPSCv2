@@ -6,8 +6,8 @@ import AdminDashboard from "./AdminDashboard";
 import {
     activateMember,
     deactivateMember,
-    releaseCommission,
     markPayoutSent,
+    rejectPayout,
     setClaimUnderReview,
     updateClaimStatus,
 } from "../../firebase/admin";
@@ -61,14 +61,16 @@ export default function AdminArea() {
         await refetchClaims();
     };
 
-    const handleReleaseCommission = async (commissionId: string, _earnedBy: string, _amount: number, reference: string) => {
-        await releaseCommission(commissionId, reference);
-        await refetchCommissions();
-    };
-
     const handleMarkPayoutSent = async (payoutId: string, reference: string) => {
         await markPayoutSent(payoutId, reference);
         await refetchPayouts();
+        await refetchCommissions(); // covered commissions become "paid"
+    };
+
+    const handleRejectPayout = async (payoutId: string, reason: string) => {
+        await rejectPayout(payoutId, reason);
+        await refetchPayouts();
+        await refetchCommissions(); // covered commissions return to "pending"
     };
 
     const handleExportMembers = () => {
@@ -123,8 +125,8 @@ export default function AdminArea() {
             onUpdateMemberStatus={handleUpdateMemberStatus}
             onUpdateClaimStatus={handleUpdateClaimStatus}
             onReviewClaim={handleReviewClaim}
-            onReleaseCommission={handleReleaseCommission}
             onMarkPayoutSent={handleMarkPayoutSent}
+            onRejectPayout={handleRejectPayout}
             onExportMembers={handleExportMembers}
             onExportClaims={handleExportClaims}
             onLogout={handleLogout}

@@ -118,7 +118,7 @@ export default () => {
                         benefit: (data.benefit as string) ?? "",
                         amount: (data.amount as number) ?? 0,
                         status: (data.status as string) ?? "submitted",
-                        submitted: data.submittedAt?.toDate?.()?.toISOString?.() ?? "",
+                        submitted: data.dateSubmitted?.toDate?.()?.toISOString?.() ?? "",
                     };
                 })
                 .sort((a, b) => (a.submitted < b.submitted ? -1 : 1))

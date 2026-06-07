@@ -11,7 +11,7 @@ export interface Commission {
     fromMemberCity: string;
     level: number;
     amount: number;
-    status: "pending" | "released";
+    status: "pending" | "requested" | "paid";
     dateCreated: any; // Firestore Timestamp
 }
 
@@ -20,6 +20,8 @@ export const useCommissions = (enabled = false) => {
     const [commissions, setCommissions] = useState<Commission[]>([]);
     const [totalEarned, setTotalEarned] = useState(0);
     const [loading, setLoading] = useState(false);
+    const [reloadKey, setReloadKey] = useState(0);
+    const refetch = () => setReloadKey((k) => k + 1);
 
     useEffect(() => {
         if (!currentUser || !enabled) return;
@@ -71,7 +73,7 @@ export const useCommissions = (enabled = false) => {
         };
 
         fetch();
-    }, [currentUser, enabled]); // ← enabled must be here so the effect re-runs when the section is visited
+    }, [currentUser, enabled, reloadKey]); // enabled → re-runs when section visited; reloadKey → manual refetch
 
-    return { commissions, totalEarned, loading };
+    return { commissions, totalEarned, loading, refetch };
 };

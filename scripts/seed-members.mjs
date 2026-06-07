@@ -182,9 +182,13 @@ async function createMember(parentUid, forceActive = false) {
     if (isActive) {
         const code = generateReferralCode();
         await setDoc(doc(adminDb, "referralCodes", code), { uid });
+        const dateExpiry = new Date();
+        dateExpiry.setFullYear(dateExpiry.getFullYear() + 1);
         await updateDoc(doc(adminDb, "members", uid), {
             referralCode: code,
-            activatedAt: serverTimestamp(),
+            dateActivated: serverTimestamp(),
+            dateEligibility: serverTimestamp(), // basis for eligibility timeline
+            dateExpiry, // 365-day membership
         });
         activeCount++;
     }

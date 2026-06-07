@@ -19,7 +19,7 @@ interface Props {
     earningsTrend: EarningsTrendPoint[];
     onRequestPayout: () => void;
     onComparePackages: () => void;
-    eligibilityTimeline: Array<{ label: string; months: number; unlocked: boolean }>;
+    eligibilityTimeline: Array<{ label: string; months: number; unlocked: boolean; assumed?: boolean }>;
     recentCommissions: Array<{
         id: string;
         fromMemberName: string;
@@ -260,7 +260,7 @@ export const MemberOverview: React.FC<Props> = ({
                                     <div className="flex-1">
                                         <div className="text-fsc-navy text-sm">{item.label}</div>
                                         <div className="text-fsc-stone text-xs">
-                                            After {item.months} months · {item.unlocked ? "Active" : "Unlocks Soon"}
+                                            After {item.months} months{item.assumed ? " (approx.)" : ""} · {item.unlocked ? "Active" : "Unlocks Soon"}
                                         </div>
                                     </div>
                                 </div>

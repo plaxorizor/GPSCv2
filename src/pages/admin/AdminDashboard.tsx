@@ -35,8 +35,8 @@ interface AdminDashboardProps {
     onUpdateMemberStatus: (memberId: string, status: "active" | "inactive") => Promise<void>;
     onUpdateClaimStatus: (claimId: string, status: "Approved" | "Rejected" | "Released") => Promise<void>;
     onReviewClaim: (claimId: string) => Promise<void>;
-    onReleaseCommission: (commissionId: string, earnedBy: string, amount: number, reference: string) => Promise<void>;
     onMarkPayoutSent: (payoutId: string, reference: string) => Promise<void>;
+    onRejectPayout: (payoutId: string, reason: string) => Promise<void>;
     onExportMembers: () => void;
     onExportClaims: () => void;
     onLogout: () => void;
@@ -55,8 +55,8 @@ export default function AdminDashboard({
     onUpdateMemberStatus,
     onUpdateClaimStatus,
     onReviewClaim,
-    onReleaseCommission,
     onMarkPayoutSent,
+    onRejectPayout,
     onExportMembers,
     onExportClaims,
     onLogout,
@@ -118,7 +118,6 @@ export default function AdminDashboard({
                         pendingCommissions={pendingCommissions}
                         commissionHistory={commissionHistory}
                         loading={loading.commissions || false}
-                        onRelease={onReleaseCommission}
                         onRefresh={onRefreshCommissions}
                         refreshing={refreshing?.commissions || false}
                     />
@@ -128,6 +127,7 @@ export default function AdminDashboard({
                         payouts={payouts}
                         loading={loading.payouts || false}
                         onMarkSent={onMarkPayoutSent}
+                        onReject={onRejectPayout}
                         onRefresh={onRefreshPayouts}
                         refreshing={refreshing?.payouts || false}
                     />

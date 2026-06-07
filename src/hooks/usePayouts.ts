@@ -26,13 +26,13 @@ export const usePayouts = (enabled = false) => {
                     accountNumber: data.accountNumber as string | undefined,
                     accountName: data.accountName as string | undefined,
                     status: data.status as "sent" | "requested",
-                    requestedAt: data.requestedAt?.toDate?.()?.toISOString?.() ?? "",
-                    sentAt: data.sentAt?.toDate?.()?.toISOString?.() ?? null,
+                    dateRequested: data.dateRequested?.toDate?.()?.toISOString?.() ?? "",
+                    dateSent: data.dateSent?.toDate?.()?.toISOString?.() ?? null,
                     reference: (data.reference as string | null) ?? null,
                 } satisfies Payout;
             });
             // Newest first
-            docs.sort((a, b) => (b.requestedAt > a.requestedAt ? 1 : -1));
+            docs.sort((a, b) => (b.dateRequested > a.dateRequested ? 1 : -1));
             setPayouts(docs);
         } catch (err) {
             console.error("[usePayouts] error:", err);

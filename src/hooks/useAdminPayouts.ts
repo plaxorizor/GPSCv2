@@ -26,12 +26,14 @@ const useAdminPayouts = () => {
                         memberId:      data.memberId as string,
                         memberName:    (data.memberName as string | undefined) ?? "Unknown",
                         amount:        data.amount as number,
+                        grossAmount:   (data.grossAmount as number | undefined) ?? (data.amount as number),
+                        feeAmount:     (data.feeAmount as number | undefined) ?? 0,
                         method:        (data.method as string | undefined) ?? "",
                         accountNumber: (data.accountNumber as string | undefined) ?? "",
                         accountName:   (data.accountName as string | undefined) ?? "",
-                        status:        data.status as "requested" | "sent",
-                        requestedAt:   data.requestedAt?.toDate?.()?.toISOString?.() ?? "",
-                        sentAt:        data.sentAt?.toDate?.()?.toISOString?.() ?? null,
+                        status:        data.status as "requested" | "sent" | "rejected",
+                        dateRequested:   data.dateRequested?.toDate?.()?.toISOString?.() ?? "",
+                        dateSent:        data.dateSent?.toDate?.()?.toISOString?.() ?? null,
                         reference:     (data.reference as string | null) ?? null,
                     };
                 });
@@ -40,7 +42,7 @@ const useAdminPayouts = () => {
             docs.sort((a, b) => {
                 if (a.status === "requested" && b.status !== "requested") return -1;
                 if (a.status !== "requested" && b.status === "requested") return 1;
-                return b.requestedAt > a.requestedAt ? 1 : -1;
+                return b.dateRequested > a.dateRequested ? 1 : -1;
             });
 
             setPayouts(docs);

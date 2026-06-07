@@ -1,6 +1,6 @@
 // admin/Commissions.tsx
 import React, { useState, useEffect } from "react";
-import { Send, Clock, CheckCircle, Download, Search, X, RefreshCw } from "lucide-react";
+import { Clock, CheckCircle, Download, Search, X, RefreshCw } from "lucide-react";
 import type { PendingCommission, CommissionRecord } from "../../utils/types";
 import { formatCurrency, formatDate } from "./utils";
 
@@ -8,15 +8,11 @@ interface Props {
     pendingCommissions: PendingCommission[];
     commissionHistory: CommissionRecord[];
     loading: boolean;
-    onRelease: (commissionId: string, earnedBy: string, amount: number, reference: string) => Promise<void>;
     onRefresh: () => void;
     refreshing?: boolean;
 }
 
-export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHistory, loading, onRelease, onRefresh, refreshing }) => {
-    const [selectedCommission, setSelectedCommission] = useState<PendingCommission | null>(null);
-    const [reference, setReference] = useState("");
-
+export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHistory, loading, onRefresh, refreshing }) => {
     // Track WHICH refresh button was clicked so only that one spins.
     const [activeRefresh, setActiveRefresh] = useState<null | "all" | "pending" | "history">(null);
     const triggerRefresh = (key: "all" | "pending" | "history") => {
@@ -38,13 +34,6 @@ export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHis
     // History filters
     const [historySearch, setHistorySearch] = useState("");
     const [historyLevelFilter, setHistoryLevelFilter] = useState("all");
-
-    const handleRelease = async () => {
-        if (!selectedCommission) return;
-        await onRelease(selectedCommission.id, selectedCommission.recipientName, selectedCommission.amount, reference || "");
-        setSelectedCommission(null);
-        setReference("");
-    };
 
     if (loading) {
         return (
@@ -111,7 +100,7 @@ export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHis
                         </div>
                         <div>
                             <div className="font-display text-fsc-navy text-2xl">{pendingCommissions.length}</div>
-                            <div className="text-fsc-stone text-xs">Pending Release</div>
+                            <div className="text-fsc-stone text-xs">Unclaimed / pending</div>
                         </div>
                     </div>
                     <div className="text-fsc-stone text-sm">Total: {formatCurrency(totalPending)}</div>
@@ -123,7 +112,7 @@ export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHis
                         </div>
                         <div>
                             <div className="font-display text-fsc-navy text-2xl">{commissionHistory.length}</div>
-                            <div className="text-fsc-stone text-xs">Released This Month</div>
+                            <div className="text-fsc-stone text-xs">Paid out</div>
                         </div>
                     </div>
                     <div className="text-fsc-stone text-sm">Total: {formatCurrency(totalHistory)}</div>
@@ -208,12 +197,7 @@ export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHis
                                     <td className="text-fsc-navy p-4 text-right font-medium">{formatCurrency(comm.amount)}</td>
                                     <td className="text-fsc-stone p-4">{formatDate(comm.date)}</td>
                                     <td className="p-4 text-right">
-                                        <button
-                                            onClick={() => setSelectedCommission(comm)}
-                                            className="bg-fsc-green hover:bg-fsc-green-light ml-auto flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-medium text-white transition-colors"
-                                        >
-                                            <Send size={12} /> Release
-                                        </button>
+                                        <span className="text-fsc-stone text-xs italic">Awaiting member claim</span>
                                     </td>
                                 </tr>
                             ))}
@@ -257,7 +241,7 @@ export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHis
             <div className="border-fsc-cream-dark overflow-hidden rounded-2xl border bg-white">
                 <div className="border-fsc-cream-dark flex flex-wrap items-center justify-between gap-3 border-b p-4">
                     <div>
-                        <h2 className="font-display text-fsc-navy text-lg">Release History</h2>
+                        <h2 className="font-display text-fsc-navy text-lg">Paid Commissions</h2>
                         <p className="text-fsc-stone text-xs">Recently released commissions</p>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
@@ -366,62 +350,6 @@ export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHis
                 </div>
             </div>
 
-            {/* Release Modal */}
-            {selectedCommission && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setSelectedCommission(null)}>
-                    <div className="animate-fade-up mx-4 w-full max-w-md rounded-2xl bg-white p-6" onClick={(e) => e.stopPropagation()}>
-                        <h2 className="font-display text-fsc-navy mb-1 text-xl">Release Commission</h2>
-                        <p className="text-fsc-stone mb-4 text-xs">
-                            This marks the commission as available for the member to withdraw. <br />{" "}
-                            <span className="text-[#C41E1E]">No money is sent yet.</span> The member will submit a payout request and you'll process it
-                            separately.
-                        </p>
-                        <div className="space-y-4">
-                            <div className="bg-fsc-cream rounded-xl p-4">
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-fsc-stone">Recipient:</span>
-                                    <span className="text-fsc-navy font-medium">{selectedCommission.recipientName}</span>
-                                </div>
-                                <div className="mt-2 flex justify-between text-sm">
-                                    <span className="text-fsc-stone">Amount:</span>
-                                    <span className="text-fsc-navy font-display text-lg">{formatCurrency(selectedCommission.amount)}</span>
-                                </div>
-                                <div className="mt-2 flex justify-between text-sm">
-                                    <span className="text-fsc-stone">From member:</span>
-                                    <span className="text-fsc-navy font-medium">{selectedCommission.fromMemberName}</span>
-                                </div>
-                                <div className="mt-2 flex justify-between text-sm">
-                                    <span className="text-fsc-stone">Level:</span>
-                                    <span className="text-fsc-navy font-medium">Level {selectedCommission.level}</span>
-                                </div>
-                            </div>
-                            <div>
-                                <input
-                                    value={reference}
-                                    onChange={(e) => setReference(e.target.value)}
-                                    placeholder="Notes (optional)"
-                                    className="border-fsc-cream-dark focus:ring-fsc-green w-full rounded-xl border px-4 py-2 focus:ring-2 focus:outline-none"
-                                    autoFocus
-                                />
-                            </div>
-                        </div>
-                        <div className="mt-6 flex gap-3">
-                            <button
-                                onClick={() => setSelectedCommission(null)}
-                                className="border-fsc-cream-dark text-fsc-stone hover:bg-fsc-cream/60 flex-1 rounded-lg border px-4 py-2 transition-colors"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleRelease}
-                                className="bg-fsc-green hover:bg-fsc-green-light flex-1 rounded-lg px-4 py-2 font-medium text-white transition-colors"
-                            >
-                                Confirm Release
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };

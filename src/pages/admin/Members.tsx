@@ -22,6 +22,7 @@ import { getEligibilityTimeline } from "../../utils/eligibility";
 import { computeRankFromTree, rankName } from "../../utils/rank";
 import { buildReferralTree } from "../../firebase/referral";
 import AddMemberModal from "../../components/AddMemberModal";
+import PendingUpgradesPanel from "../../components/PendingUpgradesPanel";
 import ConfirmDialog from "../../components/ConfirmDialog";
 import { sendMemberPasswordReset, archiveMember, restoreMember, hardDeleteMember, forceDeleteMember, getMemberDependencies } from "../../firebase/admin";
 
@@ -479,6 +480,7 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
 
     return (
         <div className="space-y-6">
+            <PendingUpgradesPanel onChange={refetch} />
             <div className="flex flex-wrap items-end justify-between gap-4">
                 <div>
                     <h1 className="font-display text-fsc-navy text-3xl">Members</h1>
@@ -731,7 +733,11 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
             {/* ── Member Detail Modal ── */}
             {selectedMember &&
                 (() => {
-                    const timeline = getEligibilityTimeline(selectedMember.dateCreated as any);
+                    const sm = selectedMember as any;
+                    const timeline = getEligibilityTimeline(
+                        (sm.dateEligibility ?? sm.dateActivated ?? sm.dateCreated) as any,
+                        selectedMember.package,
+                    );
                     const unlockedCount = timeline.filter((m) => m.unlocked).length;
                     return (
                         <div

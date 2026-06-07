@@ -3,6 +3,7 @@ import { collection, query, where, getDocs, doc, getDoc } from "firebase/firesto
 import { db } from "../firebase/config";
 import useAuth from "../context/useAuth";
 import type { MemberStats, EarningsTrendPoint } from "../utils/types";
+import { isEligible } from "../utils/commission";
 
 const useMemberStats = () => {
     const { currentUser } = useAuth();
@@ -12,11 +13,10 @@ const useMemberStats = () => {
     useEffect(() => {
         if (!currentUser) return;
         const fetch = async () => {
-            const [commissionsSnap, referralsSnap, claimsSnap, payoutsSnap] = await Promise.all([
+            const [commissionsSnap, referralsSnap, claimsSnap] = await Promise.all([
                 getDocs(query(collection(db, "commissions"), where("earnedBy", "==", currentUser.uid))),
                 getDocs(query(collection(db, "members"), where("referredBy", "==", currentUser.uid))),
                 getDocs(query(collection(db, "claims"), where("memberId", "==", currentUser.uid), where("status", "==", "approved"))),
-                getDocs(query(collection(db, "payouts"), where("memberId", "==", currentUser.uid), where("status", "==", "sent"))),
             ]);
 
             const commissions = commissionsSnap.docs.map((d) => ({ id: d.id, ...d.data() }) as any);
@@ -46,14 +46,18 @@ const useMemberStats = () => {
                 });
             }
 
-            // "Earned" = commissions an admin has RELEASED (approved). Pending
-            // commissions are not yet earned — they show under "Pending hold".
+            // "Earned" = commissions already PAID out (money received).
             const totalEarned = commissions
-                .filter((c: any) => c.status === "released")
+                .filter((c: any) => c.status === "paid")
                 .reduce((sum: number, c: any) => sum + c.amount, 0);
-            const totalSentPayouts = payoutsSnap.docs.reduce((sum, d) => sum + (d.data().amount ?? 0), 0);
-            const availableToWithdraw =
-                commissions.filter((c: any) => c.status === "released").reduce((sum: number, c: any) => sum + c.amount, 0) - totalSentPayouts;
+
+            // Claimable now = commissions not yet requested/paid AND eligible by
+            // time/level (L1 immediately, L2–6 after 7 days). Legacy "released"
+            // docs still count as claimable.
+            const claimable = (c: any) => c.status !== "requested" && c.status !== "paid";
+            const availableToWithdraw = commissions
+                .filter((c: any) => claimable(c) && isEligible(c.level, c.dateCreated))
+                .reduce((sum: number, c: any) => sum + c.amount, 0);
 
             const approvedClaims = claimsSnap.docs.map((d) => d.data() as any);
 

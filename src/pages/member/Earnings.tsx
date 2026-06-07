@@ -5,6 +5,7 @@ import type { Commission, Payout } from "../../utils/types";
 import { formatCurrency, formatDate } from "../../utils/formatter";
 import StatusBadge from "../../components/ui/StatusBadge";
 import EmptyState from "../../components/ui/EmptyState";
+import { isEligible, daysUntilEligible } from "../../utils/commission";
 
 interface Props {
     availableToWithdraw: number;
@@ -21,8 +22,8 @@ export const MemberEarnings: React.FC<Props> = ({ availableToWithdraw, pendingHo
             <h1 className="font-display text-fsc-navy text-3xl">Earnings</h1>
         </div>
         <div className="grid gap-4 sm:grid-cols-3">
-            <StatCard label="Available" value={formatCurrency(availableToWithdraw)} sub="Ready to withdraw" icon={Wallet} />
-            <StatCard label="Pending hold" value={formatCurrency(pendingHold)} sub="Pending admin release" icon={Clock} />
+            <StatCard label="Available" value={formatCurrency(availableToWithdraw)} sub="Ready to claim" icon={Wallet} />
+            <StatCard label="Pending hold" value={formatCurrency(pendingHold)} sub="Level 2–6 · 7-day hold" icon={Clock} />
             <StatCard label="Lifetime paid" value={formatCurrency(lifetimePaid)} sub="Since joining" icon={TrendingUp} />
         </div>
         <div className="border-fsc-cream-dark overflow-hidden rounded-2xl border bg-white">
@@ -62,7 +63,19 @@ export const MemberEarnings: React.FC<Props> = ({ availableToWithdraw, pendingHo
                                 <td className="text-fsc-stone p-4">L{c.level}</td>
                                 <td className="text-fsc-navy p-4 text-right font-medium">+{formatCurrency(c.amount)}</td>
                                 <td className="p-4 text-right">
-                                    <StatusBadge status={c.status} />
+                                    {c.status === "pending" ? (
+                                        isEligible(c.level, c.date) ? (
+                                            <span className="inline-block rounded-full bg-[#16A34A]/12 px-2.5 py-1 text-xs font-medium text-[#15803D]">
+                                                Claimable
+                                            </span>
+                                        ) : (
+                                            <span className="inline-block rounded-full bg-[#EAB308]/20 px-2.5 py-1 text-xs font-medium text-[#854D0E]">
+                                                In {daysUntilEligible(c.level, c.date)}d
+                                            </span>
+                                        )
+                                    ) : (
+                                        <StatusBadge status={c.status} />
+                                    )}
                                 </td>
                             </tr>
                         ))}
@@ -100,7 +113,7 @@ export const MemberEarnings: React.FC<Props> = ({ availableToWithdraw, pendingHo
                     <tbody>
                         {payouts.map((p) => (
                             <tr key={p.id} className="border-fsc-cream-dark border-t">
-                                <td className="text-fsc-stone p-4">{formatDate(p.requestedAt)}</td>
+                                <td className="text-fsc-stone p-4">{formatDate(p.dateRequested)}</td>
                                 <td className="p-4">
                                     <div className="text-fsc-navy capitalize">{p.method}</div>
                                     {p.accountNumber && (

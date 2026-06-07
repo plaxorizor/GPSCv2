@@ -24,7 +24,7 @@ export const submitClaim = async (
         description: input.description,
         documents: input.documents,
         status: "submitted",
-        submittedAt: serverTimestamp(),
-        decidedAt: null,
+        dateSubmitted: serverTimestamp(),
+        dateDecided: null,
     });
 };

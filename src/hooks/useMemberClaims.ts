@@ -28,8 +28,8 @@ export const useMemberClaims = (enabled = false) => {
                     status: (data.status as Claim["status"]) ?? "submitted",
                     amount: (data.amount as number) ?? 0,
                     description: (data.description as string) ?? "",
-                    submitted: data.submittedAt?.toDate?.()?.toISOString?.() ?? "",
-                    decided: data.decidedAt?.toDate?.()?.toISOString?.() ?? null,
+                    submitted: data.dateSubmitted?.toDate?.()?.toISOString?.() ?? "",
+                    decided: data.dateDecided?.toDate?.()?.toISOString?.() ?? null,
                     documents: (data.documents as string[]) ?? [],
                 } satisfies Claim;
             });

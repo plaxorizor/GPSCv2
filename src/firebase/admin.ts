@@ -15,6 +15,7 @@ import {
     where,
     orderBy,
     limit as limitQuery,
+    writeBatch,
 } from "firebase/firestore";
 import { db } from "./config";
 import { triggerCommissions, type Package } from "./transactions";
@@ -40,11 +41,11 @@ export const activateMember = async (uid: string) => {
     const memberData = memberSnap.data();
     const now = new Date();
 
-    const expiresAt = new Date(now);
-    expiresAt.setFullYear(expiresAt.getFullYear() + 1);
+    const dateExpiry = new Date(now);
+    dateExpiry.setFullYear(dateExpiry.getFullYear() + 1);
 
-    const contestabilityEndsAt = new Date(now);
-    contestabilityEndsAt.setMonth(contestabilityEndsAt.getMonth() + 1);
+    const dateContestabilityEnd = new Date(now);
+    dateContestabilityEnd.setMonth(dateContestabilityEnd.getMonth() + 1);
 
     const isFirstActivation = !memberData.referralCode;
 
@@ -53,9 +54,10 @@ export const activateMember = async (uid: string) => {
         await updateDoc(doc(db, "members", uid), {
             status: "active",
             referralCode,
-            activatedAt: serverTimestamp(),
-            expiresAt,
-            contestabilityEndsAt,
+            dateActivated: serverTimestamp(),
+            dateEligibility: serverTimestamp(),
+            dateExpiry,
+            dateContestabilityEnd,
             packageLocked: false,
         });
         await setDoc(doc(db, "referralCodes", referralCode), { uid });
@@ -65,9 +67,10 @@ export const activateMember = async (uid: string) => {
     } else {
         await updateDoc(doc(db, "members", uid), {
             status: "active",
-            activatedAt: serverTimestamp(),
-            expiresAt,
-            contestabilityEndsAt,
+            dateActivated: serverTimestamp(),
+            dateEligibility: serverTimestamp(),
+            dateExpiry,
+            dateContestabilityEnd,
             packageLocked: false,
         });
     }
@@ -82,11 +85,11 @@ export const deactivateMember = async (uid: string) => {
 // Soft delete: hide the member from lists but keep tree + commission history.
 // Reversible via restoreMember.
 export const archiveMember = async (uid: string) => {
-    await updateDoc(doc(db, "members", uid), { archived: true, archivedAt: serverTimestamp() });
+    await updateDoc(doc(db, "members", uid), { archived: true, dateArchived: serverTimestamp() });
 };
 
 export const restoreMember = async (uid: string) => {
-    await updateDoc(doc(db, "members", uid), { archived: false, archivedAt: null });
+    await updateDoc(doc(db, "members", uid), { archived: false, dateArchived: null });
 };
 
 // Checks whether a member is safe to hard-delete (no downlines, no commissions).
@@ -148,8 +151,8 @@ export const upgradeMember = async (uid: string, newPackage: "family" | "premium
     const data = memberSnap.data();
     if (data.packageLocked) throw new Error("Package is locked. Contestability period has expired.");
 
-    const contestabilityEndsAt = data.contestabilityEndsAt?.toDate?.();
-    if (!contestabilityEndsAt || new Date() > contestabilityEndsAt) {
+    const dateContestabilityEnd = data.dateContestabilityEnd?.toDate?.();
+    if (!dateContestabilityEnd || new Date() > dateContestabilityEnd) {
         await updateDoc(doc(db, "members", uid), { packageLocked: true });
         throw new Error("Contestability period has expired.");
     }
@@ -172,7 +175,7 @@ export const setClaimUnderReview = async (claimId: string) => {
 export const updateClaimStatus = async (claimId: string, status: "approved" | "rejected" | "released") => {
     await updateDoc(doc(db, "claims", claimId), {
         status,
-        decidedAt: serverTimestamp(),
+        dateDecided: serverTimestamp(),
     });
 };
 
@@ -183,13 +186,10 @@ export const getPendingCommissions = async () => {
     return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 };
 
-export const releaseCommission = async (commissionId: string, reference: string) => {
-    await updateDoc(doc(db, "commissions", commissionId), {
-        status: "released",
-        reference,
-        releasedAt: serverTimestamp(),
-    });
-};
+// NOTE: the old per-commission "release" step has been removed. Commissions are
+// now claimable automatically by time (L1 immediately, L2–6 after 7 days) and
+// the member requests a payout. The admin's only action is on the payout itself
+// (markPayoutSent / rejectPayout below).
 
 // --- ADMIN DASHBOARD ---
 
@@ -212,7 +212,7 @@ export const getDashboardStats = async () => {
         getDocs(query(collection(db, "commissions"), where("status", "==", "pending"))),
     ]);
 
-    const paidCommissionsSnap = await getDocs(query(collection(db, "commissions"), where("status", "==", "released")));
+    const paidCommissionsSnap = await getDocs(query(collection(db, "commissions"), where("status", "==", "paid")));
     const totalCommissionsPaid = paidCommissionsSnap.docs.reduce((sum, doc) => sum + (doc.data().amount || 0), 0);
 
     return {
@@ -234,9 +234,9 @@ export const getMembershipGrowth = async (months: number = 6) => {
     monthsAgo.setMonth(now.getMonth() - months);
 
     membersSnap.docs.forEach((doc) => {
-        const joinedAt = doc.data().joinedAt;
-        if (joinedAt) {
-            const date = new Date(joinedAt);
+        const dateJoined = doc.data().dateJoined;
+        if (dateJoined) {
+            const date = new Date(dateJoined);
             if (date >= monthsAgo) {
                 const monthKey = date.toLocaleString("default", { month: "short" });
                 monthlyData[monthKey] = (monthlyData[monthKey] || 0) + 1;
@@ -318,13 +318,13 @@ export const getTopRecruiters = async (limitCount: number = 5) => {
 };
 
 export const getRecentClaims = async (limitCount: number = 5) => {
-    const q = query(collection(db, "claims"), orderBy("submittedAt", "desc"), limitQuery(limitCount));
+    const q = query(collection(db, "claims"), orderBy("dateSubmitted", "desc"), limitQuery(limitCount));
     const snapshot = await getDocs(q);
     return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 };
 
 export const getCommissionHistory = async () => {
-    const q = query(collection(db, "commissions"), where("status", "==", "released"));
+    const q = query(collection(db, "commissions"), where("status", "==", "paid"));
     const snapshot = await getDocs(q);
     return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 };
@@ -334,12 +334,36 @@ export const getAllPayouts = async () => {
     return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 };
 
+// Admin confirms a payout was sent (money + proof handed over offline). This
+// also marks every commission the payout covers as "paid".
 export const markPayoutSent = async (payoutId: string, reference: string) => {
-    await updateDoc(doc(db, "payouts", payoutId), {
+    const payoutSnap = await getDoc(doc(db, "payouts", payoutId));
+    const commissionIds: string[] = payoutSnap.exists() ? (payoutSnap.data().commissionIds ?? []) : [];
+
+    const batch = writeBatch(db);
+    batch.update(doc(db, "payouts", payoutId), {
         status: "sent",
         reference,
-        sentAt: serverTimestamp(),
+        dateSent: serverTimestamp(),
     });
+    for (const id of commissionIds) {
+        batch.update(doc(db, "commissions", id), { status: "paid" });
+    }
+    await batch.commit();
+};
+
+// Admin rejects a payout request — the covered commissions are released back to
+// "pending" so the member can claim them again.
+export const rejectPayout = async (payoutId: string, reason: string = "") => {
+    const payoutSnap = await getDoc(doc(db, "payouts", payoutId));
+    const commissionIds: string[] = payoutSnap.exists() ? (payoutSnap.data().commissionIds ?? []) : [];
+
+    const batch = writeBatch(db);
+    batch.update(doc(db, "payouts", payoutId), { status: "rejected", reason, dateSent: null });
+    for (const id of commissionIds) {
+        batch.update(doc(db, "commissions", id), { status: "pending", payoutId: null });
+    }
+    await batch.commit();
 };
 
 export const getAllCommissions = async () => {

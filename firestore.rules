@@ -86,5 +86,17 @@ service cloud.firestore {
       allow update: if isAdmin();
       allow delete: if false;
     }
+
+    match /upgradeRequests/{requestId} {
+      allow get:    if request.auth != null && (isAdmin() || resource.data.memberId == request.auth.uid);
+      allow list:   if request.auth != null; // members query their own; admins list all
+      // Members may request ONLY their own upgrade, and only as "pending".
+      allow create: if request.auth != null
+        && request.resource.data.memberId == request.auth.uid
+        && request.resource.data.status == "pending";
+      // Only admins approve / reject (which also applies the member upgrade).
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
   }
 }

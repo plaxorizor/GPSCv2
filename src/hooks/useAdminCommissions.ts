@@ -15,14 +15,14 @@ const useAdminCommissions = () => {
         if (isInitial) setLoading(true);
         else setRefreshing(true);
         try {
-            const [pendingSnap, releasedSnap] = await Promise.all([
+            const [pendingSnap, paidSnap] = await Promise.all([
                 getDocs(query(collection(db, "commissions"), where("status", "==", "pending"))),
-                getDocs(query(collection(db, "commissions"), where("status", "==", "released"))),
+                getDocs(query(collection(db, "commissions"), where("status", "==", "paid"))),
             ]);
 
             // Batch-fetch member names for all earnedBy UIDs
             // Filter out any docs with missing/null earnedBy to avoid Firestore path errors
-            const allDocs = [...pendingSnap.docs, ...releasedSnap.docs];
+            const allDocs = [...pendingSnap.docs, ...paidSnap.docs];
             const uniqueUids = [
                 ...new Set(
                     allDocs
@@ -66,7 +66,7 @@ const useAdminCommissions = () => {
                 });
             pending.sort((a, b) => (b.date > a.date ? 1 : -1));
 
-            const history: CommissionRecord[] = releasedSnap.docs
+            const history: CommissionRecord[] = paidSnap.docs
                 .filter((d) => typeof d.data().earnedBy === "string" && d.data().earnedBy.length > 0)
                 .map((d) => {
                     const data = d.data();

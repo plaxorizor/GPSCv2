@@ -1024,7 +1024,7 @@ export default function SignUpLayout() {
                                                         <label className={labelCls}>
                                                             Beneficiaries
                                                             <span className="ml-1 normal-case" style={{ color: "#6B6862" }}>
-                                                                (up to {selectedPlan.name === "Family" ? 2 : 4})
+                                                                (up to {selectedPlan.name === "Family" ? 2 : 3})
                                                             </span>
                                                         </label>
 
@@ -1077,7 +1077,7 @@ export default function SignUpLayout() {
                                                         </div>
 
                                                         <div className="mt-3 flex gap-4">
-                                                            {form.beneficiaries.length < (selectedPlan.name === "Family" ? 2 : 4) && (
+                                                            {form.beneficiaries.length < (selectedPlan.name === "Family" ? 2 : 3) && (
                                                                 <button
                                                                     type="button"
                                                                     className="flex items-center gap-1 text-sm font-medium hover:underline"

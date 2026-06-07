@@ -12,6 +12,7 @@ import { MemberPlan } from "./Plan";
 import type { Member, Commission, ReferralNode, EarningsTrendPoint, Claim, Payout, MemberStats } from "../../utils/types";
 
 import { getEligibilityTimeline } from "../../utils/eligibility";
+import { isEligible } from "../../utils/commission";
 
 interface MemberDashboardProps {
     member: Member;
@@ -57,12 +58,16 @@ export default function MemberDashboard({
     const approvedClaimsCount = memberStats?.approvedClaimsCount ?? 0;
     const approvedClaimsTotal = memberStats?.approvedClaimsTotal ?? 0;
 
-    // These need the full commission list — only available once Earnings section is visited
-    const pendingHold = commissions.filter((c) => c.status === "pending").reduce((sum, c) => sum + c.amount, 0);
+    // These need the full commission list — only available once Earnings section is visited.
+    // Pending hold = pending commissions NOT yet eligible (L2–6 inside the 7-day window).
+    const pendingHold = commissions
+        .filter((c) => c.status === "pending" && !isEligible(c.level, c.date))
+        .reduce((sum, c) => sum + c.amount, 0);
     const lifetimePaid = commissions.filter((c) => c.status === "paid").reduce((sum, c) => sum + c.amount, 0);
 
     // Eligibility timeline (example - you can make this dynamic based on member's join date)
-    const eligibilityTimeline = getEligibilityTimeline(member.dateCreated);
+    // Eligibility counts from when coverage last (re)started — resets on upgrade.
+    const eligibilityTimeline = getEligibilityTimeline(member.dateEligibility ?? member.dateActivated ?? member.dateCreated, member.package);
 
     // Recent commissions with initials:
     const recentCommissions = (memberStats?.recentCommissions ?? []).map((c) => {
@@ -148,7 +153,7 @@ export default function MemberDashboard({
                         onRequestPayout={onRequestPayout}
                     />
                 )}
-                {currentSection === "plan" && <MemberPlan packageName={packageName} />}
+                {currentSection === "plan" && <MemberPlan packageName={packageName} member={member} />}
                 {currentSection === "claims" && <MemberClaims claims={claims} onFileClaim={onFileClaim} />}
                 {currentSection === "beneficiaries" && <MemberBeneficiaries member={member} />}
                 {currentSection === "profile" && <MemberProfile onLogout={onLogout} user={member} rankName={rankName} onChangePassword={onChangePassword} />}

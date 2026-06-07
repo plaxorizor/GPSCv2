@@ -15,6 +15,7 @@ import RequestPayoutModal from "../../components/RequestPayoutModal";
 import FileClaimModal from "../../components/FileClaimModal";
 import { PACKAGE_INFO } from "../../utils/types";
 import { rankFromChildren, rankName } from "../../utils/rank";
+import { isEligible } from "../../utils/commission";
 import type { Member, Commission, ReferralNode } from "../../utils/types";
 
 // Rank mapping based on rank number
@@ -42,7 +43,7 @@ export default function MemberArea() {
     const { stats: memberStats, loading: statsLoading } = useMemberStats();
 
     // Only fetch when the member actually visits that section
-    const { commissions: rawCommissions } = useCommissions(currentSection === "earnings");
+    const { commissions: rawCommissions, refetch: refetchCommissions } = useCommissions(currentSection === "earnings");
     const { tree } = useReferralTree(currentSection === "referrals");
     const { payouts, refetch: refetchPayouts } = usePayouts(currentSection === "earnings");
     const { claims, refetch: refetchClaims } = useMemberClaims(currentSection === "claims");
@@ -129,7 +130,8 @@ export default function MemberArea() {
     const memberRank = rankFromChildren(directReferrals);
     const memberRankName = rankName(memberRank);
 
-    // 4. Map commissions — use the enriched fields from useCommissions
+    // 4. Map commissions — carry the lifecycle status through (legacy "released"
+    //    docs collapse to "pending" so they stay claimable).
     const commissions: Commission[] = rawCommissions.map((c) => ({
         id: c.id,
         membershipId: "",
@@ -137,12 +139,16 @@ export default function MemberArea() {
         level: c.level,
         role: memberRankName,
         amount: c.amount,
-        status: c.status === "released" ? "paid" : "pending",
+        status: c.status === "paid" ? "paid" : c.status === "requested" ? "requested" : "pending",
         date: c.dateCreated?.toDate?.()?.toISOString?.() ?? "",
         fromMember: c.fromMember,
         fromMemberName: c.fromMemberName ?? "—",
         fromMemberCity: c.fromMemberCity ?? "—",
     }));
+
+    // Claimable commissions = pending + eligible by time/level. Passed to the
+    // payout modal so the member can pick which ones to withdraw.
+    const claimableCommissions = commissions.filter((c) => c.status === "pending" && isEligible(c.level, c.date));
 
     // 5. Referral link
     // const referralLink = `${window.location.origin}/signup?ref=${member.referralCode}`;
@@ -164,10 +170,13 @@ export default function MemberArea() {
             {showChangePassword && <ChangePasswordModal onClose={() => setShowChangePassword(false)} />}
             {showRequestPayout && (
                 <RequestPayoutModal
-                    availableToWithdraw={memberStats?.availableToWithdraw ?? 0}
+                    claimableCommissions={claimableCommissions}
                     memberName={`${user.firstName} ${user.lastName}`.trim()}
                     onClose={() => setShowRequestPayout(false)}
-                    onSuccess={refetchPayouts}
+                    onSuccess={() => {
+                        refetchPayouts();
+                        refetchCommissions();
+                    }}
                 />
             )}
             {showFileClaim && (

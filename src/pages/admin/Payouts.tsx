@@ -20,14 +20,26 @@ interface Props {
     payouts: AdminPayout[];
     loading: boolean;
     onMarkSent: (payoutId: string, reference: string) => Promise<void>;
+    onReject: (payoutId: string, reason: string) => Promise<void>;
     onRefresh: () => void;
     refreshing?: boolean;
 }
 
-export const Payouts: React.FC<Props> = ({ payouts, loading, onMarkSent, onRefresh, refreshing }) => {
+export const Payouts: React.FC<Props> = ({ payouts, loading, onMarkSent, onReject, onRefresh, refreshing }) => {
     const [selected, setSelected] = useState<AdminPayout | null>(null);
     const [reference, setReference] = useState("");
     const [processing, setProcessing] = useState(false);
+    const [rejectingId, setRejectingId] = useState<string | null>(null);
+
+    const handleReject = async (p: AdminPayout) => {
+        if (rejectingId) return;
+        setRejectingId(p.id);
+        try {
+            await onReject(p.id, "");
+        } finally {
+            setRejectingId(null);
+        }
+    };
 
     // Pending filters
     const [pendingSearch, setPendingSearch] = useState("");
@@ -221,17 +233,29 @@ export const Payouts: React.FC<Props> = ({ payouts, loading, onMarkSent, onRefre
                                         <div className="text-fsc-stone text-xs">{p.accountNumber}</div>
                                         <div className="text-fsc-stone text-xs">{p.accountName}</div>
                                     </td>
-                                    <td className="text-fsc-navy p-4 text-right font-medium">
-                                        {formatCurrency(p.amount)}
-                                    </td>
-                                    <td className="text-fsc-stone p-4 text-sm">{formatDate(p.requestedAt)}</td>
                                     <td className="p-4 text-right">
-                                        <button
-                                            onClick={() => setSelected(p)}
-                                            className="bg-fsc-green hover:bg-fsc-green-light ml-auto flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-medium text-white transition-colors"
-                                        >
-                                            <Send size={12} /> Mark as Sent
-                                        </button>
+                                        <div className="text-fsc-navy font-medium">{formatCurrency(p.amount)}</div>
+                                        <div className="text-fsc-stone text-xs">
+                                            gross {formatCurrency(p.grossAmount ?? p.amount)} · −{formatCurrency(p.feeAmount ?? 0)} fee
+                                        </div>
+                                    </td>
+                                    <td className="text-fsc-stone p-4 text-sm">{formatDate(p.dateRequested)}</td>
+                                    <td className="p-4">
+                                        <div className="flex items-center justify-end gap-2">
+                                            <button
+                                                onClick={() => handleReject(p)}
+                                                disabled={rejectingId === p.id}
+                                                className="border-fsc-cream-dark text-fsc-stone hover:bg-fsc-cream/60 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-50"
+                                            >
+                                                {rejectingId === p.id ? "Rejecting…" : "Reject"}
+                                            </button>
+                                            <button
+                                                onClick={() => setSelected(p)}
+                                                className="bg-fsc-green hover:bg-fsc-green-light flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-medium text-white transition-colors"
+                                            >
+                                                <Send size={12} /> Mark as Sent
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
@@ -345,7 +369,7 @@ export const Payouts: React.FC<Props> = ({ payouts, loading, onMarkSent, onRefre
                                     <td className="text-fsc-stone p-4 font-mono text-xs">
                                         {p.reference ?? "—"}
                                     </td>
-                                    <td className="text-fsc-stone p-4 text-sm">{formatDate(p.sentAt)}</td>
+                                    <td className="text-fsc-stone p-4 text-sm">{formatDate(p.dateSent)}</td>
                                 </tr>
                             ))}
                             {history.length === 0 && (
@@ -405,7 +429,15 @@ export const Payouts: React.FC<Props> = ({ payouts, loading, onMarkSent, onRefre
                                     <span className="text-fsc-navy font-medium">{selected.memberName}</span>
                                 </div>
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-fsc-stone">Amount:</span>
+                                    <span className="text-fsc-stone">Gross:</span>
+                                    <span className="text-fsc-navy">{formatCurrency(selected.grossAmount ?? selected.amount)}</span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-fsc-stone">Fee (5%):</span>
+                                    <span className="text-fsc-stone">− {formatCurrency(selected.feeAmount ?? 0)}</span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-fsc-stone">Send this amount:</span>
                                     <span className="font-display text-fsc-navy text-lg">{formatCurrency(selected.amount)}</span>
                                 </div>
                                 <div className="flex justify-between text-sm">

@@ -32,11 +32,12 @@ export interface Member {
     isAdmin: boolean;
     isSuperAdmin?: boolean;
     archived?: boolean;
-    archivedAt?: Timestamp | null;
+    dateArchived?: Timestamp | null;
     dateCreated: Timestamp;
-    activatedAt?: Timestamp;
-    expiresAt?: Timestamp;
-    contestabilityEndsAt?: Timestamp;
+    dateActivated?: Timestamp;
+    dateExpiry?: Timestamp;
+    dateContestabilityEnd?: Timestamp;
+    dateEligibility?: Timestamp; // basis for the eligibility timeline; resets on upgrade
     packageLocked?: boolean;
 }
 
@@ -51,7 +52,10 @@ export interface MemberStats {
     earningsTrend: EarningsTrendPoint[];
 }
 
-export type CommissionStatus = "pending" | "paid";
+// pending  = earned, not yet claimed (claimable once eligible by time/level)
+// requested = included in a payout request, awaiting admin payment (locked)
+// paid     = payout completed
+export type CommissionStatus = "pending" | "requested" | "paid";
 
 export interface Commission {
     id: string;
@@ -61,7 +65,7 @@ export interface Commission {
     role: string;
     amount: number;
     status: CommissionStatus;
-    date: string;
+    date: string; // ISO of dateCreated — used to compute eligibility
     fromMember: string;
     fromMemberName: string;
     fromMemberCity: string;
@@ -85,13 +89,16 @@ export interface Claim {
 export interface Payout {
     id: string;
     userId: string;
-    amount: number;
+    amount: number; // net amount the member receives (after the 5% fee)
+    grossAmount?: number; // sum of claimed commissions before the fee
+    feeAmount?: number; // 5% transaction fee deducted
+    commissionIds?: string[]; // commissions this payout covers
     method: string;
     accountNumber?: string;
     accountName?: string;
-    status: "sent" | "requested";
-    requestedAt: string;
-    sentAt: string | null;
+    status: "sent" | "requested" | "rejected";
+    dateRequested: string;
+    dateSent: string | null;
     reference: string | null;
 }
 
@@ -100,13 +107,15 @@ export interface AdminPayout {
     id: string;
     memberId: string;
     memberName: string;
-    amount: number;
+    amount: number; // net amount the member receives
+    grossAmount?: number; // before the 5% fee
+    feeAmount?: number; // 5% transaction fee
     method: string;
     accountNumber: string;
     accountName: string;
-    status: "requested" | "sent";
-    requestedAt: string;
-    sentAt: string | null;
+    status: "requested" | "sent" | "rejected";
+    dateRequested: string;
+    dateSent: string | null;
     reference: string | null;
 }
 
