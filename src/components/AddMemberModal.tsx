@@ -244,7 +244,7 @@ export default function AddMemberModal({ onClose, onSuccess }: Props) {
 
                     {/* Referral — required (golden rule), unless founder */}
                     <div className="border-fsc-cream-dark rounded-xl border p-3">
-                        <Field label="Referral code (the referrer's code)" required={!isRoot}>
+                        <Field label="Referral Code" required={!isRoot}>
                             <input
                                 value={form.referralCode}
                                 onChange={set("referralCode")}

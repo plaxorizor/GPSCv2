@@ -57,7 +57,7 @@ function generateTempPassword(): string {
 // It never has to be a real inbox — it's just a unique login identifier.
 function mobileToSyntheticEmail(mobile: string): string {
     const digits = mobile.replace(/\D/g, "");
-    return `m${digits}@members.faithshield.care`;
+    return `${digits}@members.faithshieldcare.com`;
 }
 
 export async function adminCreateMember(input: EncodeMemberInput): Promise<EncodeMemberResult> {

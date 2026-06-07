@@ -64,7 +64,7 @@ const PAYMENT_INFO = {
     // Where members send their proof of payment for manual verification.
     receiptContacts: [
         { label: "Messenger", value: "Faith Shield Care Official" },
-        { label: "Email", value: "payments@faithshield.care" },
+        { label: "Email", value: "payments@faithshieldcare.com" },
     ],
     verificationDays: "1–2 business days",
 };
@@ -85,6 +85,9 @@ export default function SignUpLayout() {
 
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+    // Birth date split into Month / Day / Year dropdowns.
+    const [birth, setBirth] = useState({ y: "", m: "", d: "" });
     const [consented, setConsented] = useState(false);
     const [policyTab, setPolicyTab] = useState<"privacy" | "terms" | "refund">("privacy");
 
@@ -109,7 +112,6 @@ export default function SignUpLayout() {
         city: "",
         cityCode: "",
         barangay: "",
-        postalCode: "",
         country: "Philippines",
         referralCode: refCode,
         beneficiaries: [{ name: "", relationship: "" }],
@@ -119,6 +121,15 @@ export default function SignUpLayout() {
     // red. Top-level keys match `form`; beneficiary keys are "ben-{index}-name" etc.
     const [invalidFields, setInvalidFields] = useState<Set<string>>(new Set());
     const isInvalid = (key: string) => invalidFields.has(key);
+
+    // Fields the user has blurred at least once — used to validate on focus loss
+    // (not while still typing).
+    const [touched, setTouched] = useState<Set<string>>(new Set());
+    const markTouched = (key: string) => setTouched((prev) => (prev.has(key) ? prev : new Set(prev).add(key)));
+
+    // Live, on-blur consistency messages (shown only after the field is touched).
+    const emailMismatch = touched.has("confirmEmail") && !!form.confirmEmail && form.email !== form.confirmEmail;
+    const passwordMismatch = touched.has("confirmPassword") && !!form.confirmPassword && form.password !== form.confirmPassword;
     const fieldCls = (key: string) => `${inputCls}${isInvalid(key) ? " !border-[#C41E1E]" : ""}`;
 
     // Clear a field's red highlight as soon as it has a value again.
@@ -139,6 +150,23 @@ export default function SignUpLayout() {
             return next.size === prev.size ? prev : next;
         });
     }, [form]);
+
+    // Combine the Month/Day/Year dropdowns into form.birthDate (YYYY-MM-DD).
+    // Only set a value once all three are chosen; otherwise keep it empty.
+    useEffect(() => {
+        const next = birth.y && birth.m && birth.d ? `${birth.y}-${birth.m}-${birth.d}` : "";
+        setForm((prev) => (prev.birthDate === next ? prev : { ...prev, birthDate: next }));
+    }, [birth]);
+
+    // Birth-date dropdown option lists.
+    const MONTHS = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December",
+    ];
+    const currentYear = new Date().getFullYear();
+    const birthYears = Array.from({ length: 100 }, (_, i) => currentYear - 18 - i); // 18..117 yrs old
+    const daysInMonth = birth.y && birth.m ? new Date(Number(birth.y), Number(birth.m), 0).getDate() : 31;
+    const birthDays = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
     // Barangay options for the selected city (lazy-loaded from the bundled dataset).
     const [barangayOptions, setBarangayOptions] = useState<Barangay[]>([]);
@@ -178,6 +206,17 @@ export default function SignUpLayout() {
         const c = citiesByProvince(form.provinceCode).find((x) => x.city_code === cityCode);
         setForm((prev) => ({ ...prev, cityCode, city: c?.city_name ?? "", barangay: "" }));
     };
+
+    // Mobile is stored as the local part only (10 digits starting with "9");
+    // the "+63" prefix is fixed in the UI and prepended on save.
+    const handleMobileChange = (raw: string) => {
+        const digits = raw.replace(/\D/g, "").slice(0, 10);
+        setForm((prev) => ({ ...prev, mobile: digits }));
+    };
+    // Display helper: "9XX XXX XXXX".
+    const formatPHMobile = (d: string) => [d.slice(0, 3), d.slice(3, 6), d.slice(6, 10)].filter(Boolean).join(" ");
+    // Valid local part = "9" followed by 9 more digits.
+    const isValidPHMobile = (m: string) => /^9\d{9}$/.test(m.replace(/\D/g, ""));
 
     // Password strength
     const getPasswordStrength = (pwd: string): { score: number; label: string; color: string } => {
@@ -232,6 +271,12 @@ export default function SignUpLayout() {
                 setError("Passwords do not match.");
                 return false;
             }
+            // Mobile must be a valid PH number.
+            if (!isValidPHMobile(form.mobile)) {
+                setInvalidFields(new Set(["mobile"]));
+                setError("Enter a valid PH mobile number (09XX XXX XXXX or +63 9XX XXX XXXX).");
+                return false;
+            }
             // Check age (must be 18+)
             const birthDate = new Date(form.birthDate);
             const today = new Date();
@@ -277,8 +322,15 @@ export default function SignUpLayout() {
         return true;
     };
 
+    const [checking, setChecking] = useState(false);
     const handleContinue = async () => {
-        if (await validateStep()) setStep(step + 1);
+        if (checking) return; // guard against double-clicks
+        setChecking(true);
+        try {
+            if (await validateStep()) setStep(step + 1);
+        } finally {
+            setChecking(false);
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -314,7 +366,7 @@ export default function SignUpLayout() {
                 lastName: form.lastName,
                 suffix: form.suffix || null,
                 email: form.email,
-                mobile: form.mobile,
+                mobile: form.mobile ? `+63${form.mobile}` : "",
                 birthDate: form.birthDate,
                 gender: form.gender,
                 civilStatus: form.civilStatus,
@@ -322,7 +374,6 @@ export default function SignUpLayout() {
                 barangay: form.barangay,
                 city: form.city,
                 province: form.province,
-                postalCode: form.postalCode || null,
                 country: form.country,
                 package: selectedPlan.name.toLowerCase(),
                 beneficiaries: form.beneficiaries,
@@ -621,63 +672,148 @@ export default function SignUpLayout() {
                                                 </div>
 
                                                 {/* Contact Information */}
+                                                <div>
+                                                    <div className="grid gap-4 sm:grid-cols-2">
+                                                        <div>
+                                                            <label className={labelCls}>
+                                                                Email <span style={{ color: "#C41E1E" }}>*</span>
+                                                            </label>
+                                                            <input
+                                                                required
+                                                                type="email"
+                                                                value={form.email}
+                                                                placeholder="juandelacruz@example.com"
+                                                                className={`${fieldCls("email")}${emailMismatch ? " !border-[#C41E1E]" : ""}`}
+                                                                onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <label className={labelCls}>
+                                                                Confirm Email <span style={{ color: "#C41E1E" }}>*</span>
+                                                            </label>
+                                                            <input
+                                                                required
+                                                                type="email"
+                                                                value={form.confirmEmail}
+                                                                placeholder="juandelacruz@example.com"
+                                                                className={`${fieldCls("confirmEmail")}${emailMismatch ? " !border-[#C41E1E]" : ""}`}
+                                                                onChange={(e) => setForm((prev) => ({ ...prev, confirmEmail: e.target.value }))}
+                                                                onBlur={() => markTouched("confirmEmail")}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    {/* Reserved-height slot keeps the layout from shifting */}
+                                                    <p className="mt-1 min-h-[1rem] text-xs" style={{ color: "#C41E1E" }}>
+                                                        {emailMismatch ? "Emails do not match" : ""}
+                                                    </p>
+                                                </div>
+
+                                                {/* Mobile & Birth date */}
                                                 <div className="grid gap-4 sm:grid-cols-2">
                                                     <div>
                                                         <label className={labelCls}>
-                                                            Email <span style={{ color: "#C41E1E" }}>*</span>
+                                                            Mobile number <span style={{ color: "#C41E1E" }}>*</span>
                                                         </label>
-                                                        <input
-                                                            required
-                                                            type="email"
-                                                            value={form.email}
-                                                            placeholder="juandelacruz@example.com"
-                                                            className={fieldCls("email")}
-                                                            onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
-                                                        />
+                                                        <div
+                                                            className={`mt-1 flex items-stretch overflow-hidden rounded-xl border bg-white transition focus-within:ring-2 focus-within:ring-[#C9922A] ${
+                                                                isInvalid("mobile") ? "border-[#C41E1E]" : "border-[#D0D2D8]"
+                                                            }`}
+                                                        >
+                                                            <span className="flex select-none items-center gap-1 border-r border-[#D0D2D8] bg-[#F2F3F5] px-3 text-sm font-medium text-[#1B2D6B]">
+                                                                +63
+                                                            </span>
+                                                            <input
+                                                                required
+                                                                type="tel"
+                                                                inputMode="numeric"
+                                                                value={formatPHMobile(form.mobile)}
+                                                                placeholder="9XX XXX XXXX"
+                                                                className="w-full bg-transparent px-4 py-3 text-[#1B2D6B] placeholder-[#6B6862] focus:outline-none"
+                                                                onChange={(e) => handleMobileChange(e.target.value)}
+                                                            />
+                                                        </div>
                                                     </div>
                                                     <div>
                                                         <label className={labelCls}>
-                                                            Confirm Email <span style={{ color: "#C41E1E" }}>*</span>
+                                                            Birth Date <span style={{ color: "#C41E1E" }}>*</span>
                                                         </label>
-                                                        <input
-                                                            required
-                                                            type="email"
-                                                            value={form.confirmEmail}
-                                                            placeholder="juandelacruz@example.com"
-                                                            className={fieldCls("confirmEmail")}
-                                                            onChange={(e) => setForm((prev) => ({ ...prev, confirmEmail: e.target.value }))}
-                                                        />
-                                                        {form.confirmEmail && form.email !== form.confirmEmail && (
-                                                            <p className="mt-1 text-xs" style={{ color: "#C41E1E" }}>
-                                                                Emails do not match
-                                                            </p>
-                                                        )}
+                                                        {(() => {
+                                                            const selCls = `w-full px-2 py-3 rounded-xl border bg-white text-[#1B2D6B] focus:outline-none focus:ring-2 focus:ring-[#C9922A] transition ${
+                                                                isInvalid("birthDate") ? "border-[#C41E1E]" : "border-[#D0D2D8]"
+                                                            }`;
+                                                            return (
+                                                                <div className="mt-1 grid grid-cols-12 gap-2">
+                                                                    <select
+                                                                        required
+                                                                        value={birth.m}
+                                                                        className={`${selCls} col-span-5`}
+                                                                        onChange={(e) => setBirth((p) => ({ ...p, m: e.target.value }))}
+                                                                    >
+                                                                        <option value="">Month</option>
+                                                                        {MONTHS.map((name, i) => (
+                                                                            <option key={name} value={String(i + 1).padStart(2, "0")}>
+                                                                                {name}
+                                                                            </option>
+                                                                        ))}
+                                                                    </select>
+                                                                    <select
+                                                                        required
+                                                                        value={birth.d}
+                                                                        className={`${selCls} col-span-3`}
+                                                                        onChange={(e) => setBirth((p) => ({ ...p, d: e.target.value }))}
+                                                                    >
+                                                                        <option value="">Day</option>
+                                                                        {birthDays.map((d) => (
+                                                                            <option key={d} value={String(d).padStart(2, "0")}>
+                                                                                {d}
+                                                                            </option>
+                                                                        ))}
+                                                                    </select>
+                                                                    <select
+                                                                        required
+                                                                        value={birth.y}
+                                                                        className={`${selCls} col-span-4`}
+                                                                        onChange={(e) => setBirth((p) => ({ ...p, y: e.target.value }))}
+                                                                    >
+                                                                        <option value="">Year</option>
+                                                                        {birthYears.map((y) => (
+                                                                            <option key={y} value={String(y)}>
+                                                                                {y}
+                                                                            </option>
+                                                                        ))}
+                                                                    </select>
+                                                                </div>
+                                                            );
+                                                        })()}
+                                                        <p className="mt-1 text-xs" style={{ color: "#6B6862" }}>
+                                                            Must be 18 years or older
+                                                        </p>
                                                     </div>
-                                                </div>
-
-                                                {/* Mobile */}
-                                                <div>
-                                                    <label className={labelCls}>
-                                                        Mobile number <span style={{ color: "#C41E1E" }}>*</span>
-                                                    </label>
-                                                    <input
-                                                        required
-                                                        value={form.mobile}
-                                                        placeholder="09XXXXXXXXX"
-                                                        className={fieldCls("mobile")}
-                                                        onChange={(e) => setForm((prev) => ({ ...prev, mobile: e.target.value }))}
-                                                    />
-                                                    <p className="mt-1 text-xs" style={{ color: "#6B6862" }}>
-                                                        Format: 09XX-XXX-XXXX
-                                                    </p>
                                                 </div>
 
                                                 {/* Password Section */}
                                                 <div className="grid gap-4 sm:grid-cols-2">
                                                     <div>
-                                                        <label className={labelCls}>
-                                                            Password <span style={{ color: "#C41E1E" }}>*</span>
-                                                        </label>
+                                                        <div className="flex items-center justify-between gap-3">
+                                                            <label className={labelCls}>
+                                                                Password <span style={{ color: "#C41E1E" }}>*</span>
+                                                            </label>
+                                                            {/* Strength bar inline with the label */}
+                                                            <div className="flex h-1 w-6/10 shrink-0 gap-1">
+                                                                {[1, 2, 3, 4].map((seg) => (
+                                                                    <div
+                                                                        key={seg}
+                                                                        className="h-1 flex-1 rounded-full transition-colors duration-300"
+                                                                        style={{
+                                                                            backgroundColor:
+                                                                                form.password.length > 0 && pwStrength.score >= seg
+                                                                                    ? pwStrength.color
+                                                                                    : "#D0D2D8",
+                                                                        }}
+                                                                    />
+                                                                ))}
+                                                            </div>
+                                                        </div>
                                                         <div className="relative">
                                                             <input
                                                                 required
@@ -697,41 +833,26 @@ export default function SignUpLayout() {
                                                                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                                             </button>
                                                         </div>
-                                                        {form.password.length > 0 && (
-                                                            <div className="mt-2">
-                                                                <div className="flex gap-1 mb-1">
-                                                                    {[1, 2, 3, 4].map((seg) => (
-                                                                        <div
-                                                                            key={seg}
-                                                                            className="h-1 flex-1 rounded-full transition-colors duration-300"
-                                                                            style={{
-                                                                                backgroundColor: pwStrength.score >= seg ? pwStrength.color : "#D0D2D8",
-                                                                            }}
-                                                                        />
-                                                                    ))}
-                                                                </div>
-                                                                <p className="text-xs" style={{ color: pwStrength.color }}>
-                                                                    {pwStrength.label}: {pwStrength.label === "Strong" ? "✓ " : ""}
-                                                                    {pwStrength.score <= 1 && "Use 8+ characters with letters, numbers & symbols"}
-                                                                    {pwStrength.score === 2 && "Add numbers or symbols to strengthen"}
-                                                                    {pwStrength.score === 3 && "Good! Add more variety for strong password"}
-                                                                    {pwStrength.score >= 4 && "Excellent security"}
-                                                                </p>
-                                                            </div>
-                                                        )}
                                                     </div>
                                                     <div>
-                                                        <label className={labelCls}>
-                                                            Confirm password <span style={{ color: "#C41E1E" }}>*</span>
-                                                        </label>
+                                                        <div className="flex items-center justify-between gap-3">
+                                                            <label className={labelCls}>
+                                                                Confirm password <span style={{ color: "#C41E1E" }}>*</span>
+                                                            </label>
+                                                            {/* Mismatch message inline with the label */}
+                                                            <span className="text-xs" style={{ color: "#C41E1E" }}>
+                                                                {passwordMismatch ? "Passwords do not match" : ""}
+                                                            </span>
+                                                        </div>
                                                         <div className="relative">
                                                             <input
                                                                 required
                                                                 type={showConfirmPassword ? "text" : "password"}
                                                                 value={form.confirmPassword}
-                                                                className={fieldCls("confirmPassword")}
+                                                                className={`${fieldCls("confirmPassword")}${passwordMismatch ? " !border-[#C41E1E]" : ""}`}
                                                                 style={{ paddingRight: "2.75rem" }}
                                                                 onChange={(e) => setForm((prev) => ({ ...prev, confirmPassword: e.target.value }))}
+                                                                onBlur={() => markTouched("confirmPassword")}
                                                             />
                                                             <button
                                                                 type="button"
@@ -743,29 +864,7 @@ export default function SignUpLayout() {
                                                                 {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                                             </button>
                                                         </div>
-                                                        {form.confirmPassword.length > 0 && (
-                                                            <p className="mt-2 text-xs" style={{ color: form.password === form.confirmPassword ? "#C9922A" : "#C41E1E" }}>
-                                                                {form.password === form.confirmPassword ? "Passwords match ✓" : "Passwords do not match"}
-                                                            </p>
-                                                        )}
                                                     </div>
-                                                </div>
-
-                                                {/* Birth date */}
-                                                <div>
-                                                    <label className={labelCls}>
-                                                        Birth date <span style={{ color: "#C41E1E" }}>*</span>
-                                                    </label>
-                                                    <input
-                                                        required
-                                                        type="date"
-                                                        value={form.birthDate}
-                                                        className={fieldCls("birthDate")}
-                                                        onChange={(e) => setForm((prev) => ({ ...prev, birthDate: e.target.value }))}
-                                                    />
-                                                    <p className="mt-1 text-xs" style={{ color: "#6B6862" }}>
-                                                        Must be 18 years or older
-                                                    </p>
                                                 </div>
 
                                                 {/* Gender & Civil Status */}
@@ -783,8 +882,6 @@ export default function SignUpLayout() {
                                                             <option value="">Select Gender</option>
                                                             <option value="male">Male</option>
                                                             <option value="female">Female</option>
-                                                            <option value="other">Other</option>
-                                                            <option value="prefer-not">Prefer not to say</option>
                                                         </select>
                                                     </div>
                                                     <div>
@@ -808,20 +905,16 @@ export default function SignUpLayout() {
                                                 </div>
 
                                                 {/* Address Information — cascading PH dropdowns */}
-                                                <div>
-                                                    <label className={labelCls}>
-                                                        Street address <span style={{ color: "#B91C1C" }}>*</span>
-                                                    </label>
-                                                    <input
-                                                        required
-                                                        value={form.streetAddress}
-                                                        placeholder="House no., street, subdivision"
-                                                        className={fieldCls("streetAddress")}
-                                                        onChange={(e) => setForm((prev) => ({ ...prev, streetAddress: e.target.value }))}
-                                                    />
-                                                </div>
-
                                                 <div className="grid gap-4 sm:grid-cols-2">
+                                                    <div>
+                                                        <label className={labelCls}>Country</label>
+                                                        <input
+                                                            value={form.country}
+                                                            readOnly
+                                                            disabled
+                                                            className={`${inputCls} cursor-not-allowed opacity-70`}
+                                                        />
+                                                    </div>
                                                     <div>
                                                         <label className={labelCls}>
                                                             Province <span style={{ color: "#C41E1E" }}>*</span>
@@ -840,6 +933,9 @@ export default function SignUpLayout() {
                                                             ))}
                                                         </select>
                                                     </div>
+                                                </div>
+
+                                                <div className="grid gap-4 sm:grid-cols-2">
                                                     <div>
                                                         <label className={labelCls}>
                                                             City / Municipality <span style={{ color: "#B91C1C" }}>*</span>
@@ -861,9 +957,6 @@ export default function SignUpLayout() {
                                                             ))}
                                                         </select>
                                                     </div>
-                                                </div>
-
-                                                <div className="grid gap-4 sm:grid-cols-2">
                                                     <div>
                                                         <label className={labelCls}>
                                                             Barangay <span style={{ color: "#B91C1C" }}>*</span>
@@ -889,26 +982,23 @@ export default function SignUpLayout() {
                                                             ))}
                                                         </select>
                                                     </div>
-                                                    <div>
-                                                        <label className={labelCls}>
-                                                            Postal / ZIP code
-                                                        </label>
-                                                        <input
-                                                            value={form.postalCode}
-                                                            placeholder="8000"
-                                                            className={inputCls}
-                                                            onChange={(e) => setForm((prev) => ({ ...prev, postalCode: e.target.value }))}
-                                                        />
-                                                    </div>
                                                 </div>
 
                                                 <div>
-                                                    <label className={labelCls}>Country</label>
+                                                    <label className={labelCls}>
+                                                        Street address <span style={{ color: "#B91C1C" }}>*</span>
+                                                    </label>
                                                     <input
-                                                        value={form.country}
-                                                        className={inputCls}
-                                                        onChange={(e) => setForm((prev) => ({ ...prev, country: e.target.value }))}
+                                                        required
+                                                        maxLength={100}
+                                                        value={form.streetAddress}
+                                                        placeholder="House no., street, subdivision"
+                                                        className={fieldCls("streetAddress")}
+                                                        onChange={(e) => setForm((prev) => ({ ...prev, streetAddress: e.target.value }))}
                                                     />
+                                                    <p className="mt-1 text-xs" style={{ color: "#6B6862" }}>
+                                                        {form.streetAddress.length}/100 characters
+                                                    </p>
                                                 </div>
                                             </div>
                                         </div>
@@ -987,7 +1077,6 @@ export default function SignUpLayout() {
                                                                     >
                                                                         <option value="">Select relationship</option>
                                                                         <option value="Parent">Parent</option>
-                                                                        <option value="Sibling">Sibling</option>
                                                                         <option value="Child">Child</option>
                                                                         <option value="Spouse">Spouse</option>
                                                                     </select>
@@ -1125,23 +1214,22 @@ export default function SignUpLayout() {
                                             </p>
                                             <div className="mb-5 space-y-2">
                                                 {[
-                                                    { label: "First name", value: form.firstName || "—" },
-                                                    { label: "Middle name", value: form.middleName || "—" },
-                                                    { label: "Last name", value: form.lastName || "—" },
+                                                    { label: "First Name", value: form.firstName || "—" },
+                                                    { label: "Middle Name", value: form.middleName || "—" },
+                                                    { label: "Last Name", value: form.lastName || "—" },
                                                     { label: "Suffix", value: form.suffix || "—" },
                                                     { label: "Email", value: form.email || "—" },
-                                                    { label: "Mobile", value: form.mobile || "—" },
-                                                    { label: "Birth date", value: form.birthDate || "—" },
+                                                    { label: "Mobile", value: form.mobile ? `+63 ${formatPHMobile(form.mobile)}` : "—" },
+                                                    { label: "Birth Date", value: form.birthDate || "—" },
                                                     { label: "Gender", value: form.gender ? form.gender.charAt(0).toUpperCase() + form.gender.slice(1) : "—" },
                                                     {
-                                                        label: "Civil status",
+                                                        label: "Civil Status",
                                                         value: form.civilStatus ? form.civilStatus.charAt(0).toUpperCase() + form.civilStatus.slice(1) : "—",
                                                     },
-                                                    { label: "Street address", value: form.streetAddress || "—" },
+                                                    { label: "Street Address", value: form.streetAddress || "—" },
                                                     { label: "Barangay", value: form.barangay || "—" },
                                                     { label: "City", value: form.city || "—" },
                                                     { label: "Province", value: form.province || "—" },
-                                                    { label: "Postal code", value: form.postalCode || "—" },
                                                     { label: "Country", value: form.country || "—" },
                                                 ].map(({ label, value }) => (
                                                     <div
@@ -1261,12 +1349,30 @@ export default function SignUpLayout() {
                                             <button
                                                 type="button"
                                                 onClick={handleContinue}
-                                                className="flex items-center gap-2 rounded-full px-6 py-2 text-sm font-medium text-white transition-colors"
+                                                disabled={checking}
+                                                className="flex items-center gap-2 rounded-full px-6 py-2 text-sm font-medium text-white transition-colors disabled:cursor-not-allowed disabled:opacity-70"
                                                 style={{ backgroundColor: "#1B2D6B" }}
-                                                onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#C9922A")}
-                                                onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#1B2D6B")}
+                                                onMouseOver={(e) => !checking && (e.currentTarget.style.backgroundColor = "#C9922A")}
+                                                onMouseOut={(e) => !checking && (e.currentTarget.style.backgroundColor = "#1B2D6B")}
                                             >
-                                                Continue <ChevronRight size={16} />
+                                                {checking ? (
+                                                    <>
+                                                        <svg
+                                                            className="h-4 w-4 animate-spin text-white"
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            fill="none"
+                                                            viewBox="0 0 24 24"
+                                                        >
+                                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z" />
+                                                        </svg>
+                                                        Checking…
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        Continue <ChevronRight size={16} />
+                                                    </>
+                                                )}
                                             </button>
                                         )}
                                     </div>
