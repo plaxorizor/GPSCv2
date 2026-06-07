@@ -9,9 +9,9 @@ export function Button({ children, variant = "primary", size = "md", className =
     const baseStyles = "font-medium transition-colors rounded-xl inline-flex items-center justify-center";
 
     const variants = {
-        primary: "bg-gpsc-navy text-white hover:bg-gpsc-green",
-        secondary: "bg-gpsc-green text-white hover:bg-gpsc-green-light",
-        outline: "border border-gpsc-navy text-gpsc-navy hover:bg-gpsc-navy hover:text-white",
+        primary: "bg-fsc-navy text-white hover:bg-fsc-green",
+        secondary: "bg-fsc-green text-white hover:bg-fsc-green-light",
+        outline: "border border-fsc-navy text-fsc-navy hover:bg-fsc-navy hover:text-white",
     };
 
     const sizes = {

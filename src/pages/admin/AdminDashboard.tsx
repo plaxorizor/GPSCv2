@@ -77,7 +77,7 @@ export default function AdminDashboard({
     ];
 
     return (
-        <div className="gpsc-cream font-body flex min-h-screen">
+        <div className="fsc-cream font-body flex min-h-screen">
             <DashboardSidebar
                 currentSection={currentSection}
                 onSectionChange={setCurrentSection}

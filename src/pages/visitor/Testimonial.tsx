@@ -1,15 +1,19 @@
 import React from "react";
 import { Quote } from "lucide-react";
+import { useScrollReveal } from "../../hooks/useScrollReveal";
 
-export const Testimonial: React.FC = () => (
-  <section className="gpsc-cream">
-    <div className="max-w-4xl mx-auto px-6 lg:px-8 py-24 text-center">
-      <Quote size={48} className="text-gpsc-green mx-auto mb-8" />
-      <p className="font-display text-3xl lg:text-4xl text-gpsc-navy leading-snug italic">
-        "When my husband was admitted last February, Faith Shield Care released ₱11,500 in four days. No paperwork chaos, no
-        waiting weeks. Now I refer everyone in our barangay — it's how we take care of each other."
-      </p>
-    
-    </div>
-  </section>
-);
+export const Testimonial: React.FC = () => {
+    const { ref, inView } = useScrollReveal();
+    return (
+        <section className="fsc-cream">
+            <div ref={ref} className={`mx-auto max-w-4xl px-6 py-24 text-center lg:px-8 scroll-reveal ${inView ? "in-view" : ""}`}>
+                <Quote size={48} className="text-fsc-green mx-auto mb-8" />
+                <p className="font-display text-fsc-navy text-3xl italic leading-snug lg:text-4xl">
+                    "When my husband was admitted last February, FaithShield Care released ₱11,500 in four days. No paperwork chaos, no
+                    waiting weeks. Now I refer everyone in our barangay — it's how we take care of each other."
+                </p>
+                <div className="mt-8 text-sm text-fsc-stone">— Maria S., Davao City</div>
+            </div>
+        </section>
+    );
+};

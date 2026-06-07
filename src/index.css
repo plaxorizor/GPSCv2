@@ -1,100 +1,122 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,800&family=DM+Sans:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
-/* Add to your global CSS file or index.css */
-/* 
-@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,800&family=DM+Sans:wght@400;500;600;700&display=swap");
-*/
-.font-display {
-    font-family: "Fraunces", Georgia, serif;
-    font-optical-sizing: auto;
+
+/* -- Typography -------------------------------------------------------- */
+.font-display { font-family: 'Fraunces', Georgia, serif; font-optical-sizing: auto; }
+.font-body    { font-family: 'DM Sans', system-ui, sans-serif; }
+body, html, #root { font-family: 'DM Sans', system-ui, sans-serif; }
+
+/* -- Color utilities --------------------------------------------------- */
+.fsc-cream              { background-color: #F2F3F5; }
+.fsc-cream-dark         { background-color: #E2E4E8; }
+
+.text-fsc-navy          { color: #1B2D6B; }
+.text-fsc-navy-light    { color: #2E4A9E; }
+.text-fsc-green         { color: #C9922A; }
+.text-fsc-green-light   { color: #D4A84B; }
+.text-fsc-stone         { color: #6B6862; }
+.text-fsc-ink           { color: #1A1E22; }
+.text-fsc-red           { color: #C41E1E; }
+
+.bg-fsc-navy            { background-color: #1B2D6B; }
+.bg-fsc-navy-light      { background-color: #2E4A9E; }
+.bg-fsc-green           { background-color: #C9922A; }
+.bg-fsc-green-light     { background-color: #D4A84B; }
+.bg-fsc-red             { background-color: #C41E1E; }
+
+.border-fsc-navy        { border-color: #1B2D6B; }
+.border-fsc-green       { border-color: #C9922A; }
+.border-fsc-cream-dark  { border-color: #D0D2D8; }
+
+.ring-fsc-green         { --tw-ring-color: #C9922A; }
+
+.hover\:bg-fsc-navy:hover       { background-color: #1B2D6B; }
+.hover\:bg-fsc-green:hover      { background-color: #C9922A; }
+.hover\:bg-fsc-cream-dark:hover { background-color: #E2E4E8; }
+.hover\:bg-fsc-red:hover        { background-color: #A31818; }
+
+/* -- Grain overlay ----------------------------------------------------- */
+.grain-overlay {
+    background-image: radial-gradient(circle at 1px 1px, rgba(27,45,107,0.04) 1px, transparent 0);
+    background-size: 24px 24px;
 }
 
-.font-body {
-    font-family: "DM Sans", system-ui, sans-serif;
+/* -- Animations -------------------------------------------------------- */
+@keyframes fade-up {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
-body,
-html,
-#root {
-    font-family: "DM Sans", system-ui, sans-serif;
+@keyframes hero-card-in {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
-.bg-gpsc-cream {
-    background-color: #faf6ee;
+@keyframes float-bob {
+    0%, 100% { transform: translateY(0px); }
+    50%       { transform: translateY(-8px); }
 }
+.anim-fade-up    { animation: fade-up 0.6s ease-out forwards; }
+.anim-delay-100  { animation-delay: 0.1s; opacity: 0; }
+.anim-delay-200  { animation-delay: 0.2s; opacity: 0; }
+.anim-delay-300  { animation-delay: 0.3s; opacity: 0; }
+.anim-delay-400  { animation-delay: 0.4s; opacity: 0; }
 
-.bg-gpsc-cream-dark {
-    background-color: #f0e9d9;
+/* -- Scroll reveal ----------------------------------------------------- */
+.scroll-reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.65s ease-out, transform 0.65s ease-out;
 }
+.scroll-reveal.in-view {
+    opacity: 1;
+    transform: translateY(0);
+}
+.scroll-reveal.delay-100 { transition-delay: 0.1s; }
+.scroll-reveal.delay-200 { transition-delay: 0.2s; }
+.scroll-reveal.delay-300 { transition-delay: 0.3s; }
 
-.text-gpsc-navy {
-    color: #14365c;
-}
+/* -- Tier: Bronze -- white card, navy text ----------------------------- */
+.tier-bronze { background-color: #ffffff; border: 1.5px solid #D0D2D8; }
+.tier-bronze .tier-coverage     { color: #6B6862; }
+.tier-bronze .tier-name         { color: #1B2D6B; }
+.tier-bronze .tier-tagline      { color: #6B6862; }
+.tier-bronze .tier-price        { color: #C9922A; }
+.tier-bronze .tier-price-note   { color: #6B6862; }
+.tier-bronze .tier-divider      { background-color: #E2E4E8; }
+.tier-bronze .tier-check        { color: #C9922A; }
+.tier-bronze .tier-benefit-name { color: #1B2D6B; }
+.tier-bronze .tier-benefit-amt  { color: #6B6862; }
+.tier-bronze .tier-more         { color: #6B6862; }
+.tier-bronze .tier-btn          { background-color: #1B2D6B; color: #fff; border: none; }
+.tier-bronze .tier-btn:hover    { background-color: #2E4A9E; }
 
-.text-gpsc-navy-light {
-    color: #2d5a85;
-}
+/* -- Tier: Silver -- navy card, gold accents (featured) ---------------- */
+.tier-silver { background-color: #1B2D6B; border: 1.5px solid #1B2D6B; }
+.tier-silver .tier-coverage     { color: #C9922A; }
+.tier-silver .tier-name         { color: #ffffff; }
+.tier-silver .tier-tagline      { color: #8A9DD4; }
+.tier-silver .tier-price        { color: #C9922A; }
+.tier-silver .tier-price-note   { color: #8A9DD4; }
+.tier-silver .tier-divider      { background-color: #2E3D7C; }
+.tier-silver .tier-check        { color: #C9922A; }
+.tier-silver .tier-benefit-name { color: #ffffff; }
+.tier-silver .tier-benefit-amt  { color: #8A9DD4; }
+.tier-silver .tier-more         { color: #8A9DD4; }
+.tier-silver .tier-btn          { background-color: #C9922A; color: #fff; border: none; }
+.tier-silver .tier-btn:hover    { background-color: #A87820; }
 
-.text-gpsc-green {
-    color: #4a8a2c;
-}
-
-.text-gpsc-green-light {
-    color: #5dab3a;
-}
-
-.text-gpsc-stone {
-    color: #6b6862;
-}
-
-.text-gpsc-ink {
-    color: #1a1e22;
-}
-
-.bg-gpsc-navy {
-    background-color: #14365c;
-}
-
-.bg-gpsc-navy-light {
-    background-color: #2d5a85;
-}
-
-.bg-gpsc-green {
-    background-color: #4a8a2c;
-}
-
-.bg-gpsc-green-light {
-    background-color: #5dab3a;
-}
-
-.border-gpsc-navy {
-    border-color: #14365c;
-}
-
-.border-gpsc-green {
-    border-color: #4a8a2c;
-}
-
-.border-gpsc-cream-dark {
-    border-color: #e5ddc8;
-}
-
-.ring-gpsc-green {
-    --tw-ring-color: #4a8a2c;
-}
-
-.hover\:bg-gpsc-navy:hover {
-    background-color: #14365c;
-}
-
-.hover\:bg-gpsc-green:hover {
-    background-color: #4a8a2c;
-}
-
-.hover\:bg-gpsc-cream-dark:hover {
-    background-color: #f0e9d9;
-}
-
-button,
-a {
-    cursor: pointer;
-}
+/* -- Tier: Gold -- white card, gold CTA -------------------------------- */
+.tier-gold { background-color: #ffffff; border: 1.5px solid #D0D2D8; }
+.tier-gold .tier-coverage       { color: #6B6862; }
+.tier-gold .tier-name           { color: #1B2D6B; }
+.tier-gold .tier-tagline        { color: #6B6862; }
+.tier-gold .tier-price          { color: #C9922A; }
+.tier-gold .tier-price-note     { color: #6B6862; }
+.tier-gold .tier-divider        { background-color: #E2E4E8; }
+.tier-gold .tier-check          { color: #C9922A; }
+.tier-gold .tier-benefit-name   { color: #1B2D6B; }
+.tier-gold .tier-benefit-amt    { color: #6B6862; }
+.tier-gold .tier-more           { color: #6B6862; }
+.tier-gold .tier-btn            { background-color: #C9922A; color: #fff; border: none; }
+.tier-gold .tier-btn:hover      { background-color: #A87820; }

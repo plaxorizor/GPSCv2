@@ -68,10 +68,10 @@ export default function RequestPayoutModal({ availableToWithdraw, memberName, on
         return (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
                 <div className="w-full max-w-md rounded-2xl bg-white p-8 text-center shadow-xl">
-                    <CheckCircle className="text-gpsc-green mx-auto mb-4" size={48} />
-                    <h2 className="font-display text-gpsc-navy mb-2 text-xl font-semibold">Request Submitted!</h2>
-                    <p className="text-gpsc-stone mb-6 text-sm">
-                        Your payout of <span className="text-gpsc-navy font-semibold">{formatCurrency(submittedAmount)}</span> has been submitted. The
+                    <CheckCircle className="text-fsc-green mx-auto mb-4" size={48} />
+                    <h2 className="font-display text-fsc-navy mb-2 text-xl font-semibold">Request Submitted!</h2>
+                    <p className="text-fsc-stone mb-6 text-sm">
+                        Your payout of <span className="text-fsc-navy font-semibold">{formatCurrency(submittedAmount)}</span> has been submitted. The
                         admin will process it within 3–5 business days.
                     </p>
                     <button
@@ -79,7 +79,7 @@ export default function RequestPayoutModal({ availableToWithdraw, memberName, on
                             onSuccess();
                             onClose();
                         }}
-                        className="bg-gpsc-green w-full rounded-xl py-3 font-medium text-white"
+                        className="bg-fsc-green w-full rounded-xl py-3 font-medium text-white"
                     >
                         Done
                     </button>
@@ -92,17 +92,17 @@ export default function RequestPayoutModal({ availableToWithdraw, memberName, on
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
             <div className="w-full max-w-md rounded-2xl bg-white shadow-xl">
                 {/* Header */}
-                <div className="border-gpsc-cream-dark flex items-center justify-between border-b p-6">
+                <div className="border-fsc-cream-dark flex items-center justify-between border-b p-6">
                     <div className="flex items-center gap-3">
-                        <div className="bg-gpsc-green/10 flex h-9 w-9 items-center justify-center rounded-xl">
-                            <Wallet className="text-gpsc-green" size={18} />
+                        <div className="bg-fsc-green/10 flex h-9 w-9 items-center justify-center rounded-xl">
+                            <Wallet className="text-fsc-green" size={18} />
                         </div>
                         <div>
-                            <h2 className="font-display text-gpsc-navy font-semibold">Request Payout</h2>
-                            <p className="text-gpsc-stone text-xs">Available: {formatCurrency(availableToWithdraw)}</p>
+                            <h2 className="font-display text-fsc-navy font-semibold">Request Payout</h2>
+                            <p className="text-fsc-stone text-xs">Available: {formatCurrency(availableToWithdraw)}</p>
                         </div>
                     </div>
-                    <button onClick={onClose} className="text-gpsc-stone hover:text-gpsc-navy rounded-lg p-1 transition-colors">
+                    <button onClick={onClose} className="text-fsc-stone hover:text-fsc-navy rounded-lg p-1 transition-colors">
                         <X size={20} />
                     </button>
                 </div>
@@ -111,9 +111,9 @@ export default function RequestPayoutModal({ availableToWithdraw, memberName, on
                 <form onSubmit={handleSubmit} className="space-y-4 p-6">
                     {/* Amount */}
                     <div>
-                        <label className="text-gpsc-navy mb-1.5 block text-sm font-medium">Amount</label>
+                        <label className="text-fsc-navy mb-1.5 block text-sm font-medium">Amount</label>
                         <div className="relative">
-                            <span className="text-gpsc-stone absolute top-1/2 left-3 -translate-y-1/2 text-sm">₱</span>
+                            <span className="text-fsc-stone absolute top-1/2 left-3 -translate-y-1/2 text-sm">₱</span>
                             <input
                                 type="number"
                                 min={MIN_PAYOUT}
@@ -122,15 +122,15 @@ export default function RequestPayoutModal({ availableToWithdraw, memberName, on
                                 value={amount}
                                 onChange={(e) => setAmount(e.target.value)}
                                 placeholder={`Min ₱${MIN_PAYOUT}`}
-                                className="border-gpsc-cream-dark focus:border-gpsc-green w-full rounded-xl border py-3 pr-3 pl-7 text-sm focus:outline-none"
+                                className="border-fsc-cream-dark focus:border-fsc-green w-full rounded-xl border py-3 pr-3 pl-7 text-sm focus:outline-none"
                                 required
                             />
                         </div>
                         {numAmount > 0 && numAmount < MIN_PAYOUT && (
-                            <p className="mt-1 text-xs text-red-500">Minimum payout is {formatCurrency(MIN_PAYOUT)}</p>
+                            <p className="mt-1 text-xs text-[#C41E1E]">Minimum payout is {formatCurrency(MIN_PAYOUT)}</p>
                         )}
                         {numAmount > availableToWithdraw && (
-                            <p className="mt-1 text-xs text-red-500">Exceeds available balance of {formatCurrency(availableToWithdraw)}</p>
+                            <p className="mt-1 text-xs text-[#C41E1E]">Exceeds available balance of {formatCurrency(availableToWithdraw)}</p>
                         )}
                         {/* Quick-fill buttons */}
                         <div className="mt-2 flex gap-2">
@@ -142,7 +142,7 @@ export default function RequestPayoutModal({ availableToWithdraw, memberName, on
                                         key={frac}
                                         type="button"
                                         onClick={() => setAmount(val.toString())}
-                                        className="border-gpsc-cream-dark text-gpsc-stone hover:bg-gpsc-cream rounded-lg border px-2.5 py-1 text-xs transition-colors"
+                                        className="border-fsc-cream-dark text-fsc-stone hover:bg-fsc-cream rounded-lg border px-2.5 py-1 text-xs transition-colors"
                                     >
                                         {frac === 1 ? "Max" : `${frac * 100}%`}
                                     </button>
@@ -153,11 +153,11 @@ export default function RequestPayoutModal({ availableToWithdraw, memberName, on
 
                     {/* Payment method */}
                     <div>
-                        <label className="text-gpsc-navy mb-1.5 block text-sm font-medium">Payment Method</label>
+                        <label className="text-fsc-navy mb-1.5 block text-sm font-medium">Payment Method</label>
                         <select
                             value={method}
                             onChange={(e) => setMethod(e.target.value)}
-                            className="border-gpsc-cream-dark focus:border-gpsc-green w-full rounded-xl border px-3 py-3 text-sm focus:outline-none"
+                            className="border-fsc-cream-dark focus:border-fsc-green w-full rounded-xl border px-3 py-3 text-sm focus:outline-none"
                             required
                         >
                             <option value="">Select method…</option>
@@ -171,43 +171,43 @@ export default function RequestPayoutModal({ availableToWithdraw, memberName, on
 
                     {/* Account number */}
                     <div>
-                        <label className="text-gpsc-navy mb-1.5 block text-sm font-medium">{isEWallet ? "Mobile Number" : "Account Number"}</label>
+                        <label className="text-fsc-navy mb-1.5 block text-sm font-medium">{isEWallet ? "Mobile Number" : "Account Number"}</label>
                         <input
                             type="text"
                             value={accountNumber}
                             onChange={(e) => setAccountNumber(e.target.value)}
                             placeholder={isEWallet ? "09XXXXXXXXX" : "Enter account number"}
-                            className="border-gpsc-cream-dark focus:border-gpsc-green w-full rounded-xl border px-3 py-3 text-sm focus:outline-none"
+                            className="border-fsc-cream-dark focus:border-fsc-green w-full rounded-xl border px-3 py-3 text-sm focus:outline-none"
                             required
                         />
                     </div>
 
                     {/* Account name */}
                     <div>
-                        <label className="text-gpsc-navy mb-1.5 block text-sm font-medium">Account Name</label>
+                        <label className="text-fsc-navy mb-1.5 block text-sm font-medium">Account Name</label>
                         <input
                             type="text"
                             onChange={(e) => setAccountName(e.target.value)}
                             placeholder="Name on account"
-                            className="border-gpsc-cream-dark focus:border-gpsc-green w-full rounded-xl border px-3 py-3 text-sm focus:outline-none"
+                            className="border-fsc-cream-dark focus:border-fsc-green w-full rounded-xl border px-3 py-3 text-sm focus:outline-none"
                             required
                         />
                     </div>
 
-                    {error && <p className="text-sm text-red-500">{error}</p>}
+                    {error && <p className="text-sm text-[#C41E1E]">{error}</p>}
 
                     <div className="flex gap-3 pt-2">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="border-gpsc-cream-dark flex-1 rounded-xl border py-3 text-sm font-medium transition-colors hover:bg-gray-50"
+                            className="border-fsc-cream-dark flex-1 rounded-xl border py-3 text-sm font-medium transition-colors hover:bg-gray-50"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
                             disabled={loading || !isValid}
-                            className="bg-gpsc-green flex-1 rounded-xl py-3 text-sm font-medium text-white transition-opacity disabled:opacity-50"
+                            className="bg-fsc-green flex-1 rounded-xl py-3 text-sm font-medium text-white transition-opacity disabled:opacity-50"
                         >
                             {loading ? "Submitting…" : "Submit Request"}
                         </button>

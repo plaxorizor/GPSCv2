@@ -72,11 +72,11 @@ export default function ChangePasswordModal({ onClose, forced = false, onChanged
                 {/* Header */}
                 <div className="mb-6 flex items-center justify-between">
                     <div>
-                        <h2 className="font-display text-gpsc-navy text-xl">
+                        <h2 className="font-display text-fsc-navy text-xl">
                             {forced ? "Set Your Password" : "Change Password"}
                         </h2>
                         {forced && (
-                            <p className="text-gpsc-stone mt-1 text-sm">
+                            <p className="text-fsc-stone mt-1 text-sm">
                                 For your security, please replace the temporary password before continuing.
                             </p>
                         )}
@@ -84,7 +84,7 @@ export default function ChangePasswordModal({ onClose, forced = false, onChanged
                     {!forced && (
                         <button
                             onClick={onClose}
-                            className="text-gpsc-stone hover:text-gpsc-navy transition-colors"
+                            className="text-fsc-stone hover:text-fsc-navy transition-colors"
                             aria-label="Close"
                         >
                             <X size={20} />
@@ -95,12 +95,12 @@ export default function ChangePasswordModal({ onClose, forced = false, onChanged
                 {success ? (
                     /* Success state */
                     <div className="py-6 text-center">
-                        <CheckCircle size={48} className="text-gpsc-green mx-auto mb-3" />
-                        <p className="text-gpsc-navy font-medium">Password changed successfully!</p>
-                        <p className="text-gpsc-stone mt-1 text-sm">Use your new password next time you log in.</p>
+                        <CheckCircle size={48} className="text-fsc-green mx-auto mb-3" />
+                        <p className="text-fsc-navy font-medium">Password changed successfully!</p>
+                        <p className="text-fsc-stone mt-1 text-sm">Use your new password next time you log in.</p>
                         <button
                             onClick={onClose}
-                            className="bg-gpsc-green mt-6 rounded-xl px-8 py-2.5 text-sm font-medium text-white"
+                            className="bg-fsc-green mt-6 rounded-xl px-8 py-2.5 text-sm font-medium text-white"
                         >
                             Done
                         </button>
@@ -108,14 +108,14 @@ export default function ChangePasswordModal({ onClose, forced = false, onChanged
                 ) : (
                     <form onSubmit={handleSubmit} className="space-y-4">
                         {error && (
-                            <div className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
+                            <div className="rounded-xl bg-[#C41E1E]/5 px-4 py-3 text-sm text-[#C41E1E]">
                                 {error}
                             </div>
                         )}
 
                         {/* Current password */}
                         <div>
-                            <label className="text-gpsc-stone text-xs uppercase tracking-wider">
+                            <label className="text-fsc-stone text-xs uppercase tracking-wider">
                                 Current Password
                             </label>
                             <div className="relative mt-1">
@@ -124,12 +124,12 @@ export default function ChangePasswordModal({ onClose, forced = false, onChanged
                                     required
                                     value={currentPassword}
                                     onChange={(e) => setCurrentPassword(e.target.value)}
-                                    className="border-gpsc-cream-dark text-gpsc-navy focus:ring-gpsc-green w-full rounded-xl border bg-white px-4 py-3 pr-10 focus:outline-none focus:ring-2"
+                                    className="border-fsc-cream-dark text-fsc-navy focus:ring-fsc-green w-full rounded-xl border bg-white px-4 py-3 pr-10 focus:outline-none focus:ring-2"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowCurrent((v) => !v)}
-                                    className="text-gpsc-stone absolute inset-y-0 right-3 flex items-center"
+                                    className="text-fsc-stone absolute inset-y-0 right-3 flex items-center"
                                     tabIndex={-1}
                                 >
                                     {showCurrent ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -139,7 +139,7 @@ export default function ChangePasswordModal({ onClose, forced = false, onChanged
 
                         {/* New password */}
                         <div>
-                            <label className="text-gpsc-stone text-xs uppercase tracking-wider">
+                            <label className="text-fsc-stone text-xs uppercase tracking-wider">
                                 New Password
                             </label>
                             <div className="relative mt-1">
@@ -148,12 +148,12 @@ export default function ChangePasswordModal({ onClose, forced = false, onChanged
                                     required
                                     value={newPassword}
                                     onChange={(e) => setNewPassword(e.target.value)}
-                                    className="border-gpsc-cream-dark text-gpsc-navy focus:ring-gpsc-green w-full rounded-xl border bg-white px-4 py-3 pr-10 focus:outline-none focus:ring-2"
+                                    className="border-fsc-cream-dark text-fsc-navy focus:ring-fsc-green w-full rounded-xl border bg-white px-4 py-3 pr-10 focus:outline-none focus:ring-2"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowNew((v) => !v)}
-                                    className="text-gpsc-stone absolute inset-y-0 right-3 flex items-center"
+                                    className="text-fsc-stone absolute inset-y-0 right-3 flex items-center"
                                     tabIndex={-1}
                                 >
                                     {showNew ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -163,7 +163,7 @@ export default function ChangePasswordModal({ onClose, forced = false, onChanged
 
                         {/* Confirm new password */}
                         <div>
-                            <label className="text-gpsc-stone text-xs uppercase tracking-wider">
+                            <label className="text-fsc-stone text-xs uppercase tracking-wider">
                                 Confirm New Password
                             </label>
                             <input
@@ -171,10 +171,10 @@ export default function ChangePasswordModal({ onClose, forced = false, onChanged
                                 required
                                 value={confirmPassword}
                                 onChange={(e) => setConfirmPassword(e.target.value)}
-                                className="border-gpsc-cream-dark text-gpsc-navy focus:ring-gpsc-green mt-1 w-full rounded-xl border bg-white px-4 py-3 focus:outline-none focus:ring-2"
+                                className="border-fsc-cream-dark text-fsc-navy focus:ring-fsc-green mt-1 w-full rounded-xl border bg-white px-4 py-3 focus:outline-none focus:ring-2"
                             />
                             {confirmPassword && newPassword !== confirmPassword && (
-                                <p className="mt-1 text-xs text-red-600">Passwords do not match</p>
+                                <p className="mt-1 text-xs text-[#C41E1E]">Passwords do not match</p>
                             )}
                         </div>
 
@@ -184,7 +184,7 @@ export default function ChangePasswordModal({ onClose, forced = false, onChanged
                                 <button
                                     type="button"
                                     onClick={onClose}
-                                    className="border-gpsc-cream-dark text-gpsc-stone hover:bg-gpsc-cream/40 flex-1 rounded-xl border py-3 text-sm transition-colors"
+                                    className="border-fsc-cream-dark text-fsc-stone hover:bg-fsc-cream/40 flex-1 rounded-xl border py-3 text-sm transition-colors"
                                 >
                                     Cancel
                                 </button>
@@ -192,7 +192,7 @@ export default function ChangePasswordModal({ onClose, forced = false, onChanged
                             <button
                                 type="submit"
                                 disabled={loading || (!!confirmPassword && newPassword !== confirmPassword)}
-                                className="bg-gpsc-green flex-1 rounded-xl py-3 text-sm font-medium text-white disabled:opacity-50"
+                                className="bg-fsc-green flex-1 rounded-xl py-3 text-sm font-medium text-white disabled:opacity-50"
                             >
                                 {loading ? "Updating…" : "Update Password"}
                             </button>

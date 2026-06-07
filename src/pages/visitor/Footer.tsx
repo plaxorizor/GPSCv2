@@ -3,19 +3,22 @@ import { Link } from "react-router-dom";
 import logo from "../../components/ui/Logo.png";
 
 export const Footer: React.FC = () => (
-    <footer className="bg-gpsc-navy text-white">
+    <footer className="bg-fsc-navy text-white">
         <div className="mx-auto max-w-6xl px-6 py-16 lg:px-8">
             <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
                 <div>
                     <div className="mb-4 flex items-center gap-3">
-                        <img src={logo} alt="Faith Shield Care Logo" className="h-12 w-12 rounded-full object-contain mix-blend-lighten" />
+                        <img src={logo} alt="GPSC Logo" className="h-12 w-12 rounded-full object-contain mix-blend-lighten" />
                         <div className="leading-tight">
-                            <div className="font-display text-base font-semibold text-white">Faith Shield</div>
-                            <div className="font-display text-gpsc-green text-xs italic">Care</div>
+                            <div className="font-display text-base font-bold">
+                                <span className="text-white">FaithShield </span>
+                                <span style={{ color: "#C41E1E" }}>Care</span>
+                            </div>
+                            <div className="font-body text-[10px] italic text-white/50">Guided by Faith, Driven by Care</div>
                         </div>
                     </div>
                     <p className="text-sm leading-relaxed text-white/60">
-                        A community-owned safety net for Filipino families, rooted in faith and Bayanihan spirit.
+                        A community-based membership organization providing affordable financial assistance, livelihood opportunities, and compassionate care — inspired by Christian values and the Bayanihan spirit.
                     </p>
                 </div>
                 <div>
@@ -90,8 +93,8 @@ export const Footer: React.FC = () => (
                 </div>
             </div>
             <div className="mt-16 flex flex-wrap justify-between gap-4 border-t border-white/10 pt-8 text-xs text-white/40">
-                <div>© 2026 Faith Shield Care · Davao City, Philippines</div>
-                <div className="font-display italic">We Care · We Serve · We Share</div>
+                <div>© 2026 FaithShield Care · Philippines</div>
+                <div className="font-display italic">Guided by Faith, Driven by Care</div>
             </div>
         </div>
     </footer>

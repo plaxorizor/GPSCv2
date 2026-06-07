@@ -88,8 +88,8 @@ export default function AdminArea() {
     // Check auth loading
     if (authLoading) {
         return (
-            <div className="bg-gpsc-cream flex min-h-screen items-center justify-center">
-                <div className="border-gpsc-green h-12 w-12 animate-spin rounded-full border-b-2"></div>
+            <div className="bg-fsc-cream flex min-h-screen items-center justify-center">
+                <div className="border-fsc-green h-12 w-12 animate-spin rounded-full border-b-2"></div>
             </div>
         );
     }

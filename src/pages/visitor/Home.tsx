@@ -1,5 +1,4 @@
 import React from "react";
-import { GlobalStyles } from "./GlobalStyles";
 import PublicNav from "./PublicNav";
 import { Footer } from "./Footer";
 import { Hero } from "./Hero";
@@ -8,23 +7,25 @@ import { HowItWorks } from "./HowItWorks";
 import { Packages } from "./Packages";
 import { Testimonial } from "./Testimonial";
 import { TrustStrip } from "./TrustStrip";
-import { Navigate } from "react-router-dom";
+import { CTABanner } from "./CTABanner";
+import { Navigate, useNavigate } from "react-router-dom";
 import useAuth from "../../context/useAuth";
 
 export default function Home(): React.ReactElement {
     const { currentUser: user } = useAuth();
+    const navigate = useNavigate();
     if (user) return <Navigate to="/dashboard" />;
 
     return (
-        <div className="font-body text-gpsc-ink min-h-screen antialiased">
-            <GlobalStyles />
+        <div className="font-body text-fsc-ink min-h-screen antialiased">
             <PublicNav />
             <Hero />
             <Pillars />
             <HowItWorks />
-            <Packages onChoosePackage={(packageName: string) => console.log(packageName + " chosen")} />
+            <Packages onChoosePackage={() => navigate("/signup")} />
             <Testimonial />
             <TrustStrip />
+            <CTABanner />
             <Footer />
         </div>
     );

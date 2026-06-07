@@ -21,7 +21,7 @@ const AllMembers = ({ members, loading, onSelectMember, selectedIds, onToggleSel
         return (
             <tbody>
                 <tr>
-                    <td colSpan={COL_SPAN} className="text-gpsc-stone p-8 text-center">
+                    <td colSpan={COL_SPAN} className="text-fsc-stone p-8 text-center">
                         Loading members...
                     </td>
                 </tr>
@@ -32,7 +32,7 @@ const AllMembers = ({ members, loading, onSelectMember, selectedIds, onToggleSel
         return (
             <tbody>
                 <tr>
-                    <td colSpan={COL_SPAN} className="text-gpsc-stone p-8 text-center">
+                    <td colSpan={COL_SPAN} className="text-fsc-stone p-8 text-center">
                         No members match your filters.
                     </td>
                 </tr>
@@ -44,47 +44,47 @@ const AllMembers = ({ members, loading, onSelectMember, selectedIds, onToggleSel
             {(members as MemberRow[]).map((m) => (
                 <tr
                     key={m.uid}
-                    className="border-gpsc-cream-dark hover:bg-gpsc-cream/40 cursor-pointer border-t transition-colors"
+                    className="border-fsc-cream-dark hover:bg-fsc-cream/40 cursor-pointer border-t transition-colors"
                     onClick={() => onSelectMember(m)}
                 >
                     <td className="p-4">
                         <div className="flex items-center gap-3">
-                            <div className="bg-gpsc-navy font-display flex h-9 w-9 items-center justify-center rounded-full text-xs text-white">
+                            <div className="bg-fsc-navy font-display flex h-9 w-9 items-center justify-center rounded-full text-xs text-white">
                                 {m.firstName.charAt(0).toUpperCase() + m.lastName.charAt(0).toUpperCase()}
                             </div>
                             <div>
-                                <div className="text-gpsc-navy font-medium">
+                                <div className="text-fsc-navy font-medium">
                                     {m.firstName} {m.lastName}
                                 </div>
-                                <div className="text-gpsc-stone text-xs">{m.email}</div>
+                                <div className="text-fsc-stone text-xs">{m.email}</div>
                             </div>
                         </div>
                     </td>
-                    <td className="text-gpsc-stone p-4">
+                    <td className="text-fsc-stone p-4">
                         <span
                             className={`inline-block rounded-full px-2 py-1 text-xs font-medium capitalize ${
                                 m.package?.toLowerCase() === "premium"
-                                    ? "bg-yellow-100 text-yellow-800"
+                                    ? "bg-[#C9922A]/10 text-[#C9922A]"
                                     : m.package?.toLowerCase() === "family"
-                                    ? "bg-slate-100 text-slate-700"
-                                    : "bg-amber-100 text-amber-700"
+                                    ? "bg-fsc-navy/10 text-fsc-navy"
+                                    : "bg-fsc-cream text-fsc-stone"
                             }`}
                         >
                             {m.package ?? "—"} Care
                         </span>
                     </td>
-                    <td className="text-gpsc-stone p-4">{m.sponsorName || "—"}</td>
-                    <td className="text-gpsc-stone p-4">{m.dateCreated?.toDate?.()?.toLocaleDateString() ?? "—"}</td>
+                    <td className="text-fsc-stone p-4">{m.sponsorName || "—"}</td>
+                    <td className="text-fsc-stone p-4">{m.dateCreated?.toDate?.()?.toLocaleDateString() ?? "—"}</td>
                     <td className="p-4">
                         <span
                             className={`rounded-full px-2 py-1 text-xs font-medium ${
                                 m.archived
-                                    ? "bg-gpsc-stone/15 text-gpsc-stone"
+                                    ? "bg-fsc-stone/15 text-fsc-stone"
                                     : m.status === "active"
-                                    ? "bg-green-100 text-green-700"
+                                    ? "bg-fsc-green/10 text-fsc-green"
                                     : m.status === "pending"
-                                    ? "bg-amber-100 text-amber-700"
-                                    : "bg-red-100 text-red-700"
+                                    ? "bg-[#C9922A]/10 text-[#A87820]"
+                                    : "bg-[#C41E1E]/10 text-[#C41E1E]"
                             }`}
                         >
                             {m.archived ? "archived" : m.status}
@@ -96,7 +96,7 @@ const AllMembers = ({ members, loading, onSelectMember, selectedIds, onToggleSel
                                 type="checkbox"
                                 checked={selectedIds.has(m.uid)}
                                 onChange={() => onToggleSelect(m.uid)}
-                                className="accent-gpsc-navy h-4 w-4 cursor-pointer"
+                                className="accent-fsc-navy h-4 w-4 cursor-pointer"
                                 aria-label={`Select ${m.firstName} ${m.lastName}`}
                             />
                         )}

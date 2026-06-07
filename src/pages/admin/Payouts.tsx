@@ -96,11 +96,11 @@ export const Payouts: React.FC<Props> = ({ payouts, loading, onMarkSent, onRefre
     if (loading) {
         return (
             <div className="space-y-6 animate-pulse">
-                <div className="bg-gpsc-cream-dark h-8 w-32 rounded mb-4" />
+                <div className="bg-fsc-cream-dark h-8 w-32 rounded mb-4" />
                 <div className="grid gap-4 sm:grid-cols-3">
-                    {[1, 2, 3].map((i) => <div key={i} className="bg-gpsc-cream-dark h-28 rounded-2xl" />)}
+                    {[1, 2, 3].map((i) => <div key={i} className="bg-fsc-cream-dark h-28 rounded-2xl" />)}
                 </div>
-                <div className="bg-gpsc-cream-dark h-72 rounded-2xl" />
+                <div className="bg-fsc-cream-dark h-72 rounded-2xl" />
             </div>
         );
     }
@@ -110,13 +110,13 @@ export const Payouts: React.FC<Props> = ({ payouts, loading, onMarkSent, onRefre
             {/* Header */}
             <div className="flex items-end justify-between">
                 <div>
-                    <div className="text-gpsc-stone text-xs tracking-wider uppercase">Payout management</div>
-                    <h1 className="font-display text-gpsc-navy text-3xl">Payouts</h1>
+                    <div className="text-fsc-stone text-xs tracking-wider uppercase">Payout management</div>
+                    <h1 className="font-display text-fsc-navy text-3xl">Payouts</h1>
                 </div>
                 <button
                     onClick={() => triggerRefresh("all")}
                     disabled={activeRefresh === "all"}
-                    className="text-gpsc-green flex items-center gap-1 text-xs transition-colors hover:underline disabled:opacity-60"
+                    className="text-fsc-green flex items-center gap-1 text-xs transition-colors hover:underline disabled:opacity-60"
                 >
                     <RefreshCw size={16} className={activeRefresh === "all" ? "animate-spin" : ""} /> Refresh
                 </button>
@@ -124,75 +124,75 @@ export const Payouts: React.FC<Props> = ({ payouts, loading, onMarkSent, onRefre
 
             {/* Stat cards */}
             <div className="grid gap-4 sm:grid-cols-3">
-                <div className="border-gpsc-cream-dark rounded-2xl border bg-white p-6">
+                <div className="border-fsc-cream-dark rounded-2xl border bg-white p-6">
                     <div className="mb-3 flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100">
-                            <Clock size={20} className="text-amber-600" />
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#C9922A]/10">
+                            <Clock size={20} className="text-[#C9922A]" />
                         </div>
                         <div>
-                            <div className="font-display text-gpsc-navy text-2xl">{allPending.length}</div>
-                            <div className="text-gpsc-stone text-xs">Pending Requests</div>
+                            <div className="font-display text-fsc-navy text-2xl">{allPending.length}</div>
+                            <div className="text-fsc-stone text-xs">Pending Requests</div>
                         </div>
                     </div>
-                    <div className="text-gpsc-stone text-sm">Total: {formatCurrency(totalPending)}</div>
+                    <div className="text-fsc-stone text-sm">Total: {formatCurrency(totalPending)}</div>
                 </div>
-                <div className="border-gpsc-cream-dark rounded-2xl border bg-white p-6">
+                <div className="border-fsc-cream-dark rounded-2xl border bg-white p-6">
                     <div className="mb-3 flex items-center gap-3">
-                        <div className="bg-gpsc-green/10 flex h-10 w-10 items-center justify-center rounded-full">
-                            <CheckCircle size={20} className="text-gpsc-green" />
+                        <div className="bg-fsc-green/10 flex h-10 w-10 items-center justify-center rounded-full">
+                            <CheckCircle size={20} className="text-fsc-green" />
                         </div>
                         <div>
-                            <div className="font-display text-gpsc-navy text-2xl">{allHistory.length}</div>
-                            <div className="text-gpsc-stone text-xs">Processed</div>
+                            <div className="font-display text-fsc-navy text-2xl">{allHistory.length}</div>
+                            <div className="text-fsc-stone text-xs">Processed</div>
                         </div>
                     </div>
-                    <div className="text-gpsc-stone text-sm">Total sent: {formatCurrency(totalSent)}</div>
+                    <div className="text-fsc-stone text-sm">Total sent: {formatCurrency(totalSent)}</div>
                 </div>
-                <div className="border-gpsc-cream-dark rounded-2xl border bg-white p-6">
+                <div className="border-fsc-cream-dark rounded-2xl border bg-white p-6">
                     <div className="mb-3 flex items-center gap-3">
-                        <div className="bg-gpsc-navy/10 flex h-10 w-10 items-center justify-center rounded-full">
-                            <Wallet size={20} className="text-gpsc-navy" />
+                        <div className="bg-fsc-navy/10 flex h-10 w-10 items-center justify-center rounded-full">
+                            <Wallet size={20} className="text-fsc-navy" />
                         </div>
                         <div>
-                            <div className="font-display text-gpsc-navy text-2xl">{formatCurrency(totalPending)}</div>
-                            <div className="text-gpsc-stone text-xs">Awaiting Transfer</div>
+                            <div className="font-display text-fsc-navy text-2xl">{formatCurrency(totalPending)}</div>
+                            <div className="text-fsc-stone text-xs">Awaiting Transfer</div>
                         </div>
                     </div>
-                    <div className="text-gpsc-stone text-sm">Amount to send out</div>
+                    <div className="text-fsc-stone text-sm">Amount to send out</div>
                 </div>
             </div>
 
             {/* Pending requests */}
-            <div className="border-gpsc-cream-dark overflow-hidden rounded-2xl border bg-white">
-                <div className="border-gpsc-cream-dark flex flex-wrap items-center justify-between gap-3 border-b p-4">
+            <div className="border-fsc-cream-dark overflow-hidden rounded-2xl border bg-white">
+                <div className="border-fsc-cream-dark flex flex-wrap items-center justify-between gap-3 border-b p-4">
                     <div>
-                        <h2 className="font-display text-gpsc-navy text-lg">Pending Requests</h2>
-                        <p className="text-gpsc-stone text-xs">Members waiting to receive their payout</p>
+                        <h2 className="font-display text-fsc-navy text-lg">Pending Requests</h2>
+                        <p className="text-fsc-stone text-xs">Members waiting to receive their payout</p>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
                         {/* Pending search */}
-                        <div className="border-gpsc-cream-dark focus-within:ring-gpsc-green flex items-center gap-2 rounded-lg border px-3 py-2 text-sm focus-within:ring-2">
-                            <Search size={14} className="text-gpsc-stone shrink-0" />
+                        <div className="border-fsc-cream-dark focus-within:ring-fsc-green flex items-center gap-2 rounded-lg border px-3 py-2 text-sm focus-within:ring-2">
+                            <Search size={14} className="text-fsc-stone shrink-0" />
                             <input
                                 type="text"
                                 value={pendingSearch}
                                 onChange={(e) => setPendingSearch(e.target.value)}
                                 placeholder="Search member or account…"
-                                className="w-44 bg-transparent outline-none placeholder:text-gpsc-stone/60"
+                                className="w-44 bg-transparent outline-none placeholder:text-fsc-stone/60"
                             />
                             {pendingSearch && (
-                                <button onClick={() => setPendingSearch("")} className="text-gpsc-stone hover:text-gpsc-navy">
+                                <button onClick={() => setPendingSearch("")} className="text-fsc-stone hover:text-fsc-navy">
                                     <X size={12} />
                                 </button>
                             )}
                         </div>
-                        <button className="text-gpsc-stone hover:text-gpsc-navy flex items-center gap-1 text-xs">
+                        <button className="text-fsc-stone hover:text-fsc-navy flex items-center gap-1 text-xs">
                             <Download size={12} /> Export
                         </button>
                         <button
                             onClick={() => triggerRefresh("pending")}
                             disabled={activeRefresh === "pending"}
-                            className="border-gpsc-cream-dark hover:bg-gpsc-cream/60 flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm transition-colors disabled:opacity-60"
+                            className="border-fsc-cream-dark hover:bg-fsc-cream/60 flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm transition-colors disabled:opacity-60"
                         >
                             <RefreshCw size={14} className={activeRefresh === "pending" ? "animate-spin" : ""} />
                             Refresh
@@ -201,7 +201,7 @@ export const Payouts: React.FC<Props> = ({ payouts, loading, onMarkSent, onRefre
                 </div>
                 <div className={`overflow-x-auto transition-opacity ${activeRefresh === "pending" || activeRefresh === "all" ? "opacity-40" : ""}`}>
                     <table className="w-full text-sm">
-                        <thead className="bg-gpsc-cream/50 text-gpsc-stone text-xs tracking-wider uppercase">
+                        <thead className="bg-fsc-cream/50 text-fsc-stone text-xs tracking-wider uppercase">
                             <tr>
                                 <th className="p-4 text-left">Member</th>
                                 <th className="p-4 text-left">Method & Account</th>
@@ -212,23 +212,23 @@ export const Payouts: React.FC<Props> = ({ payouts, loading, onMarkSent, onRefre
                         </thead>
                         <tbody>
                             {pending.map((p) => (
-                                <tr key={p.id} className="border-gpsc-cream-dark hover:bg-gpsc-cream/40 border-t transition-colors">
+                                <tr key={p.id} className="border-fsc-cream-dark hover:bg-fsc-cream/40 border-t transition-colors">
                                     <td className="p-4">
-                                        <div className="text-gpsc-navy font-medium">{p.memberName}</div>
+                                        <div className="text-fsc-navy font-medium">{p.memberName}</div>
                                     </td>
                                     <td className="p-4">
-                                        <div className="text-gpsc-navy">{methodLabel(p.method)}</div>
-                                        <div className="text-gpsc-stone text-xs">{p.accountNumber}</div>
-                                        <div className="text-gpsc-stone text-xs">{p.accountName}</div>
+                                        <div className="text-fsc-navy">{methodLabel(p.method)}</div>
+                                        <div className="text-fsc-stone text-xs">{p.accountNumber}</div>
+                                        <div className="text-fsc-stone text-xs">{p.accountName}</div>
                                     </td>
-                                    <td className="text-gpsc-navy p-4 text-right font-medium">
+                                    <td className="text-fsc-navy p-4 text-right font-medium">
                                         {formatCurrency(p.amount)}
                                     </td>
-                                    <td className="text-gpsc-stone p-4 text-sm">{formatDate(p.requestedAt)}</td>
+                                    <td className="text-fsc-stone p-4 text-sm">{formatDate(p.requestedAt)}</td>
                                     <td className="p-4 text-right">
                                         <button
                                             onClick={() => setSelected(p)}
-                                            className="bg-gpsc-green hover:bg-gpsc-green-dark ml-auto flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-medium text-white transition-colors"
+                                            className="bg-fsc-green hover:bg-fsc-green-light ml-auto flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-medium text-white transition-colors"
                                         >
                                             <Send size={12} /> Mark as Sent
                                         </button>
@@ -237,8 +237,32 @@ export const Payouts: React.FC<Props> = ({ payouts, loading, onMarkSent, onRefre
                             ))}
                             {pending.length === 0 && (
                                 <tr>
-                                    <td colSpan={5} className="text-gpsc-stone p-8 text-center">
-                                        {pendingSearch ? "No pending requests match your search" : "No pending payout requests"}
+                                    <td colSpan={5}>
+                                        <div className="px-6 py-14 text-center">
+                                            {pendingSearch ? (
+                                                <>
+                                                    <div className="bg-fsc-cream mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full">
+                                                        <Search size={22} className="text-fsc-stone" />
+                                                    </div>
+                                                    <div className="font-display text-fsc-navy text-lg">No matches</div>
+                                                    <div className="text-fsc-stone mt-1 text-sm">Try adjusting your search.</div>
+                                                    <button
+                                                        onClick={() => setPendingSearch("")}
+                                                        className="text-fsc-green mt-4 text-sm hover:underline"
+                                                    >
+                                                        Clear search
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <div className="bg-fsc-cream mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full">
+                                                        <CheckCircle size={22} className="text-fsc-stone" />
+                                                    </div>
+                                                    <div className="font-display text-fsc-navy text-lg">All clear</div>
+                                                    <div className="text-fsc-stone mt-1 text-sm">No payout requests are waiting to be processed.</div>
+                                                </>
+                                            )}
+                                        </div>
                                     </td>
                                 </tr>
                             )}
@@ -248,25 +272,25 @@ export const Payouts: React.FC<Props> = ({ payouts, loading, onMarkSent, onRefre
             </div>
 
             {/* History */}
-            <div className="border-gpsc-cream-dark overflow-hidden rounded-2xl border bg-white">
-                <div className="border-gpsc-cream-dark flex flex-wrap items-center justify-between gap-3 border-b p-4">
+            <div className="border-fsc-cream-dark overflow-hidden rounded-2xl border bg-white">
+                <div className="border-fsc-cream-dark flex flex-wrap items-center justify-between gap-3 border-b p-4">
                     <div>
-                        <h2 className="font-display text-gpsc-navy text-lg">Payout History</h2>
-                        <p className="text-gpsc-stone text-xs">All processed payouts</p>
+                        <h2 className="font-display text-fsc-navy text-lg">Payout History</h2>
+                        <p className="text-fsc-stone text-xs">All processed payouts</p>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
                         {/* History search */}
-                        <div className="border-gpsc-cream-dark focus-within:ring-gpsc-green flex items-center gap-2 rounded-lg border px-3 py-2 text-sm focus-within:ring-2">
-                            <Search size={14} className="text-gpsc-stone shrink-0" />
+                        <div className="border-fsc-cream-dark focus-within:ring-fsc-green flex items-center gap-2 rounded-lg border px-3 py-2 text-sm focus-within:ring-2">
+                            <Search size={14} className="text-fsc-stone shrink-0" />
                             <input
                                 type="text"
                                 value={historySearch}
                                 onChange={(e) => setHistorySearch(e.target.value)}
                                 placeholder="Search member or reference…"
-                                className="w-44 bg-transparent outline-none placeholder:text-gpsc-stone/60"
+                                className="w-44 bg-transparent outline-none placeholder:text-fsc-stone/60"
                             />
                             {historySearch && (
-                                <button onClick={() => setHistorySearch("")} className="text-gpsc-stone hover:text-gpsc-navy">
+                                <button onClick={() => setHistorySearch("")} className="text-fsc-stone hover:text-fsc-navy">
                                     <X size={12} />
                                 </button>
                             )}
@@ -276,7 +300,7 @@ export const Payouts: React.FC<Props> = ({ payouts, loading, onMarkSent, onRefre
                             <select
                                 value={methodFilter}
                                 onChange={(e) => setMethodFilter(e.target.value)}
-                                className="border-gpsc-cream-dark focus:ring-gpsc-green rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:outline-none"
+                                className="border-fsc-cream-dark focus:ring-fsc-green rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:outline-none"
                             >
                                 <option value="all">All methods</option>
                                 {availableMethods.map((m) => (
@@ -287,7 +311,7 @@ export const Payouts: React.FC<Props> = ({ payouts, loading, onMarkSent, onRefre
                         <button
                             onClick={() => triggerRefresh("history")}
                             disabled={activeRefresh === "history"}
-                            className="border-gpsc-cream-dark hover:bg-gpsc-cream/60 flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm transition-colors disabled:opacity-60"
+                            className="border-fsc-cream-dark hover:bg-fsc-cream/60 flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm transition-colors disabled:opacity-60"
                         >
                             <RefreshCw size={14} className={activeRefresh === "history" ? "animate-spin" : ""} />
                             Refresh
@@ -296,7 +320,7 @@ export const Payouts: React.FC<Props> = ({ payouts, loading, onMarkSent, onRefre
                 </div>
                 <div className={`overflow-x-auto transition-opacity ${activeRefresh === "history" || activeRefresh === "all" ? "opacity-40" : ""}`}>
                     <table className="w-full text-sm">
-                        <thead className="bg-gpsc-cream/50 text-gpsc-stone text-xs tracking-wider uppercase">
+                        <thead className="bg-fsc-cream/50 text-fsc-stone text-xs tracking-wider uppercase">
                             <tr>
                                 <th className="p-4 text-left">Member</th>
                                 <th className="p-4 text-left">Method & Account</th>
@@ -307,27 +331,51 @@ export const Payouts: React.FC<Props> = ({ payouts, loading, onMarkSent, onRefre
                         </thead>
                         <tbody>
                             {history.map((p) => (
-                                <tr key={p.id} className="border-gpsc-cream-dark hover:bg-gpsc-cream/40 border-t transition-colors">
+                                <tr key={p.id} className="border-fsc-cream-dark hover:bg-fsc-cream/40 border-t transition-colors">
                                     <td className="p-4">
-                                        <div className="text-gpsc-navy font-medium">{p.memberName}</div>
+                                        <div className="text-fsc-navy font-medium">{p.memberName}</div>
                                     </td>
                                     <td className="p-4">
-                                        <div className="text-gpsc-navy">{methodLabel(p.method)}</div>
-                                        <div className="text-gpsc-stone text-xs">{p.accountNumber}</div>
+                                        <div className="text-fsc-navy">{methodLabel(p.method)}</div>
+                                        <div className="text-fsc-stone text-xs">{p.accountNumber}</div>
                                     </td>
-                                    <td className="text-gpsc-navy p-4 text-right font-medium">
+                                    <td className="text-fsc-navy p-4 text-right font-medium">
                                         {formatCurrency(p.amount)}
                                     </td>
-                                    <td className="text-gpsc-stone p-4 font-mono text-xs">
+                                    <td className="text-fsc-stone p-4 font-mono text-xs">
                                         {p.reference ?? "—"}
                                     </td>
-                                    <td className="text-gpsc-stone p-4 text-sm">{formatDate(p.sentAt)}</td>
+                                    <td className="text-fsc-stone p-4 text-sm">{formatDate(p.sentAt)}</td>
                                 </tr>
                             ))}
                             {history.length === 0 && (
                                 <tr>
-                                    <td colSpan={5} className="text-gpsc-stone p-8 text-center">
-                                        {historySearch || methodFilter !== "all" ? "No history matches your filters" : "No payout history yet"}
+                                    <td colSpan={5}>
+                                        <div className="px-6 py-14 text-center">
+                                            {historySearch || methodFilter !== "all" ? (
+                                                <>
+                                                    <div className="bg-fsc-cream mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full">
+                                                        <Search size={22} className="text-fsc-stone" />
+                                                    </div>
+                                                    <div className="font-display text-fsc-navy text-lg">No matches</div>
+                                                    <div className="text-fsc-stone mt-1 text-sm">Try adjusting your search or method filter.</div>
+                                                    <button
+                                                        onClick={() => { setHistorySearch(""); setMethodFilter("all"); }}
+                                                        className="text-fsc-green mt-4 text-sm hover:underline"
+                                                    >
+                                                        Clear filters
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <div className="bg-fsc-cream mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full">
+                                                        <Wallet size={22} className="text-fsc-stone" />
+                                                    </div>
+                                                    <div className="font-display text-fsc-navy text-lg">No payout history</div>
+                                                    <div className="text-fsc-stone mt-1 text-sm">Processed payouts will appear here.</div>
+                                                </>
+                                            )}
+                                        </div>
                                     </td>
                                 </tr>
                             )}
@@ -346,40 +394,40 @@ export const Payouts: React.FC<Props> = ({ payouts, loading, onMarkSent, onRefre
                         className="animate-fade-up mx-4 w-full max-w-md rounded-2xl bg-white p-6"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <h2 className="font-display text-gpsc-navy mb-1 text-xl">Mark Payout as Sent</h2>
-                        <p className="text-gpsc-stone mb-4 text-xs">
+                        <h2 className="font-display text-fsc-navy mb-1 text-xl">Mark Payout as Sent</h2>
+                        <p className="text-fsc-stone mb-4 text-xs">
                             Enter the GCash/bank reference number you received after sending the money.
                         </p>
                         <div className="space-y-4">
-                            <div className="bg-gpsc-cream rounded-xl p-4 space-y-2">
+                            <div className="bg-fsc-cream rounded-xl p-4 space-y-2">
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-gpsc-stone">Member:</span>
-                                    <span className="text-gpsc-navy font-medium">{selected.memberName}</span>
+                                    <span className="text-fsc-stone">Member:</span>
+                                    <span className="text-fsc-navy font-medium">{selected.memberName}</span>
                                 </div>
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-gpsc-stone">Amount:</span>
-                                    <span className="font-display text-gpsc-navy text-lg">{formatCurrency(selected.amount)}</span>
+                                    <span className="text-fsc-stone">Amount:</span>
+                                    <span className="font-display text-fsc-navy text-lg">{formatCurrency(selected.amount)}</span>
                                 </div>
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-gpsc-stone">Send to:</span>
+                                    <span className="text-fsc-stone">Send to:</span>
                                     <div className="text-right">
-                                        <div className="text-gpsc-navy font-medium">{methodLabel(selected.method)}</div>
-                                        <div className="text-gpsc-stone text-xs">{selected.accountNumber} · {selected.accountName}</div>
+                                        <div className="text-fsc-navy font-medium">{methodLabel(selected.method)}</div>
+                                        <div className="text-fsc-stone text-xs">{selected.accountNumber} · {selected.accountName}</div>
                                     </div>
                                 </div>
                             </div>
                             <div>
-                                <label className="text-gpsc-stone mb-1 block text-xs">
-                                    Reference Number <span className="text-red-400">*</span>
+                                <label className="text-fsc-stone mb-1 block text-xs">
+                                    Reference Number <span className="text-[#C41E1E]">*</span>
                                 </label>
                                 <input
                                     value={reference}
                                     onChange={(e) => setReference(e.target.value)}
                                     placeholder="e.g., 09123456789 · 1234567890"
-                                    className="border-gpsc-cream-dark focus:ring-gpsc-green w-full rounded-xl border px-4 py-2 focus:ring-2 focus:outline-none"
+                                    className="border-fsc-cream-dark focus:ring-fsc-green w-full rounded-xl border px-4 py-2 focus:ring-2 focus:outline-none"
                                     autoFocus
                                 />
-                                <p className="text-gpsc-stone mt-1 text-xs">
+                                <p className="text-fsc-stone mt-1 text-xs">
                                     Copy this from your GCash / banking app after the transfer.
                                 </p>
                             </div>
@@ -387,14 +435,14 @@ export const Payouts: React.FC<Props> = ({ payouts, loading, onMarkSent, onRefre
                         <div className="mt-6 flex gap-3">
                             <button
                                 onClick={() => { setSelected(null); setReference(""); }}
-                                className="border-gpsc-cream-dark text-gpsc-stone hover:bg-gpsc-cream/60 flex-1 rounded-lg border px-4 py-2 transition-colors"
+                                className="border-fsc-cream-dark text-fsc-stone hover:bg-fsc-cream/60 flex-1 rounded-lg border px-4 py-2 transition-colors"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleMarkSent}
                                 disabled={!reference.trim() || processing}
-                                className="bg-gpsc-green hover:bg-gpsc-green-dark flex-1 rounded-lg px-4 py-2 font-medium text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                                className="bg-fsc-green hover:bg-fsc-green-light flex-1 rounded-lg px-4 py-2 font-medium text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 {processing ? "Saving…" : "Confirm Sent"}
                             </button>

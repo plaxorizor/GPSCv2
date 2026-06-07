@@ -1,88 +1,105 @@
-import React from "react";
-import { MapPin, Phone, Mail, MessageCircle } from "lucide-react";
-import { GlobalStyles } from "../GlobalStyles";
+import React, { useState } from "react";
+import { MapPin, Phone, Mail, MessageCircle, CheckCircle } from "lucide-react";
 import PublicNav from "../PublicNav";
 import { Footer } from "../Footer";
 
 const Contact: React.FC = () => {
+    const [sent, setSent] = useState(false);
     return (
-        <div className="font-body text-gpsc-ink min-h-screen antialiased">
-            <GlobalStyles />
+        <div className="font-body text-fsc-ink min-h-screen antialiased flex flex-col">
             <PublicNav />
-            <main className="mx-auto max-w-4xl px-6 py-20">
-                <h1 className="font-display text-gpsc-navy mb-8 text-4xl">Get in Touch</h1>
+            <main className="mx-auto max-w-4xl w-full px-6 py-20 anim-fade-up flex-1">
+                <h1 className="font-display text-fsc-navy mb-8 text-4xl">Get in Touch</h1>
                 <div className="grid gap-12 md:grid-cols-2">
                     {/* Contact details */}
                     <div className="space-y-6">
                         <div className="flex gap-4">
-                            <div className="bg-gpsc-navy flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white">
+                            <div className="bg-fsc-navy flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white">
                                 <MapPin size={18} />
                             </div>
                             <div>
-                                <div className="font-display text-gpsc-navy text-base">Main Office</div>
-                                <div className="text-gpsc-stone text-sm">Davao City, Davao del Sur, Philippines</div>
+                                <div className="font-display text-fsc-navy text-base">Main Office</div>
+                                <div className="text-fsc-stone text-sm">Davao City, Davao del Sur, Philippines</div>
                             </div>
                         </div>
                         <div className="flex gap-4">
-                            <div className="bg-gpsc-navy flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white">
+                            <div className="bg-fsc-navy flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white">
                                 <Phone size={18} />
                             </div>
                             <div>
-                                <div className="font-display text-gpsc-navy text-base">Phone</div>
-                                <div className="text-gpsc-stone text-sm">+63 (82) 000 0000 · +63 917 000 0000</div>
+                                <div className="font-display text-fsc-navy text-base">Phone</div>
+                                <div className="text-fsc-stone text-sm">+63 (82) 000 0000 · +63 917 000 0000</div>
                             </div>
                         </div>
                         <div className="flex gap-4">
-                            <div className="bg-gpsc-navy flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white">
+                            <div className="bg-fsc-navy flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white">
                                 <Mail size={18} />
                             </div>
                             <div>
-                                <div className="font-display text-gpsc-navy text-base">Email</div>
-                                <div className="text-gpsc-stone text-sm">hello@gpsc.ph · claims@gpsc.ph</div>
+                                <div className="font-display text-fsc-navy text-base">Email</div>
+                                <div className="text-fsc-stone text-sm">hello@faithshieldcare.ph · claims@faithshieldcare.ph</div>
                             </div>
                         </div>
                         <div className="flex gap-4">
-                            <div className="bg-gpsc-navy flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white">
+                            <div className="bg-fsc-navy flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white">
                                 <MessageCircle size={18} />
                             </div>
                             <div>
-                                <div className="font-display text-gpsc-navy text-base">Facebook</div>
-                                <div className="text-gpsc-stone text-sm">facebook.com/faithshieldcare</div>
+                                <div className="font-display text-fsc-navy text-base">Facebook</div>
+                                <div className="text-fsc-stone text-sm">facebook.com/faithshieldcare</div>
                             </div>
                         </div>
                     </div>
 
                     {/* Contact form */}
-                    <div className="border-gpsc-cream-dark rounded-3xl border bg-white p-6">
-                        <h2 className="font-display text-gpsc-navy mb-4 text-2xl">Send a Message</h2>
-                        <form
-                            onSubmit={(e) => {
-                                e.preventDefault();
-                                alert("Message sent (demo)");
-                            }}
-                            className="space-y-4"
-                        >
-                            <input type="text" placeholder="Full name" className="border-gpsc-cream-dark w-full rounded-xl border px-4 py-3" />
-                            <input type="email" placeholder="Email" className="border-gpsc-cream-dark w-full rounded-xl border px-4 py-3" />
-                            <select className="border-gpsc-cream-dark w-full rounded-xl border px-4 py-3">
-                                <option>Membership inquiry</option>
-                                <option>Claims question</option>
-                                <option>Become a consultant</option>
-                                <option>Partner with us</option>
-                                <option>Other</option>
-                            </select>
-                            <textarea
-                                rows={4}
-                                placeholder="Your message"
-                                className="border-gpsc-cream-dark w-full rounded-xl border px-4 py-3"
-                            ></textarea>
-                            <button
-                                type="submit"
-                                className="bg-gpsc-navy hover:bg-gpsc-green w-full rounded-xl py-3 font-medium text-white transition-colors"
+                    <div className="border-fsc-cream-dark rounded-3xl border bg-white p-6">
+                        <h2 className="font-display text-fsc-navy mb-4 text-2xl">Send a Message</h2>
+                        {sent ? (
+                            <div className="flex flex-col items-center py-10 text-center">
+                                <div className="bg-fsc-green/10 mb-4 flex h-16 w-16 items-center justify-center rounded-full">
+                                    <CheckCircle size={28} className="text-fsc-green" />
+                                </div>
+                                <div className="font-display text-fsc-navy text-xl">Message sent!</div>
+                                <div className="text-fsc-stone mt-2 text-sm leading-relaxed">
+                                    We'll get back to you within 1–2 business days.
+                                </div>
+                                <button
+                                    onClick={() => setSent(false)}
+                                    className="text-fsc-stone hover:text-fsc-navy mt-6 text-xs underline-offset-2 hover:underline transition-colors"
+                                >
+                                    Send another message
+                                </button>
+                            </div>
+                        ) : (
+                            <form
+                                onSubmit={(e) => {
+                                    e.preventDefault();
+                                    setSent(true);
+                                }}
+                                className="space-y-4"
                             >
-                                Send Message
-                            </button>
-                        </form>
+                                <input type="text" placeholder="Full name" className="border-fsc-cream-dark w-full rounded-xl border px-4 py-3" />
+                                <input type="email" placeholder="Email" className="border-fsc-cream-dark w-full rounded-xl border px-4 py-3" />
+                                <select className="border-fsc-cream-dark w-full rounded-xl border px-4 py-3">
+                                    <option>Membership inquiry</option>
+                                    <option>Claims question</option>
+                                    <option>Become a consultant</option>
+                                    <option>Partner with us</option>
+                                    <option>Other</option>
+                                </select>
+                                <textarea
+                                    rows={4}
+                                    placeholder="Your message"
+                                    className="border-fsc-cream-dark w-full rounded-xl border px-4 py-3"
+                                ></textarea>
+                                <button
+                                    type="submit"
+                                    className="bg-fsc-navy hover:bg-fsc-green w-full rounded-xl py-3 font-medium text-white transition-colors"
+                                >
+                                    Send Message
+                                </button>
+                            </form>
+                        )}
                     </div>
                 </div>
             </main>

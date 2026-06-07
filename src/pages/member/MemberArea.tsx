@@ -51,7 +51,7 @@ export default function MemberArea() {
         return (
             // Loading spinner
             <div className="flex h-screen items-center justify-center">
-                <div className="border-gpsc-navy h-12 w-12 animate-spin rounded-full border-b-2"></div>
+                <div className="border-fsc-navy h-12 w-12 animate-spin rounded-full border-b-2"></div>
             </div>
         );
     }

@@ -41,29 +41,29 @@ export function Settings() {
 
             {/* Header */}
             <div className="mb-8">
-                <h1 className="font-display text-gpsc-navy text-2xl">Settings</h1>
-                <p className="text-gpsc-stone mt-1 text-sm">Manage your admin account.</p>
+                <h1 className="font-display text-fsc-navy text-2xl">Settings</h1>
+                <p className="text-fsc-stone mt-1 text-sm">Manage your admin account.</p>
             </div>
 
             {/* Profile card */}
-            <div className="border-gpsc-cream-dark mb-6 rounded-2xl border bg-white p-6">
+            <div className="border-fsc-cream-dark mb-6 rounded-2xl border bg-white p-6">
                 <div className="flex items-center gap-4">
-                    <div className="bg-gpsc-navy flex h-16 w-16 shrink-0 items-center justify-center rounded-full text-xl font-semibold text-white">
+                    <div className="bg-fsc-navy flex h-16 w-16 shrink-0 items-center justify-center rounded-full text-xl font-semibold text-white">
                         {initials}
                     </div>
                     <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                            <h2 className="font-display text-gpsc-navy truncate text-lg">{fullName}</h2>
-                            <span className="bg-gpsc-green/10 text-gpsc-green inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium">
+                            <h2 className="font-display text-fsc-navy truncate text-lg">{fullName}</h2>
+                            <span className="bg-fsc-green/10 text-fsc-green inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium">
                                 <Shield size={12} />
                                 Administrator
                             </span>
                         </div>
-                        <p className="text-gpsc-stone mt-0.5 truncate text-sm">{email}</p>
+                        <p className="text-fsc-stone mt-0.5 truncate text-sm">{email}</p>
                     </div>
                 </div>
 
-                <div className="border-gpsc-cream-dark mt-6 grid gap-4 border-t pt-6 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="border-fsc-cream-dark mt-6 grid gap-4 border-t pt-6 sm:grid-cols-2 lg:grid-cols-3">
                     <InfoRow icon={<Mail size={15} />} label="Email" value={email} />
                     <InfoRow icon={<Calendar size={15} />} label="Admin since" value={joined} />
                     <InfoRow
@@ -76,25 +76,25 @@ export function Settings() {
             </div>
 
             {/* Security card */}
-            <div className="border-gpsc-cream-dark rounded-2xl border bg-white p-6">
-                <h2 className="font-display text-gpsc-navy text-lg">Security</h2>
-                <p className="text-gpsc-stone mt-1 text-sm">
+            <div className="border-fsc-cream-dark rounded-2xl border bg-white p-6">
+                <h2 className="font-display text-fsc-navy text-lg">Security</h2>
+                <p className="text-fsc-stone mt-1 text-sm">
                     Keep your account safe. Use a strong password you don't reuse elsewhere.
                 </p>
 
-                <div className="border-gpsc-cream-dark mt-5 flex flex-col gap-3 rounded-xl border p-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="border-fsc-cream-dark mt-5 flex flex-col gap-3 rounded-xl border p-4 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="bg-gpsc-cream text-gpsc-navy flex h-10 w-10 items-center justify-center rounded-lg">
+                        <div className="bg-fsc-cream text-fsc-navy flex h-10 w-10 items-center justify-center rounded-lg">
                             <KeyRound size={18} />
                         </div>
                         <div>
-                            <p className="text-gpsc-navy text-sm font-medium">Password</p>
-                            <p className="text-gpsc-stone text-xs">••••••••••</p>
+                            <p className="text-fsc-navy text-sm font-medium">Password</p>
+                            <p className="text-fsc-stone text-xs">••••••••••</p>
                         </div>
                     </div>
                     <button
                         onClick={() => setShowChangePassword(true)}
-                        className="bg-gpsc-green rounded-xl px-5 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
+                        className="bg-fsc-green rounded-xl px-5 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
                     >
                         Change Password
                     </button>
@@ -117,10 +117,10 @@ function InfoRow({
 }) {
     return (
         <div className="flex items-start gap-2.5">
-            <span className="text-gpsc-stone mt-0.5 shrink-0">{icon}</span>
+            <span className="text-fsc-stone mt-0.5 shrink-0">{icon}</span>
             <div className="min-w-0">
-                <p className="text-gpsc-stone text-xs uppercase tracking-wider">{label}</p>
-                <p className={`text-gpsc-navy truncate text-sm ${mono ? "font-mono text-xs" : ""}`}>
+                <p className="text-fsc-stone text-xs uppercase tracking-wider">{label}</p>
+                <p className={`text-fsc-navy truncate text-sm ${mono ? "font-mono text-xs" : ""}`}>
                     {value}
                 </p>
             </div>
