@@ -120,7 +120,18 @@ export default function SignUpLayout() {
     // Required fields that failed validation on the last "Continue" — highlighted
     // red. Top-level keys match `form`; beneficiary keys are "ben-{index}-name" etc.
     const [invalidFields, setInvalidFields] = useState<Set<string>>(new Set());
-    const isInvalid = (key: string) => invalidFields.has(key);
+    // Derived: a field shows red only while it was flagged AND still has no value,
+    // so the highlight clears as the user types (no effect / setState needed).
+    const isInvalid = (key: string) => {
+        if (!invalidFields.has(key)) return false;
+        if (key.startsWith("ben-")) {
+            const [, idxStr, sub] = key.split("-");
+            const b = form.beneficiaries[Number(idxStr)];
+            return !(b && String((b as Record<string, string>)[sub] ?? "").trim());
+        }
+        const v = (form as Record<string, unknown>)[key];
+        return typeof v === "string" ? v.trim() === "" : !v;
+    };
 
     // Fields the user has blurred at least once — used to validate on focus loss
     // (not while still typing).
@@ -132,31 +143,14 @@ export default function SignUpLayout() {
     const passwordMismatch = touched.has("confirmPassword") && !!form.confirmPassword && form.password !== form.confirmPassword;
     const fieldCls = (key: string) => `${inputCls}${isInvalid(key) ? " !border-[#C41E1E]" : ""}`;
 
-    // Clear a field's red highlight as soon as it has a value again.
-    useEffect(() => {
-        setInvalidFields((prev) => {
-            if (prev.size === 0) return prev;
-            const next = new Set(prev);
-            for (const key of prev) {
-                if (key.startsWith("ben-")) {
-                    const [, idxStr, sub] = key.split("-");
-                    const b = form.beneficiaries[Number(idxStr)];
-                    if (b && String((b as Record<string, string>)[sub] ?? "").trim()) next.delete(key);
-                } else {
-                    const v = (form as Record<string, unknown>)[key];
-                    if (typeof v === "string" ? v.trim() !== "" : Boolean(v)) next.delete(key);
-                }
-            }
-            return next.size === prev.size ? prev : next;
-        });
-    }, [form]);
-
-    // Combine the Month/Day/Year dropdowns into form.birthDate (YYYY-MM-DD).
-    // Only set a value once all three are chosen; otherwise keep it empty.
-    useEffect(() => {
-        const next = birth.y && birth.m && birth.d ? `${birth.y}-${birth.m}-${birth.d}` : "";
-        setForm((prev) => (prev.birthDate === next ? prev : { ...prev, birthDate: next }));
-    }, [birth]);
+    // Update one part of the birth date and keep form.birthDate (YYYY-MM-DD) in
+    // sync within the same event — no effect, no cascading render.
+    const handleBirthChange = (part: "y" | "m" | "d", value: string) => {
+        const nb = { ...birth, [part]: value };
+        setBirth(nb);
+        const next = nb.y && nb.m && nb.d ? `${nb.y}-${nb.m}-${nb.d}` : "";
+        setForm((prev) => ({ ...prev, birthDate: next }));
+    };
 
     // Birth-date dropdown option lists.
     const MONTHS = [
@@ -168,27 +162,24 @@ export default function SignUpLayout() {
     const daysInMonth = birth.y && birth.m ? new Date(Number(birth.y), Number(birth.m), 0).getDate() : 31;
     const birthDays = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
-    // Barangay options for the selected city (lazy-loaded from the bundled dataset).
-    const [barangayOptions, setBarangayOptions] = useState<Barangay[]>([]);
-    const [loadingBarangays, setLoadingBarangays] = useState(false);
+    // Barangays are lazy-loaded from the bundled dataset, tagged with the city
+    // they belong to. The effect only does the async fetch (setState lives in the
+    // resolved callback, which is allowed); options + loading are derived below.
+    const [barangayData, setBarangayData] = useState<{ cityCode: string; list: Barangay[] }>({ cityCode: "", list: [] });
     useEffect(() => {
-        if (!form.cityCode) {
-            setBarangayOptions([]);
-            return;
-        }
+        if (!form.cityCode) return;
         let cancelled = false;
-        setLoadingBarangays(true);
-        barangaysByCity(form.cityCode)
-            .then((list) => {
-                if (!cancelled) setBarangayOptions(list);
-            })
-            .finally(() => {
-                if (!cancelled) setLoadingBarangays(false);
-            });
+        barangaysByCity(form.cityCode).then((list) => {
+            if (!cancelled) setBarangayData({ cityCode: form.cityCode, list });
+        });
         return () => {
             cancelled = true;
         };
     }, [form.cityCode]);
+    // Derived: only show options once the loaded data matches the selected city
+    // (avoids flashing the previous city's barangays); loading = mismatch.
+    const barangayOptions = barangayData.cityCode === form.cityCode ? barangayData.list : [];
+    const loadingBarangays = !!form.cityCode && barangayData.cityCode !== form.cityCode;
 
     // Cascading address handlers — selecting a parent resets its children.
     const handleProvinceChange = (provinceCode: string) => {
@@ -747,7 +738,7 @@ export default function SignUpLayout() {
                                                                         required
                                                                         value={birth.m}
                                                                         className={`${selCls} col-span-5`}
-                                                                        onChange={(e) => setBirth((p) => ({ ...p, m: e.target.value }))}
+                                                                        onChange={(e) => handleBirthChange("m", e.target.value)}
                                                                     >
                                                                         <option value="">Month</option>
                                                                         {MONTHS.map((name, i) => (
@@ -760,7 +751,7 @@ export default function SignUpLayout() {
                                                                         required
                                                                         value={birth.d}
                                                                         className={`${selCls} col-span-3`}
-                                                                        onChange={(e) => setBirth((p) => ({ ...p, d: e.target.value }))}
+                                                                        onChange={(e) => handleBirthChange("d", e.target.value)}
                                                                     >
                                                                         <option value="">Day</option>
                                                                         {birthDays.map((d) => (
@@ -773,7 +764,7 @@ export default function SignUpLayout() {
                                                                         required
                                                                         value={birth.y}
                                                                         className={`${selCls} col-span-4`}
-                                                                        onChange={(e) => setBirth((p) => ({ ...p, y: e.target.value }))}
+                                                                        onChange={(e) => handleBirthChange("y", e.target.value)}
                                                                     >
                                                                         <option value="">Year</option>
                                                                         {birthYears.map((y) => (
