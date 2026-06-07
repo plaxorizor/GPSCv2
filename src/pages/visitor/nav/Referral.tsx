@@ -32,7 +32,7 @@ const Referral: React.FC = () => {
                             { level: "03", position: "Sales Manager", commission: "3%", desc: "Earn from your 3rd level downline as your team grows." },
                             { level: "04", position: "Provincial Director", commission: "2%", desc: "Earn from your 4th level as your network expands provincially." },
                             { level: "05", position: "Regional Director", commission: "1%", desc: "Earn from your 5th level as you lead a regional team." },
-                            { level: "06", position: "National Director", commission: "1%", desc: "Earn from your 6th level — the highest leadership rank in GPSC." },
+                            { level: "06", position: "National Director", commission: "1%", desc: "Earn from your 6th level — the highest leadership rank in Faith Shield Care." },
                         ].map((rank, i) => (
                             <div key={i} className="border border-gpsc-cream-dark rounded-2xl px-6 py-4 flex items-center gap-6">
                                 <div className="font-display text-3xl text-gpsc-green/30 w-12 shrink-0">{rank.level}</div>
@@ -55,8 +55,8 @@ const Referral: React.FC = () => {
                     {[
                         { title: "Car Incentive", desc: "Family Care and Premium Care consultants who reach qualifying ranks have the chance to earn their own car." },
                         { title: "Travel Rewards", desc: "Top performers enjoy local and international travel tours as recognition for their leadership." },
-                        { title: "Livelihood Projects", desc: "Members and leaders get priority access to participate in GPSC livelihood and skills training programs." },
-                        { title: "Leadership Development", desc: "GPSC invests in its leaders through training, seminars, and community service recognition programs." },
+                        { title: "Livelihood Projects", desc: "Members and leaders get priority access to participate in Faith Shield Care livelihood and skills training programs." },
+                        { title: "Leadership Development", desc: "Faith Shield Care invests in its leaders through training, seminars, and community service recognition programs." },
                         { title: "Community Service Recognition", desc: "Outstanding contributors to the community are recognized and rewarded by the organization." },
                         { title: "Team Building", desc: "Regular team-building events to strengthen your network and deepen community bonds." },
                     ].map((reward, i) => (
@@ -76,7 +76,7 @@ const Referral: React.FC = () => {
                     <h2 className="font-display text-3xl text-gpsc-navy mb-10">Start earning in 3 steps</h2>
                     <div className="space-y-4">
                         {[
-                            { step: "01", title: "Become a member", desc: "Sign up for any GPSC membership package — Basic, Family, or Premium Care." },
+                            { step: "01", title: "Become a member", desc: "Sign up for any Faith Shield Care membership package — Basic, Family, or Premium Care." },
                             { step: "02", title: "Get your referral link", desc: "After registration, your personal referral link and QR code are instantly available in your dashboard." },
                             { step: "03", title: "Share and earn", desc: "Share your link with family, friends, and community. Every membership they purchase earns you a 20% commission — automatically tracked and credited to your account." },
                         ].map((s, i) => (
@@ -96,7 +96,7 @@ const Referral: React.FC = () => {
             <section className="gpsc-cream max-w-4xl mx-auto px-6 lg:px-8 py-12">
                 <p className="text-xs text-gpsc-stone leading-relaxed text-center italic">
                     Income from referral commissions varies based on individual sales effort. Earnings shown are examples only and are not guaranteed.
-                    GPSC is a community-based membership program, not an investment scheme.
+                    Faith Shield Care is a community-based membership program, not an investment scheme.
                 </p>
             </section>
 

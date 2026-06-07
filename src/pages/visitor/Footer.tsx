@@ -8,10 +8,10 @@ export const Footer: React.FC = () => (
             <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
                 <div>
                     <div className="mb-4 flex items-center gap-3">
-                        <img src={logo} alt="GPSC Logo" className="h-12 w-12 rounded-full object-contain mix-blend-lighten" />
+                        <img src={logo} alt="Faith Shield Care Logo" className="h-12 w-12 rounded-full object-contain mix-blend-lighten" />
                         <div className="leading-tight">
-                            <div className="font-display text-base font-semibold text-white">Green Pasture</div>
-                            <div className="font-display text-gpsc-green text-xs italic">Shepherd's Care</div>
+                            <div className="font-display text-base font-semibold text-white">Faith Shield</div>
+                            <div className="font-display text-gpsc-green text-xs italic">Care</div>
                         </div>
                     </div>
                     <p className="text-sm leading-relaxed text-white/60">
@@ -90,7 +90,7 @@ export const Footer: React.FC = () => (
                 </div>
             </div>
             <div className="mt-16 flex flex-wrap justify-between gap-4 border-t border-white/10 pt-8 text-xs text-white/40">
-                <div>© 2026 Green Pasture Shepherd's Care · Davao City, Philippines</div>
+                <div>© 2026 Faith Shield Care · Davao City, Philippines</div>
                 <div className="font-display italic">We Care · We Serve · We Share</div>
             </div>
         </div>

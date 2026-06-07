@@ -35,7 +35,7 @@ export const DashboardSidebar: React.FC<Props> = ({ member, rankName, currentSec
         >
             {/* Logo */}
             <div className="flex items-center gap-3 overflow-hidden px-3 py-3">
-                <img src={logo} alt="GPSC Logo" className="h-10 w-10 shrink-0 rounded-full object-contain" />
+                <img src={logo} alt="Faith Shield Care Logo" className="h-10 w-10 shrink-0 rounded-full object-contain" />
                 <div
                     style={{
                         opacity: expanded ? 1 : 0,
@@ -47,8 +47,8 @@ export const DashboardSidebar: React.FC<Props> = ({ member, rankName, currentSec
                     }}
                     className="leading-tight whitespace-nowrap"
                 >
-                    <div className="font-display text-gpsc-navy text-base font-semibold tracking-tight">Green Pasture</div>
-                    <div className="font-display text-gpsc-green text-xs italic">Shepherd's Care</div>
+                    <div className="font-display text-gpsc-navy text-base font-semibold tracking-tight">Faith Shield</div>
+                    <div className="font-display text-gpsc-green text-xs italic">Care</div>
                 </div>
             </div>
 

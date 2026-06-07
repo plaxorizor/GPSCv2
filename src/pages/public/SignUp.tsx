@@ -55,13 +55,13 @@ const PAYMENT_INFO = {
     // `qr` is an optional image path (e.g. "/qr/gcash.png" in /public, or an
     // imported asset URL). Leave empty to show the "QR placeholder" box.
     accounts: [
-        { label: "GCash", accountName: "GPSC Official", number: "09XX-XXX-XXXX", qr: "" },
-        { label: "Maya", accountName: "GPSC Official", number: "09XX-XXX-XXXX", qr: "" },
+        { label: "GCash", accountName: "Faith Shield Care Official", number: "09XX-XXX-XXXX", qr: "" },
+        { label: "Maya", accountName: "Faith Shield Care Official", number: "09XX-XXX-XXXX", qr: "" },
     ],
     // Where members send their proof of payment for manual verification.
     receiptContacts: [
-        { label: "Messenger", value: "GPSC Official" },
-        { label: "Email", value: "payments@gpsc.app" },
+        { label: "Messenger", value: "Faith Shield Care Official" },
+        { label: "Email", value: "payments@faithshieldcare.app" },
     ],
     verificationDays: "1–2 business days",
 };
@@ -307,13 +307,13 @@ export default function SignUpLayout() {
                     {/* ── Header ── */}
                     <div className="mb-10 text-center">
                         <button type="button" onClick={() => navigate("/")} className="inline-flex cursor-pointer flex-col items-center">
-                            <img src={logo} alt="GPSC Logo" className="h-20 w-20 rounded-full object-contain" />
+                            <img src={logo} alt="Faith Shield Care Logo" className="h-20 w-20 rounded-full object-contain" />
                         </button>
                         <h1 className="font-display mt-4 text-4xl" style={{ color: "#14365C" }}>
                             Join in a few minutes
                         </h1>
                         <p className="mt-2 text-sm" style={{ color: "#6B6862" }}>
-                            Become part of the GPSC community today
+                            Become part of the Faith Shield Care community today
                         </p>
                     </div>
 
@@ -358,33 +358,33 @@ export default function SignUpLayout() {
                                 {policyTab === "privacy" && (
                                     <>
                                         <p><strong style={{ color: "#14365C" }}>Last updated: June 2025</strong></p>
-                                        <p>GPSC ("we", "us", or "our") is committed to protecting your personal information. This Privacy Policy explains how we collect, use, and safeguard the data you provide when registering as a member.</p>
+                                        <p>Faith Shield Care ("we", "us", or "our") is committed to protecting your personal information. This Privacy Policy explains how we collect, use, and safeguard the data you provide when registering as a member.</p>
                                         <p><strong style={{ color: "#14365C" }}>Information We Collect</strong><br />We collect your name, email address, mobile number, birth date, civil status, location, referral code, and beneficiary details. Proof of payment that you send us for verification is handled separately and is not stored in your online account.</p>
                                         <p><strong style={{ color: "#14365C" }}>How We Use Your Information</strong><br />Your data is used to process your membership application, verify identity, manage your account, facilitate referral rewards, and communicate important updates.</p>
                                         <p><strong style={{ color: "#14365C" }}>Data Sharing</strong><br />We do not sell or rent your personal data. Information may be shared only with service providers necessary to operate our platform, or as required by law.</p>
                                         <p><strong style={{ color: "#14365C" }}>Data Security</strong><br />We use industry-standard security measures to protect your information. However, no online transmission is 100% secure and we cannot guarantee absolute security.</p>
-                                        <p><strong style={{ color: "#14365C" }}>Your Rights</strong><br />You may request access to, correction of, or deletion of your personal data by contacting us at support@gpsc.com.</p>
+                                        <p><strong style={{ color: "#14365C" }}>Your Rights</strong><br />You may request access to, correction of, or deletion of your personal data by contacting us at support@faithshieldcare.com.</p>
                                     </>
                                 )}
                                 {policyTab === "terms" && (
                                     <>
                                         <p><strong style={{ color: "#14365C" }}>Last updated: June 2025</strong></p>
-                                        <p>By registering for a GPSC membership, you agree to be bound by these Terms &amp; Conditions. Please read them carefully before proceeding.</p>
+                                        <p>By registering for a Faith Shield Care membership, you agree to be bound by these Terms &amp; Conditions. Please read them carefully before proceeding.</p>
                                         <p><strong style={{ color: "#14365C" }}>Eligibility</strong><br />Membership is open to individuals 18 years of age or older. By registering, you confirm that all information provided is accurate and truthful.</p>
                                         <p><strong style={{ color: "#14365C" }}>Membership Plans</strong><br />Each plan (Basic, Family, Premium) carries distinct benefits and referral structures. Plan details are subject to change with prior notice to members.</p>
-                                        <p><strong style={{ color: "#14365C" }}>Referral Program</strong><br />Referral commissions are credited upon successful activation of referred members. GPSC reserves the right to adjust commission rates with reasonable notice.</p>
-                                        <p><strong style={{ color: "#14365C" }}>Account Responsibility</strong><br />You are responsible for maintaining the confidentiality of your account credentials. GPSC is not liable for unauthorized access resulting from your failure to secure your account.</p>
-                                        <p><strong style={{ color: "#14365C" }}>Termination</strong><br />GPSC reserves the right to suspend or terminate any account found to be in violation of these Terms or engaged in fraudulent activity.</p>
+                                        <p><strong style={{ color: "#14365C" }}>Referral Program</strong><br />Referral commissions are credited upon successful activation of referred members. Faith Shield Care reserves the right to adjust commission rates with reasonable notice.</p>
+                                        <p><strong style={{ color: "#14365C" }}>Account Responsibility</strong><br />You are responsible for maintaining the confidentiality of your account credentials. Faith Shield Care is not liable for unauthorized access resulting from your failure to secure your account.</p>
+                                        <p><strong style={{ color: "#14365C" }}>Termination</strong><br />Faith Shield Care reserves the right to suspend or terminate any account found to be in violation of these Terms or engaged in fraudulent activity.</p>
                                         <p><strong style={{ color: "#14365C" }}>Governing Law</strong><br />These Terms are governed by the laws of the Republic of the Philippines.</p>
                                     </>
                                 )}
                                 {policyTab === "refund" && (
                                     <>
                                         <p><strong style={{ color: "#14365C" }}>Last updated: June 2025</strong></p>
-                                        <p>GPSC strives to ensure member satisfaction. Please review our refund policy before completing your registration.</p>
+                                        <p>Faith Shield Care strives to ensure member satisfaction. Please review our refund policy before completing your registration.</p>
                                         <p><strong style={{ color: "#14365C" }}>Cooling-Off Period</strong><br />Members may request a full refund within 7 calendar days of account activation, provided no referral commissions have been disbursed under their account.</p>
                                         <p><strong style={{ color: "#14365C" }}>Non-Refundable Circumstances</strong><br />Refunds will not be granted if the membership has been active for more than 7 days, if commissions have already been paid to the member, or if the account has been found in violation of our Terms &amp; Conditions.</p>
-                                        <p><strong style={{ color: "#14365C" }}>How to Request a Refund</strong><br />To initiate a refund, contact our support team at support@gpsc.com with your registered email and reason for the request. Approved refunds will be processed within 7–14 business days.</p>
+                                        <p><strong style={{ color: "#14365C" }}>How to Request a Refund</strong><br />To initiate a refund, contact our support team at support@faithshieldcare.com with your registered email and reason for the request. Approved refunds will be processed within 7–14 business days.</p>
                                         <p><strong style={{ color: "#14365C" }}>Plan Upgrades</strong><br />Payments made for plan upgrades are non-refundable once the upgraded plan has been activated.</p>
                                     </>
                                 )}

@@ -47,7 +47,7 @@ const Contact: React.FC = () => {
                             </div>
                             <div>
                                 <div className="font-display text-gpsc-navy text-base">Facebook</div>
-                                <div className="text-gpsc-stone text-sm">facebook.com/greenpasture.shepherds.care</div>
+                                <div className="text-gpsc-stone text-sm">facebook.com/faithshieldcare</div>
                             </div>
                         </div>
                     </div>

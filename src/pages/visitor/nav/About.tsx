@@ -11,10 +11,10 @@ const About: React.FC = () => {
 
             {/* Hero */}
             <section className="gpsc-cream mx-auto max-w-4xl px-6 py-20 lg:px-8">
-                <div className="text-gpsc-green mb-4 text-xs tracking-[0.2em] uppercase">About GPSC</div>
+                <div className="text-gpsc-green mb-4 text-xs tracking-[0.2em] uppercase">About Faith Shield Care</div>
                 <h1 className="font-display text-gpsc-navy mb-6 text-5xl leading-tight lg:text-6xl">Together in Christ, Stronger in Life.</h1>
                 <p className="text-gpsc-stone max-w-2xl text-lg leading-relaxed">
-                    Green Pasture Shepherd's Care is a community-based membership organization designed to provide affordable financial assistance,
+                    Faith Shield Care is a community-based membership organization designed to provide affordable financial assistance,
                     emergency support, livelihood opportunities, and community care services for low-income and middle-income Filipino families.
                 </p>
             </section>

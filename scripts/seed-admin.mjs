@@ -25,9 +25,9 @@ const getArg = (name, fallback) => {
     return i !== -1 && args[i + 1] ? args[i + 1] : fallback;
 };
 
-const email = getArg("email", "admin@gpsc.com");
+const email = getArg("email", "admin@faithshieldcare.com");
 const password = getArg("password", "Admin12345!");
-const firstName = getArg("first", "GPSC");
+const firstName = getArg("first", "Admin");
 const lastName = getArg("last", "Admin");
 
 // --- Build Firebase config from env -----------------------------------------

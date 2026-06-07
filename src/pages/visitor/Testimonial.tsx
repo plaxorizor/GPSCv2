@@ -6,7 +6,7 @@ export const Testimonial: React.FC = () => (
     <div className="max-w-4xl mx-auto px-6 lg:px-8 py-24 text-center">
       <Quote size={48} className="text-gpsc-green mx-auto mb-8" />
       <p className="font-display text-3xl lg:text-4xl text-gpsc-navy leading-snug italic">
-        "When my husband was admitted last February, GPSC released ₱11,500 in four days. No paperwork chaos, no
+        "When my husband was admitted last February, Faith Shield Care released ₱11,500 in four days. No paperwork chaos, no
         waiting weeks. Now I refer everyone in our barangay — it's how we take care of each other."
       </p>
     

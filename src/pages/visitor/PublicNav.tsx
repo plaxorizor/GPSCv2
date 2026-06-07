@@ -31,8 +31,8 @@ export default function PublicNav(): React.ReactElement {
                         className="flex items-center gap-3 cursor-pointer">
                         <img src={logoSrc} width={40} height={40} alt="Logo" className="rounded-full object-contain" />
                         <div className="leading-tight">
-                            <div className="font-display text-base font-semibold tracking-tight text-gpsc-navy">Green Pasture</div>
-                            <div className="font-display text-xs italic text-gpsc-green">Shepherd's Care</div>
+                            <div className="font-display text-base font-semibold tracking-tight text-gpsc-navy">Faith Shield</div>
+                            <div className="font-display text-xs italic text-gpsc-green">Care</div>
                         </div>
                     </button>
 

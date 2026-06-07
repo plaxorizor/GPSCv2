@@ -22,7 +22,7 @@ export const Hero: React.FC = () => {
                             <em className="text-gpsc-green font-medium not-italic">stronger</em> in life.
                         </h1>
                         <p className="text-gpsc-stone mt-8 max-w-xl text-lg leading-relaxed">
-                            Green Pasture Shepherd's Care is a community membership program that gives Filipino families affordable financial
+                            Faith Shield Care is a community membership program that gives Filipino families affordable financial
                             assistance, livelihood opportunities, and a network that grows with them — rooted in the Bayanihan spirit.
                         </p>
                         <div className="mt-10 flex flex-wrap items-center gap-4">
@@ -68,7 +68,7 @@ export const Hero: React.FC = () => {
                             <div className="border-gpsc-navy/20 absolute inset-0 rounded-full border"></div>
                             <div className="border-gpsc-green/20 absolute inset-8 rounded-full border"></div>
                             <div className="from-gpsc-cream-dark absolute inset-16 flex items-center justify-center rounded-full bg-gradient-to-br to-transparent">
-                                <img src={logo} alt="GPSC Logo" className="h-44 w-44 rounded-full object-contain mix-blend-multiply" />
+                                <img src={logo} alt="Faith Shield Care Logo" className="h-44 w-44 rounded-full object-contain mix-blend-multiply" />
                             </div>
                             <div className="border-gpsc-cream-dark absolute top-12 -left-4 max-w-[200px] rounded-2xl border bg-white p-4 shadow-lg">
                                 <div className="text-gpsc-green mb-1 flex items-center gap-2 text-xs font-semibold">

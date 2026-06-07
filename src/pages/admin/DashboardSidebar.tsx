@@ -99,8 +99,8 @@ export const DashboardSidebar: React.FC<Props> = ({ currentSection, onSectionCha
                     }}
                     className="leading-tight whitespace-nowrap"
                 >
-                    <div className="font-display text-gpsc-navy text-base font-semibold tracking-tight">Green Pasture</div>
-                    <div className="font-display text-gpsc-green text-xs italic">Shepherd's Care</div>
+                    <div className="font-display text-gpsc-navy text-base font-semibold tracking-tight">Faith Shield</div>
+                    <div className="font-display text-gpsc-green text-xs italic">Care</div>
                 </div>
             </div>
 

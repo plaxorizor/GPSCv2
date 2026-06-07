@@ -46,7 +46,7 @@ export const createPaymentLink = onCall({ secrets: [PAYMONGO_SECRET_KEY] }, asyn
                 attributes: {
                     amount: PACKAGE_AMOUNTS[pkg],
                     currency: "PHP",
-                    description: `GPSC ${pkg} Care Package`,
+                    description: `Faith Shield Care ${pkg} Package`,
                     remarks: `${memberId}|${txRef.id}`,
                 },
             },
