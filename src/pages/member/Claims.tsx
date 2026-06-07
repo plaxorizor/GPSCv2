@@ -2,6 +2,8 @@ import React from "react";
 import { Plus, FileText } from "lucide-react";
 import type { Claim } from "../../utils/types";
 import { formatCurrency, formatDate } from "../../utils/formatter";
+import StatusBadge from "../../components/ui/StatusBadge";
+import EmptyState from "../../components/ui/EmptyState";
 
 interface Props {
     claims: Claim[];
@@ -38,22 +40,19 @@ export const MemberClaims: React.FC<Props> = ({ claims, onFileClaim }) => (
                         </div>
                         <div className="text-right">
                             <div className="font-display text-fsc-navy text-2xl">{formatCurrency(c.amount)}</div>
-                            <span
-                                className={`mt-1 inline-block rounded-full px-3 py-1 text-xs ${c.status === "approved" ? "bg-fsc-green/10 text-fsc-green" : c.status === "under_review" ? "bg-fsc-navy/10 text-fsc-navy" : "bg-[#C9922A]/10 text-[#A87820]"}`}
-                            >
-                                {c.status.replace("_", " ")}
-                            </span>
+                            <StatusBadge status={c.status} className="mt-1" />
                         </div>
                     </div>
                 </div>
             ))}
             {claims.length === 0 && (
-                <div className="border-fsc-cream-dark rounded-2xl border bg-white p-12 text-center">
-                    <div className="bg-fsc-cream mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full">
-                        <FileText size={24} className="text-fsc-stone" />
-                    </div>
-                    <div className="font-display text-fsc-navy text-lg">No claims yet</div>
-                    <div className="text-fsc-stone mt-1 text-sm">When you need to file one, we'll guide you through.</div>
+                <div className="border-fsc-cream-dark rounded-2xl border bg-white">
+                    <EmptyState
+                        icon={FileText}
+                        title="No claims yet"
+                        description="When you need to file one, we'll guide you through it."
+                        action={{ label: "File a claim", onClick: onFileClaim, icon: Plus }}
+                    />
                 </div>
             )}
         </div>

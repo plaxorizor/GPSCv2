@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { Download, Eye, CheckCircle, XCircle, Clock, FileText, Search, X, RefreshCw } from "lucide-react";
 import type { Claim } from "../../utils/types";
 import { formatCurrency, formatDate } from "./utils";
+import StatusBadge from "../../components/ui/StatusBadge";
 
 interface Props {
     claims: Claim[];
@@ -13,22 +14,6 @@ interface Props {
     refreshing?: boolean;
     onExport: () => void;
 }
-
-const statusColors: Record<string, string> = {
-    submitted: "bg-fsc-navy/10 text-fsc-navy",
-    under_review: "bg-[#C9922A]/10 text-[#A87820]",
-    approved: "bg-fsc-green/10 text-fsc-green",
-    rejected: "bg-[#C41E1E]/10 text-[#C41E1E]",
-    released: "bg-fsc-green/20 text-fsc-green",
-};
-
-const statusLabels: Record<string, string> = {
-    submitted: "Submitted",
-    under_review: "Under Review",
-    approved: "Approved",
-    rejected: "Rejected",
-    released: "Released",
-};
 
 export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onReviewClaim, onRefresh, refreshing, onExport }) => {
     const [statusFilter, setStatusFilter] = useState("all");
@@ -106,7 +91,7 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 placeholder="Search by ID or benefit…"
-                                className="w-44 bg-transparent outline-none placeholder:text-fsc-stone/60"
+                                className="placeholder:text-fsc-stone/60 w-44 bg-transparent outline-none"
                             />
                             {search && (
                                 <button onClick={() => setSearch("")} className="text-fsc-stone hover:text-fsc-navy">
@@ -164,9 +149,7 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                                     <td className="text-fsc-stone p-4">{formatDate(claim.submitted)}</td>
                                     <td className="text-fsc-navy p-4 text-right font-medium">{formatCurrency(claim.amount)}</td>
                                     <td className="p-4">
-                                        <span className={`rounded-full px-2 py-1 text-xs ${statusColors[claim.status] || "bg-fsc-stone/10"}`}>
-                                            {statusLabels[claim.status] || claim.status}
-                                        </span>
+                                        <StatusBadge status={claim.status} />
                                     </td>
                                     <td className="p-4 text-right">
                                         <div className="flex items-center justify-end gap-2">
@@ -197,7 +180,7 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                                                     </button>
                                                     <button
                                                         onClick={() => onUpdateStatus(claim.id, "Approved")}
-                                                        className="rounded p-1 text-fsc-green transition-colors hover:bg-fsc-green/10"
+                                                        className="text-fsc-green hover:bg-fsc-green/10 rounded p-1 transition-colors"
                                                         title="Approve"
                                                     >
                                                         <CheckCircle size={16} />
@@ -228,7 +211,10 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                                                     <div className="font-display text-fsc-navy text-lg">No claims match</div>
                                                     <div className="text-fsc-stone mt-1 text-sm">Try adjusting your search or status filter.</div>
                                                     <button
-                                                        onClick={() => { setSearch(""); setStatusFilter("all"); }}
+                                                        onClick={() => {
+                                                            setSearch("");
+                                                            setStatusFilter("all");
+                                                        }}
                                                         className="text-fsc-green mt-4 text-sm hover:underline"
                                                     >
                                                         Clear filters
@@ -269,9 +255,7 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                                     <span className="font-display text-fsc-navy text-2xl">{formatCurrency(selectedClaim.amount)}</span>
                                 </div>
                                 <div className="mt-2">
-                                    <span className={`rounded-full px-2 py-1 text-xs ${statusColors[selectedClaim.status]}`}>
-                                        {statusLabels[selectedClaim.status]}
-                                    </span>
+                                    <StatusBadge status={selectedClaim.status} />
                                 </div>
                             </div>
                             <div>
@@ -330,7 +314,7 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                                         handleStartReview(selectedClaim.id);
                                         setSelectedClaim(null);
                                     }}
-                                    className="bg-[#C9922A] hover:bg-[#A87820] flex-1 rounded-lg px-4 py-2 font-medium text-white transition-colors"
+                                    className="flex-1 rounded-lg bg-[#C9922A] px-4 py-2 font-medium text-white transition-colors hover:bg-[#A87820]"
                                 >
                                     Start Review
                                 </button>

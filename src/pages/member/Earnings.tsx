@@ -3,6 +3,8 @@ import { Wallet, Clock, TrendingUp, Download } from "lucide-react";
 import { StatCard } from "./StatCard";
 import type { Commission, Payout } from "../../utils/types";
 import { formatCurrency, formatDate } from "../../utils/formatter";
+import StatusBadge from "../../components/ui/StatusBadge";
+import EmptyState from "../../components/ui/EmptyState";
 
 interface Props {
     availableToWithdraw: number;
@@ -60,20 +62,19 @@ export const MemberEarnings: React.FC<Props> = ({ availableToWithdraw, pendingHo
                                 <td className="text-fsc-stone p-4">L{c.level}</td>
                                 <td className="text-fsc-navy p-4 text-right font-medium">+{formatCurrency(c.amount)}</td>
                                 <td className="p-4 text-right">
-                                    <span
-                                        className={`rounded-full px-2 py-1 text-xs ${
-                                            c.status === "paid" ? "bg-fsc-green/10 text-fsc-green" : "bg-[#C9922A]/10 text-[#A87820]"
-                                        }`}
-                                    >
-                                        {c.status}
-                                    </span>
+                                    <StatusBadge status={c.status} />
                                 </td>
                             </tr>
                         ))}
                         {commissions.length === 0 && (
                             <tr>
-                                <td colSpan={5} className="text-fsc-stone p-8 text-center">
-                                    No commissions yet
+                                <td colSpan={5}>
+                                    <EmptyState
+                                        icon={TrendingUp}
+                                        title="No commissions yet"
+                                        description="Commissions you earn from your referral network will show up here."
+                                        compact
+                                    />
                                 </td>
                             </tr>
                         )}
@@ -109,20 +110,19 @@ export const MemberEarnings: React.FC<Props> = ({ availableToWithdraw, pendingHo
                                 <td className="text-fsc-stone p-4 font-mono text-xs">{p.reference || "—"}</td>
                                 <td className="text-fsc-navy p-4 text-right font-medium">{formatCurrency(p.amount)}</td>
                                 <td className="p-4 text-right">
-                                    <span
-                                        className={`rounded-full px-2 py-1 text-xs ${
-                                            p.status === "sent" ? "bg-fsc-green/10 text-fsc-green" : "bg-[#C9922A]/10 text-[#A87820]"
-                                        }`}
-                                    >
-                                        {p.status}
-                                    </span>
+                                    <StatusBadge status={p.status} />
                                 </td>
                             </tr>
                         ))}
                         {payouts.length === 0 && (
                             <tr>
-                                <td colSpan={5} className="text-fsc-stone p-8 text-center">
-                                    No payouts yet
+                                <td colSpan={5}>
+                                    <EmptyState
+                                        icon={Wallet}
+                                        title="No payouts yet"
+                                        description="Once you request a payout, its status and reference will appear here."
+                                        compact
+                                    />
                                 </td>
                             </tr>
                         )}

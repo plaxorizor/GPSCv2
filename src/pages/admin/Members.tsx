@@ -318,25 +318,34 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
     const filteredMembers = useMemo(() => {
         let filtered = [...members];
 
-        // Apply search filter
-        if (query) {
-            const lowerQuery = query.toLowerCase();
-            filtered = filtered.filter(
-                (member) =>
-                    member.firstName?.toLowerCase().includes(lowerQuery) ||
-                    member.lastName?.toLowerCase().includes(lowerQuery) ||
-                    `${member.firstName ?? ""} ${member.lastName ?? ""}`.toLowerCase().includes(lowerQuery) ||
-                    member.email?.toLowerCase().includes(lowerQuery) ||
-                    member.city?.toLowerCase().includes(lowerQuery) ||
-                    member.mobile?.includes(lowerQuery) ||
-                    member.referralCode?.toLowerCase().includes(lowerQuery) ||
-                    member.sponsorName?.toLowerCase().includes(lowerQuery),
-            );
+        // Apply search filter. Coerce every field to a string first — some docs
+        // store mobile (and others) as numbers, and calling .includes/.toLowerCase
+        // on a non-string throws and kills the whole filter.
+        const lowerQuery = query.trim().toLowerCase();
+        if (lowerQuery) {
+            filtered = filtered.filter((member) => {
+                const haystack = [
+                    member.firstName,
+                    member.lastName,
+                    `${member.firstName ?? ""} ${member.lastName ?? ""}`,
+                    member.email,
+                    member.city,
+                    member.province,
+                    member.mobile,
+                    member.referralCode,
+                    member.sponsorName,
+                ]
+                    .map((v) => String(v ?? "").toLowerCase())
+                    .join(" ");
+                return haystack.includes(lowerQuery);
+            });
         }
 
-        // Apply package filter
+        // Apply package filter. member.package is stored lowercase
+        // ("basic"/"family"/"premium") while the dropdown values are capitalized,
+        // so compare case-insensitively.
         if (packageFilter !== "all") {
-            filtered = filtered.filter((member) => member.package === packageFilter);
+            filtered = filtered.filter((member) => (member.package ?? "").toLowerCase() === packageFilter.toLowerCase());
         }
 
         // Archived members are hidden unless you explicitly view the Archived filter

@@ -1,6 +1,7 @@
 import React from "react";
-import { Edit } from "lucide-react";
+import { Edit, Users } from "lucide-react";
 import type { Member } from "../../utils/types";
+import EmptyState from "../../components/ui/EmptyState";
 
 export const MemberBeneficiaries: React.FC<{ member: Member }> = ({ member }) => {
     return (
@@ -24,7 +25,14 @@ export const MemberBeneficiaries: React.FC<{ member: Member }> = ({ member }) =>
                         </button>
                     </div>
                 ))}
-                {member.beneficiaries.length === 0 && <div className="text-fsc-stone py-4 text-center">No beneficiaries added yet</div>}
+                {member.beneficiaries.length === 0 && (
+                    <EmptyState
+                        icon={Users}
+                        title="No beneficiaries yet"
+                        description="Add the people who should receive your benefits when a claim is paid out."
+                        compact
+                    />
+                )}
             </div>
         </div>
     );
