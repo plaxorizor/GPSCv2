@@ -33,7 +33,7 @@ export default function PublicNav(): React.ReactElement {
                         <img src={logoSrc} width={40} height={40} alt="Logo" className="rounded-full object-contain" />
                         <div className="leading-tight">
                             <div className="font-display text-base font-bold tracking-tight">
-                                <span className="text-fsc-navy">FaithShield </span>
+                                <span className="text-fsc-navy">Faith Shield </span>
                                 <span className="text-fsc-red">Care</span>
                             </div>
                             <div className="font-body text-[10px] tracking-wide text-fsc-stone italic">Guided by Faith, Driven by Care</div>

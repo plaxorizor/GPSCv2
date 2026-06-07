@@ -22,8 +22,8 @@ const ReferralCard: React.FC<{ member: Member }> = ({ member }) => {
         if (navigator.share) {
             try {
                 await navigator.share({
-                    title: "Join FaithShield Care",
-                    text: `Join FaithShield Care using my referral code: ${member.referralCode}`,
+                    title: "Join Faith Shield Care",
+                    text: `Join Faith Shield Care using my referral code: ${member.referralCode}`,
                     url: referralLink,
                 });
             } catch {

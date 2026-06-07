@@ -8,8 +8,8 @@ const FAQ: React.FC = () => {
 
     const faqs = [
         {
-            q: "Is FaithShield Care an insurance company?",
-            a: "No. FaithShield Care is a community-based membership program. We are not regulated by the Insurance Commission.",
+            q: "Is Faith Shield Care an insurance company?",
+            a: "No. Faith Shield Care is a community-based membership program. We are not regulated by the Insurance Commission.",
         },
         {
             q: "When can I claim benefits after joining?",
@@ -24,7 +24,7 @@ const FAQ: React.FC = () => {
             a: "Your membership and benefits are unaffected. Your position in the referral tree remains the same.",
         },
         { q: "Can I cancel my membership?", a: "Yes. Unused contributions are subject to our refund policy based on tenure and claims history." },
-        { q: "Is the program Christian-only?", a: "No. While FaithShield Care is rooted in Christian values, membership is open to people of all faiths." },
+        { q: "Is the program Christian-only?", a: "No. While Faith Shield Care is rooted in Christian values, membership is open to people of all faiths." },
     ];
 
     return (

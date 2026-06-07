@@ -13,7 +13,7 @@ export const CTABanner: React.FC = () => {
                 ref={ref}
                 className={`mx-auto max-w-4xl px-6 py-24 text-center lg:px-8 scroll-reveal ${inView ? "in-view" : ""}`}
             >
-                <div className="text-fsc-green mb-4 text-xs tracking-[0.2em] uppercase">Join FaithShield Care</div>
+                <div className="text-fsc-green mb-4 text-xs tracking-[0.2em] uppercase">Join Faith Shield Care</div>
                 <h2 className="font-display mb-6 text-4xl leading-tight text-white lg:text-5xl">
                     Ready to protect your family?
                 </h2>

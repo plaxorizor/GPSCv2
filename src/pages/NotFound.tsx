@@ -9,10 +9,10 @@ export default function NotFound(): React.ReactElement {
     return (
         <div className="font-body text-fsc-ink flex min-h-screen flex-col items-center justify-center bg-[#F2F3F5] px-6 text-center">
             <button onClick={() => navigate("/")} className="mb-10 flex items-center gap-3 cursor-pointer">
-                <img src={logo} alt="FaithShield Care" className="h-10 w-10 rounded-full object-contain" />
+                <img src={logo} alt="Faith Shield Care" className="h-10 w-10 rounded-full object-contain" />
                 <div className="leading-tight text-left">
                     <div className="font-display text-base font-bold tracking-tight">
-                        <span className="text-fsc-navy">FaithShield </span>
+                        <span className="text-fsc-navy">Faith Shield </span>
                         <span style={{ color: "#C41E1E" }}>Care</span>
                     </div>
                     <div className="font-body text-fsc-stone text-[10px] tracking-wide italic">Guided by Faith, Driven by Care</div>

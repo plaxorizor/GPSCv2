@@ -138,7 +138,7 @@ const Membership: React.FC = () => {
                         Choose the plan that fits your family.
                     </h1>
                     <p className="text-fsc-stone text-lg leading-relaxed max-w-2xl">
-                        Every FaithShield Care membership gives your family access to financial assistance, emergency support, and community care services — guided by faith and driven by compassion.
+                        Every Faith Shield Care membership gives your family access to financial assistance, emergency support, and community care services — guided by faith and driven by compassion.
                     </p>
                 </div>
             </section>

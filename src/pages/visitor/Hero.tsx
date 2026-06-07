@@ -27,7 +27,7 @@ export const Hero: React.FC = () => {
                             <em className="text-fsc-green font-medium not-italic">rooted</em> in faith.
                         </h1>
                         <p className="text-fsc-stone mt-8 max-w-xl text-lg leading-relaxed">
-                            FaithShield Care is a community-based membership organization designed to provide affordable financial assistance,
+                            Faith Shield Care is a community-based membership organization designed to provide affordable financial assistance,
                             emergency support, livelihood opportunities, and community care services for low-income and middle-income families.
                         </p>
                         <div className="mt-10 flex flex-wrap items-center gap-4">
@@ -79,7 +79,7 @@ export const Hero: React.FC = () => {
                             <div className="border-fsc-navy/20 absolute inset-0 rounded-full border"></div>
                             <div className="border-fsc-green/20 absolute inset-8 rounded-full border"></div>
                             <div className="from-fsc-cream-dark absolute inset-16 flex items-center justify-center rounded-full bg-gradient-to-br to-transparent">
-                                <img src={logo} alt="GPSC Logo" className="h-44 w-44 rounded-full object-contain mix-blend-multiply" />
+                                <img src={logo} alt="Faith Shield Care Logo" className="h-44 w-44 rounded-full object-contain mix-blend-multiply" />
                             </div>
                             <div
                                 className="border-fsc-cream-dark absolute top-12 -left-4 max-w-[200px] rounded-2xl border bg-white p-4 shadow-lg"

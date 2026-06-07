@@ -113,7 +113,7 @@ export const DashboardSidebar: React.FC<Props> = ({ currentSection, onSectionCha
                     className="leading-tight whitespace-nowrap"
                 >
                     <div className="font-display text-base font-semibold tracking-tight">
-                        <span className="text-fsc-navy">FaithShield </span>
+                        <span className="text-fsc-navy">Faith Shield </span>
                         <span className="text-fsc-red">Care</span>
                     </div>
                     <div className="font-body text-fsc-stone text-[10px] italic">Admin Portal</div>

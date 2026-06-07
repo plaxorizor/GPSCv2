@@ -8,10 +8,10 @@ export const Footer: React.FC = () => (
             <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
                 <div>
                     <div className="mb-4 flex items-center gap-3">
-                        <img src={logo} alt="GPSC Logo" className="h-12 w-12 rounded-full object-contain mix-blend-lighten" />
+                        <img src={logo} alt="Faith Shield Care Logo" className="h-12 w-12 rounded-full object-contain mix-blend-lighten" />
                         <div className="leading-tight">
                             <div className="font-display text-base font-bold">
-                                <span className="text-white">FaithShield </span>
+                                <span className="text-white">Faith Shield </span>
                                 <span style={{ color: "#C41E1E" }}>Care</span>
                             </div>
                             <div className="font-body text-[10px] italic text-white/50">Guided by Faith, Driven by Care</div>
@@ -93,7 +93,7 @@ export const Footer: React.FC = () => (
                 </div>
             </div>
             <div className="mt-16 flex flex-wrap justify-between gap-4 border-t border-white/10 pt-8 text-xs text-white/40">
-                <div>© 2026 FaithShield Care · Philippines</div>
+                <div>© 2026 Faith Shield Care · Philippines</div>
                 <div className="font-display italic">Guided by Faith, Driven by Care</div>
             </div>
         </div>
