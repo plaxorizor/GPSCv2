@@ -76,10 +76,10 @@ export default function FileClaimModal({ memberName, onClose, onSuccess }: Props
         return (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
                 <div className="w-full max-w-md rounded-2xl bg-white p-8 text-center shadow-xl">
-                    <CheckCircle className="text-gpsc-green mx-auto mb-4" size={48} />
-                    <h2 className="font-display text-gpsc-navy mb-2 text-xl font-semibold">Claim Submitted!</h2>
-                    <p className="text-gpsc-stone mb-6 text-sm">
-                        Your claim for <span className="text-gpsc-navy font-semibold">{benefit}</span> (
+                    <CheckCircle className="text-fsc-green mx-auto mb-4" size={48} />
+                    <h2 className="font-display text-fsc-navy mb-2 text-xl font-semibold">Claim Submitted!</h2>
+                    <p className="text-fsc-stone mb-6 text-sm">
+                        Your claim for <span className="text-fsc-navy font-semibold">{benefit}</span> (
                         {formatCurrency(numAmount)}) has been submitted. An admin will review it and update
                         the status here.
                     </p>
@@ -88,7 +88,7 @@ export default function FileClaimModal({ memberName, onClose, onSuccess }: Props
                             onSuccess();
                             onClose();
                         }}
-                        className="bg-gpsc-green w-full rounded-xl py-3 font-medium text-white"
+                        className="bg-fsc-green w-full rounded-xl py-3 font-medium text-white"
                     >
                         Done
                     </button>
@@ -101,16 +101,16 @@ export default function FileClaimModal({ memberName, onClose, onSuccess }: Props
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
             <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl bg-white shadow-xl">
                 {/* Header */}
-                <div className="border-gpsc-cream-dark sticky top-0 flex items-center justify-between border-b bg-white p-6">
+                <div className="border-fsc-cream-dark sticky top-0 flex items-center justify-between border-b bg-white p-6">
                     <div className="flex items-center gap-3">
-                        <div className="bg-gpsc-navy/10 flex h-9 w-9 items-center justify-center rounded-xl">
-                            <FileText className="text-gpsc-navy" size={18} />
+                        <div className="bg-fsc-navy/10 flex h-9 w-9 items-center justify-center rounded-xl">
+                            <FileText className="text-fsc-navy" size={18} />
                         </div>
-                        <h2 className="font-display text-gpsc-navy font-semibold">File a Claim</h2>
+                        <h2 className="font-display text-fsc-navy font-semibold">File a Claim</h2>
                     </div>
                     <button
                         onClick={onClose}
-                        className="text-gpsc-stone hover:text-gpsc-navy rounded-lg p-1 transition-colors"
+                        className="text-fsc-stone hover:text-fsc-navy rounded-lg p-1 transition-colors"
                     >
                         <X size={20} />
                     </button>
@@ -120,11 +120,11 @@ export default function FileClaimModal({ memberName, onClose, onSuccess }: Props
                 <form onSubmit={handleSubmit} className="space-y-4 p-6">
                     {/* Benefit */}
                     <div>
-                        <label className="text-gpsc-navy mb-1.5 block text-sm font-medium">Benefit</label>
+                        <label className="text-fsc-navy mb-1.5 block text-sm font-medium">Benefit</label>
                         <select
                             value={benefit}
                             onChange={(e) => setBenefit(e.target.value)}
-                            className="border-gpsc-cream-dark focus:border-gpsc-green w-full rounded-xl border px-3 py-3 text-sm focus:outline-none"
+                            className="border-fsc-cream-dark focus:border-fsc-green w-full rounded-xl border px-3 py-3 text-sm focus:outline-none"
                             required
                         >
                             <option value="">Select benefit…</option>
@@ -138,11 +138,11 @@ export default function FileClaimModal({ memberName, onClose, onSuccess }: Props
 
                     {/* Amount */}
                     <div>
-                        <label className="text-gpsc-navy mb-1.5 block text-sm font-medium">
+                        <label className="text-fsc-navy mb-1.5 block text-sm font-medium">
                             Amount being claimed
                         </label>
                         <div className="relative">
-                            <span className="text-gpsc-stone absolute top-1/2 left-3 -translate-y-1/2 text-sm">₱</span>
+                            <span className="text-fsc-stone absolute top-1/2 left-3 -translate-y-1/2 text-sm">₱</span>
                             <input
                                 type="number"
                                 min={1}
@@ -150,18 +150,18 @@ export default function FileClaimModal({ memberName, onClose, onSuccess }: Props
                                 value={amount}
                                 onChange={(e) => setAmount(e.target.value)}
                                 placeholder="0.00"
-                                className="border-gpsc-cream-dark focus:border-gpsc-green w-full rounded-xl border py-3 pr-3 pl-7 text-sm focus:outline-none"
+                                className="border-fsc-cream-dark focus:border-fsc-green w-full rounded-xl border py-3 pr-3 pl-7 text-sm focus:outline-none"
                                 required
                             />
                         </div>
-                        <p className="text-gpsc-stone mt-1 text-xs">
+                        <p className="text-fsc-stone mt-1 text-xs">
                             The admin will verify this amount during review.
                         </p>
                     </div>
 
                     {/* Description */}
                     <div>
-                        <label className="text-gpsc-navy mb-1.5 block text-sm font-medium">
+                        <label className="text-fsc-navy mb-1.5 block text-sm font-medium">
                             What happened?
                         </label>
                         <textarea
@@ -169,14 +169,14 @@ export default function FileClaimModal({ memberName, onClose, onSuccess }: Props
                             onChange={(e) => setDescription(e.target.value)}
                             rows={3}
                             placeholder="Briefly describe the reason for this claim…"
-                            className="border-gpsc-cream-dark focus:border-gpsc-green w-full resize-none rounded-xl border px-3 py-3 text-sm focus:outline-none"
+                            className="border-fsc-cream-dark focus:border-fsc-green w-full resize-none rounded-xl border px-3 py-3 text-sm focus:outline-none"
                             required
                         />
                     </div>
 
                     {/* Documents checklist */}
                     <div>
-                        <label className="text-gpsc-navy mb-1.5 block text-sm font-medium">
+                        <label className="text-fsc-navy mb-1.5 block text-sm font-medium">
                             Supporting documents you have
                         </label>
                         <div className="space-y-2">
@@ -186,9 +186,9 @@ export default function FileClaimModal({ memberName, onClose, onSuccess }: Props
                                         type="checkbox"
                                         checked={documents.includes(doc)}
                                         onChange={() => toggleDoc(doc)}
-                                        className="accent-gpsc-green h-4 w-4 rounded"
+                                        className="accent-fsc-green h-4 w-4 rounded"
                                     />
-                                    <span className="text-gpsc-stone">{doc}</span>
+                                    <span className="text-fsc-stone">{doc}</span>
                                 </label>
                             ))}
                             <input
@@ -196,25 +196,25 @@ export default function FileClaimModal({ memberName, onClose, onSuccess }: Props
                                 value={otherDoc}
                                 onChange={(e) => setOtherDoc(e.target.value)}
                                 placeholder="Other document (optional)"
-                                className="border-gpsc-cream-dark focus:border-gpsc-green mt-1 w-full rounded-xl border px-3 py-2 text-sm focus:outline-none"
+                                className="border-fsc-cream-dark focus:border-fsc-green mt-1 w-full rounded-xl border px-3 py-2 text-sm focus:outline-none"
                             />
                         </div>
                     </div>
 
-                    {error && <p className="text-sm text-red-500">{error}</p>}
+                    {error && <p className="text-sm text-[#C41E1E]">{error}</p>}
 
                     <div className="flex gap-3 pt-2">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="border-gpsc-cream-dark flex-1 rounded-xl border py-3 text-sm font-medium transition-colors hover:bg-gray-50"
+                            className="border-fsc-cream-dark flex-1 rounded-xl border py-3 text-sm font-medium transition-colors hover:bg-gray-50"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
                             disabled={loading || !isValid}
-                            className="bg-gpsc-navy flex-1 rounded-xl py-3 text-sm font-medium text-white transition-opacity disabled:opacity-50"
+                            className="bg-fsc-navy flex-1 rounded-xl py-3 text-sm font-medium text-white transition-opacity disabled:opacity-50"
                         >
                             {loading ? "Submitting…" : "Submit Claim"}
                         </button>

@@ -7,12 +7,14 @@ import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 // ── Design tokens (mirrors pro.jsx GlobalStyles) ──────────────────
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=DM+Sans:wght@400;500;600;700&display=swap');
-  .gpsc-signin-root { font-family: 'DM Sans', system-ui, sans-serif; }
-  .gpsc-signin-root .font-display { font-family: 'Fraunces', Georgia, serif; }
+  .fsc-signin-root { font-family: 'DM Sans', system-ui, sans-serif; }
+  .fsc-signin-root .font-display { font-family: 'Fraunces', Georgia, serif; }
+  @keyframes signin-fade-up { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  .signin-anim { animation: signin-fade-up 0.5s ease-out forwards; }
 `;
 
 const inputCls =
-    "w-full mt-1 px-4 py-3 rounded-xl border border-[#E5DDC8] bg-white text-[#14365C] placeholder-[#6B6862] focus:outline-none focus:ring-2 focus:ring-[#4A8A2C] transition";
+    "w-full mt-1 px-4 py-3 rounded-xl border border-[#D0D2D8] bg-white text-[#1B2D6B] placeholder-[#6B6862] focus:outline-none focus:ring-2 focus:ring-[#C9922A] transition";
 const labelCls = "text-xs uppercase tracking-wider text-[#6B6862]";
 
 export default function SignIn() {
@@ -40,8 +42,8 @@ export default function SignIn() {
         <>
             <style>{css}</style>
 
-            <div className="gpsc-signin-root flex min-h-screen items-center justify-center px-6 py-12" style={{ backgroundColor: "#FAF6EE" }}>
-                <div className="mx-auto w-full max-w-md">
+            <div className="fsc-signin-root flex min-h-screen items-center justify-center px-6 py-12" style={{ backgroundColor: "#F2F3F5" }}>
+                <div className="mx-auto w-full max-w-md signin-anim">
                     {/* ── Back Button ── */}
                     <button
                         type="button"
@@ -76,9 +78,9 @@ export default function SignIn() {
                     </div>
 
                     {/* ── Card ── */}
-                    <div className="space-y-4 rounded-3xl p-8" style={{ backgroundColor: "#fff", border: "1px solid #E5DDC8" }}>
+                    <div className="space-y-4 rounded-3xl p-8" style={{ backgroundColor: "#fff", border: "1px solid #D0D2D8" }}>
                         {error && (
-                            <div className="rounded-xl px-4 py-3 text-sm" style={{ backgroundColor: "#FEE2E2", color: "#B91C1C" }}>
+                            <div className="rounded-xl px-4 py-3 text-sm" style={{ backgroundColor: "#FEE2E2", color: "#C41E1E" }}>
                                 {error}
                             </div>
                         )}
@@ -86,7 +88,7 @@ export default function SignIn() {
                         <form onSubmit={handleLogin} className="space-y-4">
                             <div>
                                 <label className={labelCls}>
-                                    Email <span style={{ color: "#B91C1C" }}>*</span>
+                                    Email <span style={{ color: "#C41E1E" }}>*</span>
                                 </label>
                                 <input
                                     required
@@ -100,7 +102,7 @@ export default function SignIn() {
 
                             <div>
                                 <label className={labelCls}>
-                                    Password <span style={{ color: "#B91C1C" }}>*</span>
+                                    Password <span style={{ color: "#C41E1E" }}>*</span>
                                 </label>
                                 <div className="relative">
                                     <input
@@ -113,7 +115,7 @@ export default function SignIn() {
                                     <button
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-[#6B6862] hover:text-[#4A8A2C] transition-colors"
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-[#6B6862] hover:text-[#C9922A] transition-colors"
                                         style={{ marginTop: "2px" }}
                                     >
                                         {showPassword ? (
@@ -151,7 +153,7 @@ export default function SignIn() {
                                         )}
                                     </button>
                                 </div>
-                                <button type="button" className="mt-2 text-xs hover:underline" style={{ color: "#4A8A2C" }}>
+                                <button type="button" className="mt-2 text-xs hover:underline" style={{ color: "#C9922A" }}>
                                     Forgot password?
                                 </button>
                             </div>
@@ -159,9 +161,9 @@ export default function SignIn() {
                             <button
                                 type="submit"
                                 className="w-full rounded-xl py-3 font-medium text-white transition-colors"
-                                style={{ backgroundColor: "#14365C" }}
-                                onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#4A8A2C")}
-                                onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#14365C")}
+                                style={{ backgroundColor: "#1B2D6B" }}
+                                onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#C9922A")}
+                                onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#1B2D6B")}
                             >
                                 Sign in
                             </button>
@@ -169,7 +171,7 @@ export default function SignIn() {
 
                         <div className="pt-2 text-center text-xs" style={{ color: "#6B6862" }}>
                             New here?{" "}
-                            <Link to="/signup" className="font-medium hover:underline" style={{ color: "#4A8A2C" }}>
+                            <Link to="/signup" className="font-medium hover:underline" style={{ color: "#C9922A" }}>
                                 Become a member
                             </Link>
                         </div>

@@ -30,10 +30,23 @@ export const DashboardSidebar: React.FC<Props> = ({ currentSection, onSectionCha
             <button
                 onClick={() => onSectionChange(item.id)}
                 className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition-colors ${
-                    currentSection === item.id ? "bg-gpsc-cream text-gpsc-navy font-medium" : "text-gpsc-stone hover:bg-gpsc-cream/60"
+                    currentSection === item.id ? "bg-fsc-cream text-fsc-navy font-medium" : "text-fsc-stone hover:bg-fsc-cream/60"
                 }`}
             >
-                <item.icon size={16} className="shrink-0" />
+                <div className="relative shrink-0">
+                    <item.icon size={16} />
+                    {item.badge !== undefined && item.badge !== null && item.badge > 0 && (
+                        <span
+                            style={{
+                                opacity: expanded ? 0 : 1,
+                                transition: "opacity 200ms ease",
+                            }}
+                            className="bg-fsc-green absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full text-[8px] font-bold text-white"
+                        >
+                            {item.badge > 9 ? "9+" : item.badge}
+                        </span>
+                    )}
+                </div>
                 <span
                     style={{
                         opacity: expanded ? 1 : 0,
@@ -54,7 +67,7 @@ export const DashboardSidebar: React.FC<Props> = ({ currentSection, onSectionCha
                             transition: "opacity 200ms ease",
                             transitionDelay: expanded ? `${160 + i * 20}ms` : "0ms",
                         }}
-                        className="bg-gpsc-green shrink-0 rounded-full px-2 py-0.5 text-xs text-white"
+                        className="bg-fsc-green shrink-0 rounded-full px-2 py-0.5 text-xs text-white"
                     >
                         {item.badge}
                     </span>
@@ -64,10 +77,10 @@ export const DashboardSidebar: React.FC<Props> = ({ currentSection, onSectionCha
             {/* Tooltip — only mounts when collapsed AND this item is hovered */}
             {!expanded && hoveredId === item.id && (
                 <div style={{ pointerEvents: "none" }} className="absolute top-1/2 left-full z-50 ml-2 flex -translate-y-1/2 items-center">
-                    <div className="bg-gpsc-navy rounded-lg px-2.5 py-1.5 text-xs whitespace-nowrap text-white shadow-sm">
+                    <div className="bg-fsc-navy rounded-lg px-2.5 py-1.5 text-xs whitespace-nowrap text-white shadow-sm">
                         {item.label}
                         {item.badge !== undefined && item.badge !== null && item.badge > 0 && (
-                            <span className="bg-gpsc-green ml-1.5 rounded-full px-1.5 py-0.5 text-xs">{item.badge}</span>
+                            <span className="bg-fsc-green ml-1.5 rounded-full px-1.5 py-0.5 text-xs">{item.badge}</span>
                         )}
                     </div>
                 </div>
@@ -83,10 +96,10 @@ export const DashboardSidebar: React.FC<Props> = ({ currentSection, onSectionCha
                 setHoveredId(null);
             }}
             style={{ width: expanded ? "16rem" : "4rem", transition: "width 400ms cubic-bezier(0.4, 0, 0.2, 1)" }}
-            className="border-gpsc-cream-dark fixed top-0 left-0 z-40 hidden h-screen flex-col overflow-hidden border-r bg-white lg:flex"
+            className="border-fsc-cream-dark fixed top-0 left-0 z-40 hidden h-screen flex-col overflow-hidden border-r bg-white lg:flex"
         >
             {/* Logo */}
-            <div className="border-gpsc-cream-dark flex items-center gap-3 overflow-hidden border-b px-3 py-4">
+            <div className="border-fsc-cream-dark flex items-center gap-3 overflow-hidden border-b px-3 py-4">
                 <img src={logoSrc} width={36} height={36} alt="Logo" className="shrink-0" />
                 <div
                     style={{
@@ -99,8 +112,11 @@ export const DashboardSidebar: React.FC<Props> = ({ currentSection, onSectionCha
                     }}
                     className="leading-tight whitespace-nowrap"
                 >
-                    <div className="font-display text-gpsc-navy text-base font-semibold tracking-tight">Faith Shield</div>
-                    <div className="font-display text-gpsc-green text-xs italic">Care</div>
+                    <div className="font-display text-base font-semibold tracking-tight">
+                        <span className="text-fsc-navy">FaithShield </span>
+                        <span className="text-fsc-red">Care</span>
+                    </div>
+                    <div className="font-body text-fsc-stone text-[10px] italic">Admin Portal</div>
                 </div>
             </div>
 
@@ -110,7 +126,7 @@ export const DashboardSidebar: React.FC<Props> = ({ currentSection, onSectionCha
             </nav>
 
             {/* Bottom section: Settings + Logout */}
-            <div className="border-gpsc-cream-dark space-y-1 border-t p-2">
+            <div className="border-fsc-cream-dark space-y-1 border-t p-2">
                 {/* Settings pinned above Logout */}
                 {settingsItem && renderNavButton(settingsItem, navItems.length)}
 
@@ -118,7 +134,7 @@ export const DashboardSidebar: React.FC<Props> = ({ currentSection, onSectionCha
                 <div className="relative" onMouseEnter={() => !expanded && setHoveredId("__logout__")} onMouseLeave={() => setHoveredId(null)}>
                     <button
                         onClick={onLogout}
-                        className="text-gpsc-stone hover:bg-gpsc-cream/60 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors"
+                        className="text-fsc-stone hover:bg-fsc-cream/60 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors"
                     >
                         <LogOut size={16} className="shrink-0" />
                         <span
@@ -136,7 +152,7 @@ export const DashboardSidebar: React.FC<Props> = ({ currentSection, onSectionCha
                     </button>
                     {!expanded && hoveredId === "__logout__" && (
                         <div style={{ pointerEvents: "none" }} className="absolute top-1/2 left-full z-50 ml-2 flex -translate-y-1/2 items-center">
-                            <div className="bg-gpsc-navy rounded-lg px-2.5 py-1.5 text-xs whitespace-nowrap text-white shadow-sm">Logout</div>
+                            <div className="bg-fsc-navy rounded-lg px-2.5 py-1.5 text-xs whitespace-nowrap text-white shadow-sm">Logout</div>
                         </div>
                     )}
                 </div>

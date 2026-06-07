@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { ChevronRight } from "lucide-react";
-import { GlobalStyles } from "../GlobalStyles";
 import PublicNav from "../PublicNav";
 import { Footer } from "../Footer";
 
@@ -9,8 +8,8 @@ const FAQ: React.FC = () => {
 
     const faqs = [
         {
-            q: "Is Faith Shield Care an insurance company?",
-            a: "No. Faith Shield Care is a community-based membership program. We are not regulated by the Insurance Commission.",
+            q: "Is FaithShield Care an insurance company?",
+            a: "No. FaithShield Care is a community-based membership program. We are not regulated by the Insurance Commission.",
         },
         {
             q: "When can I claim benefits after joining?",
@@ -25,30 +24,57 @@ const FAQ: React.FC = () => {
             a: "Your membership and benefits are unaffected. Your position in the referral tree remains the same.",
         },
         { q: "Can I cancel my membership?", a: "Yes. Unused contributions are subject to our refund policy based on tenure and claims history." },
-        { q: "Is the program Christian-only?", a: "No. While Faith Shield Care is rooted in Christian values, membership is open to people of all faiths." },
+        { q: "Is the program Christian-only?", a: "No. While FaithShield Care is rooted in Christian values, membership is open to people of all faiths." },
     ];
 
     return (
-        <div className="font-body text-gpsc-ink min-h-screen antialiased">
-            <GlobalStyles />
+        <div className="font-body text-fsc-ink min-h-screen antialiased flex flex-col">
             <PublicNav />
-            <main className="mx-auto max-w-3xl px-6 py-20">
-                <h1 className="font-display text-gpsc-navy mb-8 text-4xl">Frequently Asked Questions</h1>
+            <main className="mx-auto max-w-3xl w-full px-6 py-20 anim-fade-up flex-1">
+                <h1 className="font-display text-fsc-navy mb-8 text-4xl">Frequently Asked Questions</h1>
                 <div className="space-y-3">
-                    {faqs.map((faq, i) => (
-                        <div key={i} className="border-gpsc-cream-dark overflow-hidden rounded-2xl border bg-white">
-                            <button
-                                onClick={() => setOpenIndex(openIndex === i ? null : i)}
-                                className="hover:bg-gpsc-cream/40 flex w-full items-center justify-between p-5 text-left transition-colors"
-                            >
-                                <span className="font-display text-gpsc-navy text-lg">{faq.q}</span>
-                                <ChevronRight size={20} className={`text-gpsc-stone transition-transform ${openIndex === i ? "rotate-90" : ""}`} />
-                            </button>
-                            {openIndex === i && (
-                                <div className="text-gpsc-stone border-gpsc-cream-dark border-t px-5 pt-4 pb-5 leading-relaxed">{faq.a}</div>
-                            )}
-                        </div>
-                    ))}
+                    {faqs.map((faq, i) => {
+                        const isOpen = openIndex === i;
+                        return (
+                            <div key={i} className="border-fsc-cream-dark overflow-hidden rounded-2xl border bg-white">
+                                <button
+                                    onClick={() => setOpenIndex(isOpen ? null : i)}
+                                    className="hover:bg-fsc-cream/40 flex w-full items-center justify-between p-5 text-left transition-colors"
+                                >
+                                    <span
+                                        className="font-display text-fsc-navy text-lg transition-colors"
+                                        style={{ color: isOpen ? "#1B2D6B" : undefined, fontWeight: isOpen ? 600 : undefined }}
+                                    >
+                                        {faq.q}
+                                    </span>
+                                    <ChevronRight
+                                        size={20}
+                                        className="text-fsc-stone shrink-0 ml-4"
+                                        style={{
+                                            transform: isOpen ? "rotate(90deg)" : "rotate(0deg)",
+                                            transition: "transform 300ms ease",
+                                            color: isOpen ? "#C9922A" : undefined,
+                                        }}
+                                    />
+                                </button>
+
+                                {/* Grid trick: animates from 0fr → 1fr with no JS height measurement */}
+                                <div
+                                    style={{
+                                        display: "grid",
+                                        gridTemplateRows: isOpen ? "1fr" : "0fr",
+                                        transition: "grid-template-rows 300ms ease",
+                                    }}
+                                >
+                                    <div className="overflow-hidden">
+                                        <div className="text-fsc-stone border-fsc-cream-dark border-t px-5 pt-4 pb-5 leading-relaxed">
+                                            {faq.a}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
                 </div>
             </main>
             <Footer />

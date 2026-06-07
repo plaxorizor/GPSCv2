@@ -92,7 +92,7 @@ export default function MemberDashboard({
     sidebarItems.push({ id: "profile", label: "Profile", icon: Settings });
 
     return (
-        <div className="gpsc-cream flex min-h-screen">
+        <div className="fsc-cream flex min-h-screen">
             <DashboardSidebar
                 member={member}
                 rankName={rankName}

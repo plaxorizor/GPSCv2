@@ -13,8 +13,10 @@ import { ChevronLeft, ChevronRight, Plus, Eye, EyeOff } from "lucide-react";
 // ── Design tokens (mirrors pro.jsx GlobalStyles) ──────────────────
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=DM+Sans:wght@400;500;600;700&display=swap');
-  .gpsc-signup-root { font-family: 'DM Sans', system-ui, sans-serif; }
-  .gpsc-signup-root .font-display { font-family: 'Fraunces', Georgia, serif; }
+  .fsc-signup-root { font-family: 'DM Sans', system-ui, sans-serif; }
+  .fsc-signup-root .font-display { font-family: 'Fraunces', Georgia, serif; }
+  @keyframes signup-fade-up { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  .signup-anim { animation: signup-fade-up 0.5s ease-out forwards; }
 `;
 
 const plans = [
@@ -69,7 +71,7 @@ const PAYMENT_INFO = {
 
 // ── Shared input / label styles ───────────────────────────────────
 const inputCls =
-    "w-full mt-1 px-4 py-3 rounded-xl border border-[#E5DDC8] bg-white text-[#14365C] placeholder-[#6B6862] focus:outline-none focus:ring-2 focus:ring-[#4A8A2C] transition";
+    "w-full mt-1 px-4 py-3 rounded-xl border border-[#D0D2D8] bg-white text-[#1B2D6B] placeholder-[#6B6862] focus:outline-none focus:ring-2 focus:ring-[#C9922A] transition";
 const labelCls = "text-xs uppercase tracking-wider text-[#6B6862]";
 
 export default function SignUpLayout() {
@@ -117,7 +119,7 @@ export default function SignUpLayout() {
     // red. Top-level keys match `form`; beneficiary keys are "ben-{index}-name" etc.
     const [invalidFields, setInvalidFields] = useState<Set<string>>(new Set());
     const isInvalid = (key: string) => invalidFields.has(key);
-    const fieldCls = (key: string) => `${inputCls}${isInvalid(key) ? " border-red-500 ring-2 ring-red-500" : ""}`;
+    const fieldCls = (key: string) => `${inputCls}${isInvalid(key) ? " !border-[#C41E1E]" : ""}`;
 
     // Clear a field's red highlight as soon as it has a value again.
     useEffect(() => {
@@ -179,17 +181,17 @@ export default function SignUpLayout() {
 
     // Password strength
     const getPasswordStrength = (pwd: string): { score: number; label: string; color: string } => {
-        if (!pwd) return { score: 0, label: "", color: "#E5DDC8" };
+        if (!pwd) return { score: 0, label: "", color: "#D0D2D8" };
         let score = 0;
         if (pwd.length >= 8) score++;
         if (pwd.length >= 12) score++;
         if (/[A-Z]/.test(pwd)) score++;
         if (/[0-9]/.test(pwd)) score++;
         if (/[^A-Za-z0-9]/.test(pwd)) score++;
-        if (score <= 1) return { score, label: "Weak", color: "#DC2626" };
+        if (score <= 1) return { score, label: "Weak", color: "#C41E1E" };
         if (score <= 2) return { score, label: "Fair", color: "#F59E0B" };
         if (score <= 3) return { score, label: "Good", color: "#3B82F6" };
-        return { score, label: "Strong", color: "#4A8A2C" };
+        return { score, label: "Strong", color: "#C9922A" };
     };
     const pwStrength = getPasswordStrength(form.password);
 
@@ -342,14 +344,14 @@ export default function SignUpLayout() {
             {/* Inject design-token CSS */}
             <style>{css}</style>
 
-            <div className="gpsc-signup-root min-h-screen px-6 py-12" style={{ backgroundColor: "#FAF6EE" }}>
-                <div className="mx-auto max-w-2xl">
+            <div className="fsc-signup-root min-h-screen px-6 py-12" style={{ backgroundColor: "#F2F3F5" }}>
+                <div className="mx-auto max-w-2xl signup-anim">
                     {/* ── Header ── */}
                     <div className="mb-10 text-center">
                         <button type="button" onClick={() => navigate("/")} className="inline-flex cursor-pointer flex-col items-center">
                             <img src={logo} alt="Faith Shield Care Logo" className="h-20 w-20 rounded-full object-contain" />
                         </button>
-                        <h1 className="font-display mt-4 text-4xl" style={{ color: "#14365C" }}>
+                        <h1 className="font-display mt-4 text-4xl" style={{ color: "#1B2D6B" }}>
                             Join in a few minutes
                         </h1>
                         <p className="mt-2 text-sm" style={{ color: "#6B6862" }}>
@@ -359,8 +361,8 @@ export default function SignUpLayout() {
 
                     {/* ════ CONSENT GATE ════ */}
                     {!consented ? (
-                        <div className="rounded-3xl p-8" style={{ backgroundColor: "#fff", border: "1px solid #E5DDC8" }}>
-                            <h2 className="font-display mb-2 text-2xl" style={{ color: "#14365C" }}>
+                        <div className="rounded-3xl p-8" style={{ backgroundColor: "#fff", border: "1px solid #D0D2D8" }}>
+                            <h2 className="font-display mb-2 text-2xl" style={{ color: "#1B2D6B" }}>
                                 Before you continue
                             </h2>
                             <p className="mb-6 text-sm" style={{ color: "#6B6862" }}>
@@ -368,7 +370,7 @@ export default function SignUpLayout() {
                             </p>
 
                             {/* Tab bar */}
-                            <div className="mb-5 flex rounded-xl overflow-hidden" style={{ border: "1px solid #E5DDC8" }}>
+                            <div className="mb-5 flex rounded-xl overflow-hidden" style={{ border: "1px solid #D0D2D8" }}>
                                 {(["privacy", "terms", "refund"] as const).map((tab) => {
                                     const labels = { privacy: "Privacy Policy", terms: "Terms & Conditions", refund: "Refund Policy" };
                                     const active = policyTab === tab;
@@ -379,9 +381,9 @@ export default function SignUpLayout() {
                                             onClick={() => setPolicyTab(tab)}
                                             className="flex-1 py-2.5 text-xs font-medium transition-colors"
                                             style={{
-                                                backgroundColor: active ? "#14365C" : "#FAF6EE",
+                                                backgroundColor: active ? "#1B2D6B" : "#F2F3F5",
                                                 color: active ? "#fff" : "#6B6862",
-                                                borderRight: tab !== "refund" ? "1px solid #E5DDC8" : undefined,
+                                                borderRight: tab !== "refund" ? "1px solid #D0D2D8" : undefined,
                                             }}
                                         >
                                             {labels[tab]}
@@ -393,39 +395,39 @@ export default function SignUpLayout() {
                             {/* Tab content */}
                             <div
                                 className="rounded-2xl p-5 mb-6 overflow-y-auto space-y-3 text-sm leading-relaxed"
-                                style={{ backgroundColor: "#FAF6EE", border: "1px solid #E5DDC8", maxHeight: "320px", color: "#4B4A47" }}
+                                style={{ backgroundColor: "#F2F3F5", border: "1px solid #D0D2D8", maxHeight: "320px", color: "#4B4A47" }}
                             >
                                 {policyTab === "privacy" && (
                                     <>
-                                        <p><strong style={{ color: "#14365C" }}>Last updated: June 2025</strong></p>
+                                        <p><strong style={{ color: "#1B2D6B" }}>Last updated: June 2025</strong></p>
                                         <p>Faith Shield Care ("we", "us", or "our") is committed to protecting your personal information. This Privacy Policy explains how we collect, use, and safeguard the data you provide when registering as a member.</p>
-                                        <p><strong style={{ color: "#14365C" }}>Information We Collect</strong><br />We collect your name, email address, mobile number, birth date, civil status, location, referral code, and beneficiary details. Proof of payment that you send us for verification is handled separately and is not stored in your online account.</p>
-                                        <p><strong style={{ color: "#14365C" }}>How We Use Your Information</strong><br />Your data is used to process your membership application, verify identity, manage your account, facilitate referral rewards, and communicate important updates.</p>
-                                        <p><strong style={{ color: "#14365C" }}>Data Sharing</strong><br />We do not sell or rent your personal data. Information may be shared only with service providers necessary to operate our platform, or as required by law.</p>
-                                        <p><strong style={{ color: "#14365C" }}>Data Security</strong><br />We use industry-standard security measures to protect your information. However, no online transmission is 100% secure and we cannot guarantee absolute security.</p>
-                                        <p><strong style={{ color: "#14365C" }}>Your Rights</strong><br />You may request access to, correction of, or deletion of your personal data by contacting us at support@faithshield.care.</p>
+                                        <p><strong style={{ color: "#1B2D6B" }}>Information We Collect</strong><br />We collect your name, email address, mobile number, birth date, civil status, location, referral code, and beneficiary details. Proof of payment that you send us for verification is handled separately and is not stored in your online account.</p>
+                                        <p><strong style={{ color: "#1B2D6B" }}>How We Use Your Information</strong><br />Your data is used to process your membership application, verify identity, manage your account, facilitate referral rewards, and communicate important updates.</p>
+                                        <p><strong style={{ color: "#1B2D6B" }}>Data Sharing</strong><br />We do not sell or rent your personal data. Information may be shared only with service providers necessary to operate our platform, or as required by law.</p>
+                                        <p><strong style={{ color: "#1B2D6B" }}>Data Security</strong><br />We use industry-standard security measures to protect your information. However, no online transmission is 100% secure and we cannot guarantee absolute security.</p>
+                                        <p><strong style={{ color: "#1B2D6B" }}>Your Rights</strong><br />You may request access to, correction of, or deletion of your personal data by contacting us at support@faithshield.care.</p>
                                     </>
                                 )}
                                 {policyTab === "terms" && (
                                     <>
-                                        <p><strong style={{ color: "#14365C" }}>Last updated: June 2025</strong></p>
+                                        <p><strong style={{ color: "#1B2D6B" }}>Last updated: June 2025</strong></p>
                                         <p>By registering for a Faith Shield Care membership, you agree to be bound by these Terms &amp; Conditions. Please read them carefully before proceeding.</p>
-                                        <p><strong style={{ color: "#14365C" }}>Eligibility</strong><br />Membership is open to individuals 18 years of age or older. By registering, you confirm that all information provided is accurate and truthful.</p>
-                                        <p><strong style={{ color: "#14365C" }}>Membership Plans</strong><br />Each plan (Basic, Family, Premium) carries distinct benefits and referral structures. Plan details are subject to change with prior notice to members.</p>
-                                        <p><strong style={{ color: "#14365C" }}>Referral Program</strong><br />Referral commissions are credited upon successful activation of referred members. Faith Shield Care reserves the right to adjust commission rates with reasonable notice.</p>
-                                        <p><strong style={{ color: "#14365C" }}>Account Responsibility</strong><br />You are responsible for maintaining the confidentiality of your account credentials. Faith Shield Care is not liable for unauthorized access resulting from your failure to secure your account.</p>
-                                        <p><strong style={{ color: "#14365C" }}>Termination</strong><br />Faith Shield Care reserves the right to suspend or terminate any account found to be in violation of these Terms or engaged in fraudulent activity.</p>
-                                        <p><strong style={{ color: "#14365C" }}>Governing Law</strong><br />These Terms are governed by the laws of the Republic of the Philippines.</p>
+                                        <p><strong style={{ color: "#1B2D6B" }}>Eligibility</strong><br />Membership is open to individuals 18 years of age or older. By registering, you confirm that all information provided is accurate and truthful.</p>
+                                        <p><strong style={{ color: "#1B2D6B" }}>Membership Plans</strong><br />Each plan (Basic, Family, Premium) carries distinct benefits and referral structures. Plan details are subject to change with prior notice to members.</p>
+                                        <p><strong style={{ color: "#1B2D6B" }}>Referral Program</strong><br />Referral commissions are credited upon successful activation of referred members. Faith Shield Care reserves the right to adjust commission rates with reasonable notice.</p>
+                                        <p><strong style={{ color: "#1B2D6B" }}>Account Responsibility</strong><br />You are responsible for maintaining the confidentiality of your account credentials. Faith Shield Care is not liable for unauthorized access resulting from your failure to secure your account.</p>
+                                        <p><strong style={{ color: "#1B2D6B" }}>Termination</strong><br />Faith Shield Care reserves the right to suspend or terminate any account found to be in violation of these Terms or engaged in fraudulent activity.</p>
+                                        <p><strong style={{ color: "#1B2D6B" }}>Governing Law</strong><br />These Terms are governed by the laws of the Republic of the Philippines.</p>
                                     </>
                                 )}
                                 {policyTab === "refund" && (
                                     <>
-                                        <p><strong style={{ color: "#14365C" }}>Last updated: June 2025</strong></p>
+                                        <p><strong style={{ color: "#1B2D6B" }}>Last updated: June 2025</strong></p>
                                         <p>Faith Shield Care strives to ensure member satisfaction. Please review our refund policy before completing your registration.</p>
-                                        <p><strong style={{ color: "#14365C" }}>Cooling-Off Period</strong><br />Members may request a full refund within 7 calendar days of account activation, provided no referral commissions have been disbursed under their account.</p>
-                                        <p><strong style={{ color: "#14365C" }}>Non-Refundable Circumstances</strong><br />Refunds will not be granted if the membership has been active for more than 7 days, if commissions have already been paid to the member, or if the account has been found in violation of our Terms &amp; Conditions.</p>
-                                        <p><strong style={{ color: "#14365C" }}>How to Request a Refund</strong><br />To initiate a refund, contact our support team at support@faithshield.care with your registered email and reason for the request. Approved refunds will be processed within 7–14 business days.</p>
-                                        <p><strong style={{ color: "#14365C" }}>Plan Upgrades</strong><br />Payments made for plan upgrades are non-refundable once the upgraded plan has been activated.</p>
+                                        <p><strong style={{ color: "#1B2D6B" }}>Cooling-Off Period</strong><br />Members may request a full refund within 7 calendar days of account activation, provided no referral commissions have been disbursed under their account.</p>
+                                        <p><strong style={{ color: "#1B2D6B" }}>Non-Refundable Circumstances</strong><br />Refunds will not be granted if the membership has been active for more than 7 days, if commissions have already been paid to the member, or if the account has been found in violation of our Terms &amp; Conditions.</p>
+                                        <p><strong style={{ color: "#1B2D6B" }}>How to Request a Refund</strong><br />To initiate a refund, contact our support team at support@faithshield.care with your registered email and reason for the request. Approved refunds will be processed within 7–14 business days.</p>
+                                        <p><strong style={{ color: "#1B2D6B" }}>Plan Upgrades</strong><br />Payments made for plan upgrades are non-refundable once the upgraded plan has been activated.</p>
                                     </>
                                 )}
                             </div>
@@ -436,9 +438,9 @@ export default function SignUpLayout() {
                                     type="button"
                                     onClick={() => navigate("/")}
                                     className="flex-1 rounded-xl border py-3 text-sm font-medium transition-colors"
-                                    style={{ borderColor: "#E5DDC8", color: "#6B6862", backgroundColor: "#FAF6EE" }}
-                                    onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#E5DDC8")}
-                                    onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#FAF6EE")}
+                                    style={{ borderColor: "#D0D2D8", color: "#6B6862", backgroundColor: "#F2F3F5" }}
+                                    onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#D0D2D8")}
+                                    onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#F2F3F5")}
                                 >
                                     I Disagree — Go Back
                                 </button>
@@ -446,9 +448,9 @@ export default function SignUpLayout() {
                                     type="button"
                                     onClick={() => setConsented(true)}
                                     className="flex-1 rounded-xl py-3 text-sm font-medium text-white transition-colors"
-                                    style={{ backgroundColor: "#4A8A2C" }}
-                                    onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#5DAB3A")}
-                                    onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#4A8A2C")}
+                                    style={{ backgroundColor: "#C9922A" }}
+                                    onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#A87820")}
+                                    onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#C9922A")}
                                 >
                                     I Agree — Continue Registration
                                 </button>
@@ -459,7 +461,7 @@ export default function SignUpLayout() {
                             {/* ════ MAIN SIGNUP FLOW (after consent) ════ */}
                             <div className="relative mb-8 flex items-center justify-between">
                                 {/* Background line */}
-                                <div className="absolute right-0 left-0 h-px" style={{ backgroundColor: "#E5DDC8", top: "50%" }} />
+                                <div className="absolute right-0 left-0 h-px" style={{ backgroundColor: "#D0D2D8", top: "50%" }} />
                                 {STEPS.map((_label, i) => {
                                     const s = i + 1;
                                     const active = s === step;
@@ -469,7 +471,7 @@ export default function SignUpLayout() {
                                             key={s}
                                             className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold transition-colors"
                                             style={{
-                                                backgroundColor: done || active ? "#14365C" : "#E5DDC8",
+                                                backgroundColor: done || active ? "#1B2D6B" : "#D0D2D8",
                                                 color: done || active ? "#fff" : "#6B6862",
                                             }}
                                         >
@@ -480,9 +482,9 @@ export default function SignUpLayout() {
                             </div>
 
                             {/* ── Card ── */}
-                            <div className="rounded-3xl p-8" style={{ backgroundColor: "#fff", border: "1px solid #E5DDC8" }}>
+                            <div className="rounded-3xl p-8" style={{ backgroundColor: "#fff", border: "1px solid #D0D2D8" }}>
                                 {error && (
-                                    <div className="mb-4 rounded-xl px-4 py-3 text-sm" style={{ backgroundColor: "#FEE2E2", color: "#B91C1C" }}>
+                                    <div className="mb-4 rounded-xl px-4 py-3 text-sm" style={{ backgroundColor: "#FEE2E2", color: "#C41E1E" }}>
                                         {error}
                                     </div>
                                 )}
@@ -491,7 +493,7 @@ export default function SignUpLayout() {
                                     {/* ════ STEP 1 — Package ════ */}
                                     {step === 1 && (
                                         <div>
-                                            <h2 className="font-display mb-6 text-2xl" style={{ color: "#14365C" }}>
+                                            <h2 className="font-display mb-6 text-2xl" style={{ color: "#1B2D6B" }}>
                                                 Step 1 · Choose your package
                                             </h2>
                                             <RadioGroup
@@ -507,7 +509,7 @@ export default function SignUpLayout() {
                                                         value={plan}
                                                         className={({ checked }) =>
                                                             `block cursor-pointer rounded-2xl border p-4 transition-all outline-none ${
-                                                                checked ? "border-[#4A8A2C] bg-[#FAF6EE]" : "border-[#E5DDC8] hover:bg-[#FAF6EE]/60"
+                                                                checked ? "border-[#C9922A] bg-[#F2F3F5]" : "border-[#D0D2D8] hover:bg-[#F2F3F5]/60"
                                                             }`
                                                         }
                                                     >
@@ -517,19 +519,19 @@ export default function SignUpLayout() {
                                                                     <div
                                                                         className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors"
                                                                         style={{
-                                                                            borderColor: checked ? "#4A8A2C" : "#D1D5DB",
-                                                                            backgroundColor: checked ? "#4A8A2C" : "transparent",
+                                                                            borderColor: checked ? "#C9922A" : "#D1D5DB",
+                                                                            backgroundColor: checked ? "#C9922A" : "transparent",
                                                                         }}
                                                                     >
                                                                         {checked && <div className="h-2 w-2 rounded-full bg-white" />}
                                                                     </div>
                                                                     <div>
-                                                                        <div className="font-display text-lg" style={{ color: "#14365C" }}>
+                                                                        <div className="font-display text-lg" style={{ color: "#1B2D6B" }}>
                                                                             {plan.name} Care
                                                                             {plan.popular && (
                                                                                 <span
                                                                                     className="ml-2 rounded-full px-2 py-0.5 font-sans text-xs"
-                                                                                    style={{ backgroundColor: "#4A8A2C", color: "#fff" }}
+                                                                                    style={{ backgroundColor: "#C9922A", color: "#fff" }}
                                                                                 >
                                                                                     Popular
                                                                                 </span>
@@ -540,7 +542,7 @@ export default function SignUpLayout() {
                                                                         </div>
                                                                     </div>
                                                                 </div>
-                                                                <div className="font-display text-xl" style={{ color: "#14365C" }}>
+                                                                <div className="font-display text-xl" style={{ color: "#1B2D6B" }}>
                                                                     ₱{plan.price.toLocaleString("en-PH")}
                                                                 </div>
                                                             </div>
@@ -554,7 +556,7 @@ export default function SignUpLayout() {
                                     {/* ════ STEP 2 — Personal info (Enhanced) ════ */}
                                     {step === 2 && (
                                         <div>
-                                            <h2 className="font-display mb-6 text-2xl" style={{ color: "#14365C" }}>
+                                            <h2 className="font-display mb-6 text-2xl" style={{ color: "#1B2D6B" }}>
                                                 Step 2 · Your Information
                                             </h2>
                                             <div className="space-y-4">
@@ -562,7 +564,7 @@ export default function SignUpLayout() {
                                                 <div className="grid gap-4 sm:grid-cols-2">
                                                     <div>
                                                         <label className={labelCls}>
-                                                            First name <span style={{ color: "#B91C1C" }}>*</span>
+                                                            First name <span style={{ color: "#C41E1E" }}>*</span>
                                                         </label>
                                                         <input
                                                             required
@@ -574,7 +576,7 @@ export default function SignUpLayout() {
                                                     </div>
                                                     <div>
                                                         <label className={labelCls}>
-                                                            Last name <span style={{ color: "#B91C1C" }}>*</span>
+                                                            Last name <span style={{ color: "#C41E1E" }}>*</span>
                                                         </label>
                                                         <input
                                                             required
@@ -622,7 +624,7 @@ export default function SignUpLayout() {
                                                 <div className="grid gap-4 sm:grid-cols-2">
                                                     <div>
                                                         <label className={labelCls}>
-                                                            Email <span style={{ color: "#B91C1C" }}>*</span>
+                                                            Email <span style={{ color: "#C41E1E" }}>*</span>
                                                         </label>
                                                         <input
                                                             required
@@ -635,7 +637,7 @@ export default function SignUpLayout() {
                                                     </div>
                                                     <div>
                                                         <label className={labelCls}>
-                                                            Confirm Email <span style={{ color: "#B91C1C" }}>*</span>
+                                                            Confirm Email <span style={{ color: "#C41E1E" }}>*</span>
                                                         </label>
                                                         <input
                                                             required
@@ -646,7 +648,7 @@ export default function SignUpLayout() {
                                                             onChange={(e) => setForm((prev) => ({ ...prev, confirmEmail: e.target.value }))}
                                                         />
                                                         {form.confirmEmail && form.email !== form.confirmEmail && (
-                                                            <p className="mt-1 text-xs" style={{ color: "#DC2626" }}>
+                                                            <p className="mt-1 text-xs" style={{ color: "#C41E1E" }}>
                                                                 Emails do not match
                                                             </p>
                                                         )}
@@ -656,7 +658,7 @@ export default function SignUpLayout() {
                                                 {/* Mobile */}
                                                 <div>
                                                     <label className={labelCls}>
-                                                        Mobile number <span style={{ color: "#B91C1C" }}>*</span>
+                                                        Mobile number <span style={{ color: "#C41E1E" }}>*</span>
                                                     </label>
                                                     <input
                                                         required
@@ -674,7 +676,7 @@ export default function SignUpLayout() {
                                                 <div className="grid gap-4 sm:grid-cols-2">
                                                     <div>
                                                         <label className={labelCls}>
-                                                            Password <span style={{ color: "#B91C1C" }}>*</span>
+                                                            Password <span style={{ color: "#C41E1E" }}>*</span>
                                                         </label>
                                                         <div className="relative">
                                                             <input
@@ -688,7 +690,7 @@ export default function SignUpLayout() {
                                                             <button
                                                                 type="button"
                                                                 onClick={() => setShowPassword((v) => !v)}
-                                                                className="absolute inset-y-0 right-3 flex items-center text-[#6B6862] hover:text-[#14365C] transition-colors"
+                                                                className="absolute inset-y-0 right-3 flex items-center text-[#6B6862] hover:text-[#1B2D6B] transition-colors"
                                                                 tabIndex={-1}
                                                                 aria-label={showPassword ? "Hide password" : "Show password"}
                                                             >
@@ -703,7 +705,7 @@ export default function SignUpLayout() {
                                                                             key={seg}
                                                                             className="h-1 flex-1 rounded-full transition-colors duration-300"
                                                                             style={{
-                                                                                backgroundColor: pwStrength.score >= seg ? pwStrength.color : "#E5DDC8",
+                                                                                backgroundColor: pwStrength.score >= seg ? pwStrength.color : "#D0D2D8",
                                                                             }}
                                                                         />
                                                                     ))}
@@ -720,7 +722,7 @@ export default function SignUpLayout() {
                                                     </div>
                                                     <div>
                                                         <label className={labelCls}>
-                                                            Confirm password <span style={{ color: "#B91C1C" }}>*</span>
+                                                            Confirm password <span style={{ color: "#C41E1E" }}>*</span>
                                                         </label>
                                                         <div className="relative">
                                                             <input
@@ -734,7 +736,7 @@ export default function SignUpLayout() {
                                                             <button
                                                                 type="button"
                                                                 onClick={() => setShowConfirmPassword((v) => !v)}
-                                                                className="absolute inset-y-0 right-3 flex items-center text-[#6B6862] hover:text-[#14365C] transition-colors"
+                                                                className="absolute inset-y-0 right-3 flex items-center text-[#6B6862] hover:text-[#1B2D6B] transition-colors"
                                                                 tabIndex={-1}
                                                                 aria-label={showConfirmPassword ? "Hide password" : "Show password"}
                                                             >
@@ -742,7 +744,7 @@ export default function SignUpLayout() {
                                                             </button>
                                                         </div>
                                                         {form.confirmPassword.length > 0 && (
-                                                            <p className="mt-2 text-xs" style={{ color: form.password === form.confirmPassword ? "#4A8A2C" : "#DC2626" }}>
+                                                            <p className="mt-2 text-xs" style={{ color: form.password === form.confirmPassword ? "#C9922A" : "#C41E1E" }}>
                                                                 {form.password === form.confirmPassword ? "Passwords match ✓" : "Passwords do not match"}
                                                             </p>
                                                         )}
@@ -752,7 +754,7 @@ export default function SignUpLayout() {
                                                 {/* Birth date */}
                                                 <div>
                                                     <label className={labelCls}>
-                                                        Birth date <span style={{ color: "#B91C1C" }}>*</span>
+                                                        Birth date <span style={{ color: "#C41E1E" }}>*</span>
                                                     </label>
                                                     <input
                                                         required
@@ -770,7 +772,7 @@ export default function SignUpLayout() {
                                                 <div className="grid gap-4 sm:grid-cols-2">
                                                     <div>
                                                         <label className={labelCls}>
-                                                            Gender <span style={{ color: "#B91C1C" }}>*</span>
+                                                            Gender <span style={{ color: "#C41E1E" }}>*</span>
                                                         </label>
                                                         <select
                                                             required
@@ -787,7 +789,7 @@ export default function SignUpLayout() {
                                                     </div>
                                                     <div>
                                                         <label className={labelCls}>
-                                                            Civil status <span style={{ color: "#B91C1C" }}>*</span>
+                                                            Civil status <span style={{ color: "#C41E1E" }}>*</span>
                                                         </label>
                                                         <select
                                                             required
@@ -822,7 +824,7 @@ export default function SignUpLayout() {
                                                 <div className="grid gap-4 sm:grid-cols-2">
                                                     <div>
                                                         <label className={labelCls}>
-                                                            Province <span style={{ color: "#B91C1C" }}>*</span>
+                                                            Province <span style={{ color: "#C41E1E" }}>*</span>
                                                         </label>
                                                         <select
                                                             required
@@ -915,13 +917,13 @@ export default function SignUpLayout() {
                                     {/* ════ STEP 3 — Sponsor & Beneficiaries ════ */}
                                     {step === 3 && (
                                         <div>
-                                            <h2 className="font-display mb-6 text-2xl" style={{ color: "#14365C" }}>
+                                            <h2 className="font-display mb-6 text-2xl" style={{ color: "#1B2D6B" }}>
                                                 Step 3 · Sponsor &amp; Beneficiaries
                                             </h2>
                                             <div className="space-y-5">
                                                 <div>
                                                     <label className={labelCls}>
-                                                        Sponsor / Referral Code <span style={{ color: "#B91C1C" }}>*</span>
+                                                        Sponsor / Referral Code <span style={{ color: "#C41E1E" }}>*</span>
                                                     </label>
                                                     <input
                                                         required
@@ -936,7 +938,7 @@ export default function SignUpLayout() {
                                                 </div>
 
                                                 {selectedPlan.name !== "Basic" && (
-                                                    <div className="mt-1 border-t pt-5" style={{ borderColor: "#E5DDC8" }}>
+                                                    <div className="mt-1 border-t pt-5" style={{ borderColor: "#D0D2D8" }}>
                                                         <label className={labelCls}>
                                                             Beneficiaries
                                                             <span className="ml-1 normal-case" style={{ color: "#6B6862" }}>
@@ -949,9 +951,9 @@ export default function SignUpLayout() {
                                                                 <div
                                                                     key={index}
                                                                     className="space-y-3 rounded-2xl p-4"
-                                                                    style={{ backgroundColor: "#FAF6EE", border: "1px solid #E5DDC8" }}
+                                                                    style={{ backgroundColor: "#F2F3F5", border: "1px solid #D0D2D8" }}
                                                                 >
-                                                                    <p className="text-xs font-semibold" style={{ color: "#14365C" }}>
+                                                                    <p className="text-xs font-semibold" style={{ color: "#1B2D6B" }}>
                                                                         Beneficiary {index + 1}
                                                                     </p>
                                                                     <input
@@ -998,7 +1000,7 @@ export default function SignUpLayout() {
                                                                 <button
                                                                     type="button"
                                                                     className="flex items-center gap-1 text-sm font-medium hover:underline"
-                                                                    style={{ color: "#4A8A2C" }}
+                                                                    style={{ color: "#C9922A" }}
                                                                     onClick={() =>
                                                                         setForm((prev) => ({
                                                                             ...prev,
@@ -1013,7 +1015,7 @@ export default function SignUpLayout() {
                                                                 <button
                                                                     type="button"
                                                                     className="text-sm hover:underline"
-                                                                    style={{ color: "#B91C1C" }}
+                                                                    style={{ color: "#C41E1E" }}
                                                                     onClick={() =>
                                                                         setForm((prev) => ({
                                                                             ...prev,
@@ -1034,7 +1036,7 @@ export default function SignUpLayout() {
                                     {/* ════ STEP 4 — Payment ════ */}
                                     {step === 4 && (
                                         <div>
-                                            <h2 className="font-display mb-2 text-2xl" style={{ color: "#14365C" }}>
+                                            <h2 className="font-display mb-2 text-2xl" style={{ color: "#1B2D6B" }}>
                                                 Step 4 · Payment
                                             </h2>
                                             <p className="mb-6 text-sm" style={{ color: "#6B6862" }}>
@@ -1042,51 +1044,51 @@ export default function SignUpLayout() {
                                                 can verify it and activate your account.
                                             </p>
 
-                                            <div className="mb-6 flex items-center justify-between rounded-2xl px-5 py-4" style={{ backgroundColor: "#FAF6EE", border: "1px solid #E5DDC8" }}>
+                                            <div className="mb-6 flex items-center justify-between rounded-2xl px-5 py-4" style={{ backgroundColor: "#F2F3F5", border: "1px solid #D0D2D8" }}>
                                                 <div>
                                                     <p className="text-xs uppercase tracking-wider" style={{ color: "#6B6862" }}>Amount Due</p>
-                                                    <p className="font-display text-2xl font-semibold" style={{ color: "#14365C" }}>
+                                                    <p className="font-display text-2xl font-semibold" style={{ color: "#1B2D6B" }}>
                                                         ₱{selectedPlan.price.toLocaleString("en-PH")}
                                                     </p>
                                                 </div>
-                                                <span className="rounded-full px-3 py-1 text-xs font-medium text-white" style={{ backgroundColor: "#4A8A2C" }}>
+                                                <span className="rounded-full px-3 py-1 text-xs font-medium text-white" style={{ backgroundColor: "#C9922A" }}>
                                                     {selectedPlan.name} Care
                                                 </span>
                                             </div>
 
                                             <div className="mb-6 grid gap-4 sm:grid-cols-2">
                                                 {PAYMENT_INFO.accounts.map((acct) => (
-                                                    <div key={acct.label} className="flex flex-col items-center rounded-2xl p-5" style={{ border: "1px solid #E5DDC8", backgroundColor: "#fff" }}>
-                                                        <p className="mb-3 text-sm font-semibold" style={{ color: "#14365C" }}>{acct.label}</p>
+                                                    <div key={acct.label} className="flex flex-col items-center rounded-2xl p-5" style={{ border: "1px solid #D0D2D8", backgroundColor: "#fff" }}>
+                                                        <p className="mb-3 text-sm font-semibold" style={{ color: "#1B2D6B" }}>{acct.label}</p>
                                                         {acct.qr ? (
                                                             <img
                                                                 src={acct.qr}
                                                                 alt={`${acct.label} QR code`}
                                                                 className="h-40 w-40 rounded-xl object-contain"
-                                                                style={{ border: "1px solid #E5DDC8" }}
+                                                                style={{ border: "1px solid #D0D2D8" }}
                                                             />
                                                         ) : (
                                                             <div className="flex h-40 w-40 items-center justify-center rounded-xl text-xs" style={{ backgroundColor: "#F3F4F6", color: "#9CA3AF", border: "2px dashed #D1D5DB" }}>
                                                                 QR placeholder
                                                             </div>
                                                         )}
-                                                        <p className="mt-3 text-xs" style={{ color: "#6B6862" }}>Account name: <span className="font-medium" style={{ color: "#14365C" }}>{acct.accountName}</span></p>
-                                                        <p className="text-xs" style={{ color: "#6B6862" }}>Number: <span className="font-medium" style={{ color: "#14365C" }}>{acct.number}</span></p>
+                                                        <p className="mt-3 text-xs" style={{ color: "#6B6862" }}>Account name: <span className="font-medium" style={{ color: "#1B2D6B" }}>{acct.accountName}</span></p>
+                                                        <p className="text-xs" style={{ color: "#6B6862" }}>Number: <span className="font-medium" style={{ color: "#1B2D6B" }}>{acct.number}</span></p>
                                                     </div>
                                                 ))}
                                             </div>
 
                                             {/* Offline proof-of-payment: members send their receipt to us for
                                                 manual verification. (File upload returns after the Blaze upgrade.) */}
-                                            <div className="rounded-2xl p-5" style={{ backgroundColor: "#FAF6EE", border: "1px solid #E5DDC8" }}>
-                                                <p className="text-sm font-semibold" style={{ color: "#14365C" }}>
+                                            <div className="rounded-2xl p-5" style={{ backgroundColor: "#F2F3F5", border: "1px solid #D0D2D8" }}>
+                                                <p className="text-sm font-semibold" style={{ color: "#1B2D6B" }}>
                                                     After paying, send your proof of payment
                                                 </p>
                                                 <p className="mt-1 text-xs" style={{ color: "#6B6862" }}>
                                                     Take a screenshot or photo of your transaction receipt and send it to us, including your full
                                                     name, so we can match your payment and activate your account:
                                                 </p>
-                                                <ul className="mt-3 space-y-1 text-sm" style={{ color: "#14365C" }}>
+                                                <ul className="mt-3 space-y-1 text-sm" style={{ color: "#1B2D6B" }}>
                                                     {PAYMENT_INFO.receiptContacts.map((c) => (
                                                         <li key={c.label}>{c.label}: <span className="font-medium">{c.value}</span></li>
                                                     ))}
@@ -1102,7 +1104,7 @@ export default function SignUpLayout() {
                                     {/* ════ STEP 5 — Review ════ */}
                                     {step === 5 && (
                                         <div>
-                                            <h2 className="font-display mb-6 text-2xl" style={{ color: "#14365C" }}>
+                                            <h2 className="font-display mb-6 text-2xl" style={{ color: "#1B2D6B" }}>
                                                 Step 5 · Review &amp; register
                                             </h2>
 
@@ -1110,9 +1112,9 @@ export default function SignUpLayout() {
                                                 Membership Package
                                             </p>
                                             <div className="mb-5 space-y-2">
-                                                <div className="flex justify-between rounded-xl px-4 py-3 text-sm" style={{ backgroundColor: "#FAF6EE" }}>
+                                                <div className="flex justify-between rounded-xl px-4 py-3 text-sm" style={{ backgroundColor: "#F2F3F5" }}>
                                                     <span style={{ color: "#6B6862" }}>Package</span>
-                                                    <span className="font-medium" style={{ color: "#14365C" }}>
+                                                    <span className="font-medium" style={{ color: "#1B2D6B" }}>
                                                         {selectedPlan.name} Care — ₱{selectedPlan.price.toLocaleString("en-PH")}
                                                     </span>
                                                 </div>
@@ -1145,10 +1147,10 @@ export default function SignUpLayout() {
                                                     <div
                                                         key={label}
                                                         className="flex justify-between rounded-xl px-4 py-3 text-sm"
-                                                        style={{ backgroundColor: "#FAF6EE" }}
+                                                        style={{ backgroundColor: "#F2F3F5" }}
                                                     >
                                                         <span style={{ color: "#6B6862" }}>{label}</span>
-                                                        <span className="text-right font-medium" style={{ color: "#14365C" }}>
+                                                        <span className="text-right font-medium" style={{ color: "#1B2D6B" }}>
                                                             {value}
                                                         </span>
                                                     </div>
@@ -1159,9 +1161,9 @@ export default function SignUpLayout() {
                                                 Sponsor
                                             </p>
                                             <div className="mb-5 space-y-2">
-                                                <div className="flex justify-between rounded-xl px-4 py-3 text-sm" style={{ backgroundColor: "#FAF6EE" }}>
+                                                <div className="flex justify-between rounded-xl px-4 py-3 text-sm" style={{ backgroundColor: "#F2F3F5" }}>
                                                     <span style={{ color: "#6B6862" }}>Referral code</span>
-                                                    <span className="font-medium" style={{ color: "#14365C" }}>
+                                                    <span className="font-medium" style={{ color: "#1B2D6B" }}>
                                                         {form.referralCode || "—"}
                                                     </span>
                                                 </div>
@@ -1171,13 +1173,13 @@ export default function SignUpLayout() {
                                                 Payment
                                             </p>
                                             <div className="mb-5 space-y-2">
-                                                <div className="flex justify-between rounded-xl px-4 py-3 text-sm" style={{ backgroundColor: "#FAF6EE" }}>
+                                                <div className="flex justify-between rounded-xl px-4 py-3 text-sm" style={{ backgroundColor: "#F2F3F5" }}>
                                                     <span style={{ color: "#6B6862" }}>Amount due</span>
-                                                    <span className="font-medium" style={{ color: "#14365C" }}>
+                                                    <span className="font-medium" style={{ color: "#1B2D6B" }}>
                                                         ₱{selectedPlan.price.toLocaleString("en-PH")} · {selectedPlan.name} Care
                                                     </span>
                                                 </div>
-                                                <div className="rounded-xl px-4 py-3 text-xs" style={{ backgroundColor: "#FAF6EE", color: "#6B6862" }}>
+                                                <div className="rounded-xl px-4 py-3 text-xs" style={{ backgroundColor: "#F2F3F5", color: "#6B6862" }}>
                                                     Send your receipt after signing up so we can verify your payment and activate your account.
                                                 </div>
                                             </div>
@@ -1189,16 +1191,16 @@ export default function SignUpLayout() {
                                                     </p>
                                                     <div className="mb-5 space-y-2">
                                                         {form.beneficiaries.map((b, i) => (
-                                                            <div key={i} className="rounded-xl px-4 py-3 text-sm" style={{ backgroundColor: "#FAF6EE" }}>
+                                                            <div key={i} className="rounded-xl px-4 py-3 text-sm" style={{ backgroundColor: "#F2F3F5" }}>
                                                                 <div className="flex justify-between">
                                                                     <span style={{ color: "#6B6862" }}>Beneficiary {i + 1}</span>
-                                                                    <span className="font-medium" style={{ color: "#14365C" }}>
+                                                                    <span className="font-medium" style={{ color: "#1B2D6B" }}>
                                                                         {b.name || "—"}
                                                                     </span>
                                                                 </div>
                                                                 <div className="mt-1 flex justify-between">
                                                                     <span style={{ color: "#6B6862" }}>Relationship</span>
-                                                                    <span className="font-medium" style={{ color: "#14365C" }}>
+                                                                    <span className="font-medium" style={{ color: "#1B2D6B" }}>
                                                                         {b.relationship || "—"}
                                                                     </span>
                                                                 </div>
@@ -1211,8 +1213,8 @@ export default function SignUpLayout() {
                                             <button
                                                 type="submit"
                                                 disabled={loading || step !== totalSteps}
-                                                className="flex w-full items-center justify-center gap-2 rounded-xl py-3 text-white hover:bg-[#5DAB3A] disabled:cursor-not-allowed disabled:opacity-60"
-                                                style={{ backgroundColor: "#4A8A2C" }}
+                                                className="flex w-full items-center justify-center gap-2 rounded-xl py-3 text-white hover:bg-[#A87820] disabled:cursor-not-allowed disabled:opacity-60"
+                                                style={{ backgroundColor: "#C9922A" }}
                                             >
                                                 {loading ? (
                                                     <>
@@ -1239,7 +1241,7 @@ export default function SignUpLayout() {
                                     )}
 
                                     {/* ── Navigation buttons ── */}
-                                    <div className="flex justify-between pt-4" style={{ borderTop: "1px solid #E5DDC8" }}>
+                                    <div className="flex justify-between pt-4" style={{ borderTop: "1px solid #D0D2D8" }}>
                                         <button
                                             type="button"
                                             onClick={() => {
@@ -1260,9 +1262,9 @@ export default function SignUpLayout() {
                                                 type="button"
                                                 onClick={handleContinue}
                                                 className="flex items-center gap-2 rounded-full px-6 py-2 text-sm font-medium text-white transition-colors"
-                                                style={{ backgroundColor: "#14365C" }}
-                                                onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#4A8A2C")}
-                                                onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#14365C")}
+                                                style={{ backgroundColor: "#1B2D6B" }}
+                                                onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#C9922A")}
+                                                onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#1B2D6B")}
                                             >
                                                 Continue <ChevronRight size={16} />
                                             </button>
@@ -1274,7 +1276,7 @@ export default function SignUpLayout() {
                             {/* ── Footer link ── */}
                             <p className="pt-5 text-center text-xs" style={{ color: "#6B6862" }}>
                                 Already have an account?{" "}
-                                <Link to="/signin" className="font-medium hover:underline" style={{ color: "#4A8A2C" }}>
+                                <Link to="/signin" className="font-medium hover:underline" style={{ color: "#C9922A" }}>
                                     Sign in
                                 </Link>
                             </p>

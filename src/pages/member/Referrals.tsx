@@ -48,27 +48,27 @@ const treeStyles = `
 
 const ReferralNodeView: React.FC<{ node: ReferralNode }> = ({ node }) => (
     <div className="tree-item">
-        <div className="border-gpsc-cream-dark flex items-center gap-3 rounded-xl border bg-white p-3">
-            <div className="bg-gpsc-green font-display flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm text-white">
+        <div className="border-fsc-cream-dark flex items-center gap-3 rounded-xl border bg-white p-3">
+            <div className="bg-fsc-green font-display flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm text-white">
                 {node.initials}
             </div>
             <div className="min-w-0 flex-1">
-                <div className="text-gpsc-navy truncate font-medium">
+                <div className="text-fsc-navy truncate font-medium">
                     {node.firstName} {node.lastName}
                 </div>
-                <div className="text-gpsc-stone truncate text-xs">
+                <div className="text-fsc-stone truncate text-xs">
                     {node.packageName} Care · {node.city}
                 </div>
             </div>
             <div className="shrink-0 text-right">
                 <div
                     className={`inline-block rounded-full px-2 py-1 text-xs ${
-                        node.status === "active" ? "bg-gpsc-green/10 text-gpsc-green" : "bg-amber-100 text-amber-700"
+                        node.status === "active" ? "bg-fsc-green/10 text-fsc-green" : "bg-[#C9922A]/10 text-[#A87820]"
                     }`}
                 >
                     {node.status}
                 </div>
-                <div className="text-gpsc-stone mt-1 text-xs">
+                <div className="text-fsc-stone mt-1 text-xs">
                     Level {node.level + 1} · {node.commissionRate}%
                 </div>
             </div>
@@ -89,21 +89,21 @@ export const MemberReferrals: React.FC<Props> = ({ user, referralTree }) => (
         <style>{treeStyles}</style>
 
         <div>
-            <h1 className="font-display text-gpsc-navy text-3xl">My Referrals</h1>
+            <h1 className="font-display text-fsc-navy text-3xl">My Referrals</h1>
         </div>
 
-        <div className="border-gpsc-cream-dark rounded-2xl border bg-white p-6">
+        <div className="border-fsc-cream-dark rounded-2xl border bg-white p-6">
             {/* Root node — You */}
             <div className="relative">
-                <div className="bg-gpsc-cream flex items-center gap-3 rounded-xl p-3">
-                    <div className="bg-gpsc-navy font-display flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white">
+                <div className="bg-fsc-cream flex items-center gap-3 rounded-xl p-3">
+                    <div className="bg-fsc-navy font-display flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white">
                         {user.firstName.charAt(0).toUpperCase() + user.lastName.charAt(0).toUpperCase()}
                     </div>
                     <div className="flex-1">
-                        <div className="text-gpsc-navy font-medium">
+                        <div className="text-fsc-navy font-medium">
                             {user.firstName} {user.lastName}
                         </div>
-                        <div className="text-gpsc-stone text-xs">Root</div>
+                        <div className="text-fsc-stone text-xs">Root</div>
                     </div>
                 </div>
 
@@ -116,7 +116,7 @@ export const MemberReferrals: React.FC<Props> = ({ user, referralTree }) => (
                 )}
 
                 {referralTree.length === 0 && (
-                    <div className="text-gpsc-stone py-8 text-center">No referrals yet. Share your link to start building your network.</div>
+                    <div className="text-fsc-stone py-8 text-center">No referrals yet. Share your link to start building your network.</div>
                 )}
             </div>
         </div>

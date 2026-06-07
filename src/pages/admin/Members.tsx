@@ -449,28 +449,28 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
         <div className="space-y-6">
             <div className="flex flex-wrap items-end justify-between gap-4">
                 <div>
-                    <h1 className="font-display text-gpsc-navy text-3xl">Members</h1>
+                    <h1 className="font-display text-fsc-navy text-3xl">Members</h1>
                 </div>
                 <div className="flex gap-2">
                     <button
                         onClick={() => setShowAddMember(true)}
-                        className="bg-gpsc-navy hover:bg-gpsc-green flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium text-white transition-colors"
+                        className="bg-fsc-navy hover:bg-fsc-green flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium text-white transition-colors"
                     >
                         <Plus size={14} /> Add Member
                     </button>
                     <button
                         onClick={onExport}
-                        className="border-gpsc-navy text-gpsc-navy hover:bg-gpsc-navy flex items-center gap-2 rounded-full border px-5 py-2.5 text-sm font-medium transition-colors hover:text-white"
+                        className="border-fsc-navy text-fsc-navy hover:bg-fsc-navy flex items-center gap-2 rounded-full border px-5 py-2.5 text-sm font-medium transition-colors hover:text-white"
                     >
                         <Download size={14} /> Export
                     </button>
                 </div>
             </div>
 
-            <div className="border-gpsc-cream-dark overflow-hidden rounded-2xl border bg-white">
-                <div className="border-gpsc-cream-dark flex flex-wrap gap-3 border-b p-4">
+            <div className="border-fsc-cream-dark overflow-hidden rounded-2xl border bg-white">
+                <div className="border-fsc-cream-dark flex flex-wrap gap-3 border-b p-4">
                     <div className="relative min-w-50 flex-1">
-                        <Search size={16} className="text-gpsc-stone absolute top-1/2 left-3 -translate-y-1/2" />
+                        <Search size={16} className="text-fsc-stone absolute top-1/2 left-3 -translate-y-1/2" />
                         <input
                             value={query}
                             onChange={(e) => {
@@ -478,7 +478,7 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                                 setCurrentPage(1); // Reset to first page on search
                             }}
                             placeholder="Search by name, referral code, sponsor, email, mobile, city..."
-                            className="border-gpsc-cream-dark focus:ring-gpsc-green w-full rounded-lg border py-2 pr-4 pl-9 text-sm focus:ring-2 focus:outline-none"
+                            className="border-fsc-cream-dark focus:ring-fsc-green w-full rounded-lg border py-2 pr-4 pl-9 text-sm focus:ring-2 focus:outline-none"
                         />
                     </div>
                     <select
@@ -487,7 +487,7 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                             setPackageFilter(e.target.value);
                             setCurrentPage(1); // Reset to first page on filter change
                         }}
-                        className="border-gpsc-cream-dark focus:ring-gpsc-green rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:outline-none"
+                        className="border-fsc-cream-dark focus:ring-fsc-green rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:outline-none"
                     >
                         <option value="all">All packages</option>
                         <option value="Basic">Basic Care</option>
@@ -500,7 +500,7 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                             setStatusFilter(e.target.value);
                             setCurrentPage(1); // Reset to first page on filter change
                         }}
-                        className="border-gpsc-cream-dark focus:ring-gpsc-green rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:outline-none"
+                        className="border-fsc-cream-dark focus:ring-fsc-green rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:outline-none"
                     >
                         <option value="all">All statuses</option>
                         <option value="active">Active</option>
@@ -514,7 +514,7 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                             setCurrentPage(1);
                         }}
                         disabled={loading}
-                        className="border-gpsc-cream-dark hover:bg-gpsc-cream/60 flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm transition-colors disabled:opacity-50"
+                        className="border-fsc-cream-dark hover:bg-fsc-cream/60 flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm transition-colors disabled:opacity-50"
                     >
                         <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
                         Refresh
@@ -523,7 +523,7 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
 
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm">
-                        <thead className="bg-gpsc-cream/50 text-gpsc-stone text-xs tracking-wider uppercase">
+                        <thead className="bg-fsc-cream/50 text-fsc-stone text-xs tracking-wider uppercase">
                             <tr>
                                 <th className="p-4 text-left">Member</th>
                                 <th className="p-4 text-left">Package</th>
@@ -536,7 +536,7 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                                             type="checkbox"
                                             checked={allPageSelected}
                                             onChange={toggleSelectAll}
-                                            className="accent-gpsc-navy h-4 w-4 cursor-pointer"
+                                            className="accent-fsc-navy h-4 w-4 cursor-pointer"
                                             aria-label="Select all pending on this page"
                                         />
                                     )}
@@ -561,12 +561,12 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
 
                 {/* Pagination Controls */}
                 {totalRecords > 0 && (
-                    <div className="border-gpsc-cream-dark flex flex-wrap items-center justify-between gap-4 border-t px-4 py-3">
-                        <div className="text-gpsc-stone flex items-center gap-3 text-xs">
+                    <div className="border-fsc-cream-dark flex flex-wrap items-center justify-between gap-4 border-t px-4 py-3">
+                        <div className="text-fsc-stone flex items-center gap-3 text-xs">
                             <span>
                                 Showing {startIndex + 1} to {Math.min(endIndex, totalRecords)} of {totalRecords} records
                             </span>
-                            {bulkMsg && <span className="text-gpsc-green">{bulkMsg}</span>}
+                            {bulkMsg && <span className="text-fsc-green">{bulkMsg}</span>}
                         </div>
 
                         <div className="flex flex-wrap items-center gap-4">
@@ -575,7 +575,7 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                                 <button
                                     onClick={() => handlePageChange(currentPage - 1)}
                                     disabled={currentPage === 1}
-                                    className="border-gpsc-cream-dark hover:bg-gpsc-cream/60 rounded-lg border p-1.5 transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+                                    className="border-fsc-cream-dark hover:bg-fsc-cream/60 rounded-lg border p-1.5 transition-colors disabled:cursor-not-allowed disabled:opacity-40"
                                 >
                                     <ChevronLeft size={16} />
                                 </button>
@@ -583,14 +583,14 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                                 {getPageNumbers().map((page, index) => (
                                     <React.Fragment key={index}>
                                         {page === "..." ? (
-                                            <span className="text-gpsc-stone px-2">...</span>
+                                            <span className="text-fsc-stone px-2">...</span>
                                         ) : (
                                             <button
                                                 onClick={() => handlePageChange(page as number)}
                                                 className={`min-w-8 rounded-lg px-2 py-1 text-sm transition-colors ${
                                                     currentPage === page
-                                                        ? "bg-gpsc-navy text-white"
-                                                        : "border-gpsc-cream-dark hover:bg-gpsc-cream/60 border"
+                                                        ? "bg-fsc-navy text-white"
+                                                        : "border-fsc-cream-dark hover:bg-fsc-cream/60 border"
                                                 }`}
                                             >
                                                 {page}
@@ -602,7 +602,7 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                                 <button
                                     onClick={() => handlePageChange(currentPage + 1)}
                                     disabled={currentPage === totalPages}
-                                    className="border-gpsc-cream-dark hover:bg-gpsc-cream/60 rounded-lg border p-1.5 transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+                                    className="border-fsc-cream-dark hover:bg-fsc-cream/60 rounded-lg border p-1.5 transition-colors disabled:cursor-not-allowed disabled:opacity-40"
                                 >
                                     <ChevronRight size={16} />
                                 </button>
@@ -610,11 +610,11 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
 
                             {/* Rows per page selector */}
                             <div className="flex items-center gap-2">
-                                <span className="text-gpsc-stone text-sm">{rowsPerPage} /page</span>
+                                <span className="text-fsc-stone text-sm">{rowsPerPage} /page</span>
                                 <select
                                     value={rowsPerPage}
                                     onChange={handleRowsPerPageChange}
-                                    className="border-gpsc-cream-dark focus:ring-gpsc-green rounded-lg border px-2 py-1 text-sm focus:ring-2 focus:outline-none"
+                                    className="border-fsc-cream-dark focus:ring-fsc-green rounded-lg border px-2 py-1 text-sm focus:ring-2 focus:outline-none"
                                 >
                                     <option value={5}>5 /page</option>
                                     <option value={10}>10 /page</option>
@@ -626,7 +626,7 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
 
                             {/* Go to page input */}
                             <div className="flex items-center gap-2">
-                                <span className="text-gpsc-stone text-sm">Go To page:</span>
+                                <span className="text-fsc-stone text-sm">Go To page:</span>
                                 <input
                                     type="number"
                                     value={goToPage}
@@ -638,11 +638,11 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                                     }}
                                     min={1}
                                     max={totalPages}
-                                    className="border-gpsc-cream-dark focus:ring-gpsc-green w-16 rounded-lg border px-2 py-1 text-sm focus:ring-2 focus:outline-none"
+                                    className="border-fsc-cream-dark focus:ring-fsc-green w-16 rounded-lg border px-2 py-1 text-sm focus:ring-2 focus:outline-none"
                                 />
                                 <button
                                     onClick={handleGoToPage}
-                                    className="bg-gpsc-navy hover:bg-gpsc-green rounded-lg px-3 py-1 text-sm text-white transition-colors"
+                                    className="bg-fsc-navy hover:bg-fsc-green rounded-lg px-3 py-1 text-sm text-white transition-colors"
                                 >
                                     GO
                                 </button>
@@ -650,11 +650,11 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
 
                             {/* Bulk actions — to the right of Go, only when rows are selected */}
                             {selectedIds.size > 0 && (
-                                <div className="border-gpsc-cream-dark flex flex-wrap items-center gap-2 sm:border-l sm:pl-4">
-                                    <span className="text-gpsc-navy text-sm font-medium">{selectedIds.size} selected</span>
+                                <div className="border-fsc-cream-dark flex flex-wrap items-center gap-2 sm:border-l sm:pl-4">
+                                    <span className="text-fsc-navy text-sm font-medium">{selectedIds.size} selected</span>
                                     <button
                                         onClick={requestBulkActivate}
-                                        className="bg-gpsc-green flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-white transition-opacity hover:opacity-90"
+                                        className="bg-fsc-green flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-white transition-opacity hover:opacity-90"
                                     >
                                         <Check size={14} /> Activate
                                     </button>
@@ -662,19 +662,19 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                                         <>
                                             <button
                                                 onClick={requestBulkArchive}
-                                                className="border-gpsc-cream-dark text-gpsc-navy hover:bg-gpsc-cream flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm transition-colors"
+                                                className="border-fsc-cream-dark text-fsc-navy hover:bg-fsc-cream flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm transition-colors"
                                             >
                                                 <Archive size={14} /> Archive
                                             </button>
                                             <button
                                                 onClick={requestBulkDelete}
-                                                className="flex items-center gap-1.5 rounded-lg border border-red-200 px-3 py-1.5 text-sm text-red-600 transition-colors hover:bg-red-50"
+                                                className="flex items-center gap-1.5 rounded-lg border border-[#C41E1E]/25 px-3 py-1.5 text-sm text-[#C41E1E] transition-colors hover:bg-[#C41E1E]/5"
                                             >
                                                 <Trash2 size={14} /> Delete
                                             </button>
                                             <button
                                                 onClick={requestBulkForceDelete}
-                                                className="flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-1.5 text-sm text-white transition-colors hover:bg-red-700"
+                                                className="flex items-center gap-1.5 rounded-lg bg-[#C41E1E] px-3 py-1.5 text-sm text-white transition-colors hover:bg-[#A31818]"
                                             >
                                                 <Trash2 size={14} /> Force delete
                                             </button>
@@ -685,7 +685,7 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                                             setSelectedIds(new Set());
                                             setBulkMsg("");
                                         }}
-                                        className="text-gpsc-stone hover:text-gpsc-navy text-sm"
+                                        className="text-fsc-stone hover:text-fsc-navy text-sm"
                                     >
                                         Clear
                                     </button>
@@ -715,28 +715,28 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                                 {/* ── LEFT PANEL: Member Details ── */}
                                 <div className="max-h-[90vh] flex-1 overflow-y-auto p-6">
                                     <div className="mb-4 flex items-center justify-between">
-                                        <h2 className="font-display text-gpsc-navy text-xl">Member Details</h2>
+                                        <h2 className="font-display text-fsc-navy text-xl">Member Details</h2>
                                         <button
                                             onClick={() => setSelectedMember(null)}
                                             disabled={activating}
-                                            className="text-gpsc-stone hover:text-gpsc-navy text-lg transition-colors disabled:opacity-40"
+                                            className="text-fsc-stone hover:text-fsc-navy text-lg transition-colors disabled:opacity-40"
                                         >
                                             ✕
                                         </button>
                                     </div>
 
                                     {/* Avatar + basic info */}
-                                    <div className="bg-gpsc-cream mb-6 flex items-center gap-4 rounded-xl p-4">
-                                        <div className="bg-gpsc-navy font-display flex h-16 w-16 items-center justify-center rounded-full text-2xl text-white">
+                                    <div className="bg-fsc-cream mb-6 flex items-center gap-4 rounded-xl p-4">
+                                        <div className="bg-fsc-navy font-display flex h-16 w-16 items-center justify-center rounded-full text-2xl text-white">
                                             {selectedMember.firstName.charAt(0).toUpperCase()}
                                             {selectedMember.lastName.charAt(0).toUpperCase()}
                                         </div>
                                         <div>
-                                            <div className="font-display text-gpsc-navy text-xl">
+                                            <div className="font-display text-fsc-navy text-xl">
                                                 {selectedMember.firstName} {selectedMember.lastName}
                                             </div>
-                                            <div className="text-gpsc-stone text-sm">{selectedMember.email}</div>
-                                            <div className="text-gpsc-stone text-sm">{selectedMember.mobile ?? selectedMember.phone ?? "—"}</div>
+                                            <div className="text-fsc-stone text-sm">{selectedMember.email}</div>
+                                            <div className="text-fsc-stone text-sm">{selectedMember.mobile ?? selectedMember.phone ?? "—"}</div>
                                         </div>
                                     </div>
 
@@ -760,17 +760,17 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                                             { label: "Status", value: selectedMember.status ?? "—" },
                                         ].map(({ label, value }) => (
                                             <div key={label}>
-                                                <div className="text-gpsc-stone mb-0.5 text-xs">{label}</div>
+                                                <div className="text-fsc-stone mb-0.5 text-xs">{label}</div>
                                                 {label === "Referral Code" ? (
                                                     <div className="flex items-center gap-1.5">
-                                                        <span className="text-gpsc-navy text-sm font-medium">{value}</span>
+                                                        <span className="text-fsc-navy text-sm font-medium">{value}</span>
                                                         {selectedMember.referralCode && (
                                                             <button
                                                                 onClick={() => handleCopyReferralCode(selectedMember.referralCode!)}
-                                                                className="text-gpsc-stone hover:text-gpsc-navy transition-colors"
+                                                                className="text-fsc-stone hover:text-fsc-navy transition-colors"
                                                                 title="Copy referral code"
                                                             >
-                                                                {copied ? <Check size={14} className="text-gpsc-green" /> : <Copy size={14} />}
+                                                                {copied ? <Check size={14} className="text-fsc-green" /> : <Copy size={14} />}
                                                             </button>
                                                         )}
                                                     </div>
@@ -779,9 +779,9 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                                                         className={`text-sm font-medium ${
                                                             label === "Status"
                                                                 ? value === "active"
-                                                                    ? "text-gpsc-green"
-                                                                    : "text-red-500"
-                                                                : "text-gpsc-navy"
+                                                                    ? "text-fsc-green"
+                                                                    : "text-[#C41E1E]"
+                                                                : "text-fsc-navy"
                                                         }`}
                                                     >
                                                         {value}
@@ -794,12 +794,12 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                                     {/* Beneficiaries */}
                                     {(selectedMember.beneficiaries?.length ?? 0) > 0 && (
                                         <div className="mt-5">
-                                            <div className="text-gpsc-stone mb-2 text-xs tracking-wider uppercase">Beneficiaries</div>
+                                            <div className="text-fsc-stone mb-2 text-xs tracking-wider uppercase">Beneficiaries</div>
                                             <div className="space-y-2">
                                                 {selectedMember.beneficiaries!.map((b, i) => (
-                                                    <div key={i} className="bg-gpsc-cream flex justify-between rounded-lg px-3 py-2 text-sm">
-                                                        <span className="text-gpsc-navy font-medium">{b.name}</span>
-                                                        <span className="text-gpsc-stone">{b.relationship}</span>
+                                                    <div key={i} className="bg-fsc-cream flex justify-between rounded-lg px-3 py-2 text-sm">
+                                                        <span className="text-fsc-navy font-medium">{b.name}</span>
+                                                        <span className="text-fsc-stone">{b.relationship}</span>
                                                     </div>
                                                 ))}
                                             </div>
@@ -811,7 +811,7 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                                         <button
                                             onClick={() => setSelectedMember(null)}
                                             disabled={activating}
-                                            className="border-gpsc-cream-dark text-gpsc-stone hover:bg-gpsc-cream/60 flex-1 rounded-lg border px-4 py-2 transition-colors disabled:opacity-40"
+                                            className="border-fsc-cream-dark text-fsc-stone hover:bg-fsc-cream/60 flex-1 rounded-lg border px-4 py-2 transition-colors disabled:opacity-40"
                                         >
                                             Close
                                         </button>
@@ -820,8 +820,8 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                                             disabled={activating}
                                             className={`flex-1 rounded-lg px-4 py-2 font-medium text-white transition-colors disabled:opacity-70 ${
                                                 selectedMember.status === "active"
-                                                    ? "bg-red-500 hover:bg-red-600"
-                                                    : "bg-gpsc-green hover:bg-gpsc-green/80"
+                                                    ? "bg-[#C41E1E] hover:bg-[#A31818]"
+                                                    : "bg-fsc-green hover:bg-fsc-green/80"
                                             }`}
                                         >
                                             {activating ? "Please wait..." : selectedMember.status === "active" ? "Deactivate" : "Activate"}
@@ -829,33 +829,33 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                                     </div>
 
                                     {/* Password reset */}
-                                    <div className="border-gpsc-cream-dark mt-4 border-t pt-4">
+                                    <div className="border-fsc-cream-dark mt-4 border-t pt-4">
                                         {selectedMember.email ? (
                                             <button
                                                 onClick={handleSendReset}
                                                 disabled={resetting}
-                                                className="border-gpsc-cream-dark text-gpsc-navy hover:bg-gpsc-cream/60 w-full rounded-lg border px-4 py-2 text-sm transition-colors disabled:opacity-60"
+                                                className="border-fsc-cream-dark text-fsc-navy hover:bg-fsc-cream/60 w-full rounded-lg border px-4 py-2 text-sm transition-colors disabled:opacity-60"
                                             >
                                                 {resetting ? "Sending…" : "Send password reset link"}
                                             </button>
                                         ) : (
-                                            <p className="text-gpsc-stone text-xs">
+                                            <p className="text-fsc-stone text-xs">
                                                 No email on file — this member logs in with their mobile-based ID. Resetting their password needs the
                                                 Blaze upgrade; for now, re-encode or have them change it themselves.
                                             </p>
                                         )}
-                                        {resetMsg && <p className="text-gpsc-green mt-2 text-xs">{resetMsg}</p>}
+                                        {resetMsg && <p className="text-fsc-green mt-2 text-xs">{resetMsg}</p>}
                                     </div>
 
                                     {/* Super-admin: archive / restore / permanently delete */}
                                     {isSuperAdmin && (
-                                        <div className="mt-4 space-y-2 rounded-xl border border-red-200 bg-red-50/40 p-3">
-                                            <div className="text-xs font-medium tracking-wider text-red-700/80 uppercase">Super admin</div>
+                                        <div className="mt-4 space-y-2 rounded-xl border border-[#C41E1E]/20 bg-[#C41E1E]/5 p-3">
+                                            <div className="text-xs font-medium tracking-wider text-[#C41E1E]/80 uppercase">Super admin</div>
                                             {selectedMember.archived ? (
                                                 <button
                                                     onClick={handleRestoreOne}
                                                     disabled={memberActionBusy}
-                                                    className="border-gpsc-cream-dark text-gpsc-navy hover:bg-gpsc-cream/60 flex w-full items-center justify-center gap-1.5 rounded-lg border bg-white px-4 py-2 text-sm transition-colors disabled:opacity-50"
+                                                    className="border-fsc-cream-dark text-fsc-navy hover:bg-fsc-cream/60 flex w-full items-center justify-center gap-1.5 rounded-lg border bg-white px-4 py-2 text-sm transition-colors disabled:opacity-50"
                                                 >
                                                     <RotateCcw size={14} /> Restore member
                                                 </button>
@@ -863,7 +863,7 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                                                 <button
                                                     onClick={requestArchiveOne}
                                                     disabled={memberActionBusy}
-                                                    className="border-gpsc-cream-dark text-gpsc-navy hover:bg-gpsc-cream/60 flex w-full items-center justify-center gap-1.5 rounded-lg border bg-white px-4 py-2 text-sm transition-colors disabled:opacity-50"
+                                                    className="border-fsc-cream-dark text-fsc-navy hover:bg-fsc-cream/60 flex w-full items-center justify-center gap-1.5 rounded-lg border bg-white px-4 py-2 text-sm transition-colors disabled:opacity-50"
                                                 >
                                                     <Archive size={14} /> Archive member
                                                 </button>
@@ -873,37 +873,37 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                                                 <button
                                                     onClick={requestHardDelete}
                                                     disabled={memberActionBusy}
-                                                    className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:opacity-50"
+                                                    className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-[#C41E1E] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#A31818] disabled:opacity-50"
                                                 >
                                                     <Trash2 size={14} /> Permanently delete
                                                 </button>
                                             )}
                                             {deps && (deps.hasDownlines || deps.hasCommissions) && (
-                                                <p className="text-xs text-red-700/80">
+                                                <p className="text-xs text-[#C41E1E]/80">
                                                     Can't permanently delete — this member has {deps.hasDownlines ? "downlines" : ""}
                                                     {deps.hasDownlines && deps.hasCommissions ? " and " : ""}
                                                     {deps.hasCommissions ? "commission history" : ""}. Archive instead to keep the tree intact.
                                                 </p>
                                             )}
-                                            {!deps && <p className="text-gpsc-stone text-xs">Checking delete eligibility…</p>}
+                                            {!deps && <p className="text-fsc-stone text-xs">Checking delete eligibility…</p>}
                                         </div>
                                     )}
                                 </div>
 
                                 {/* ── RIGHT PANEL: Eligibility Timeline ── */}
-                                <div className="bg-gpsc-cream/40 border-gpsc-cream-dark max-h-[90vh] w-72 shrink-0 overflow-y-auto border-l p-6">
+                                <div className="bg-fsc-cream/40 border-fsc-cream-dark max-h-[90vh] w-72 shrink-0 overflow-y-auto border-l p-6">
                                     <div className="mb-1 flex items-center gap-2">
-                                        <ShieldCheck size={16} className="text-gpsc-navy" />
-                                        <h3 className="font-display text-gpsc-navy text-base">Benefit Eligibility</h3>
+                                        <ShieldCheck size={16} className="text-fsc-navy" />
+                                        <h3 className="font-display text-fsc-navy text-base">Benefit Eligibility</h3>
                                     </div>
-                                    <p className="text-gpsc-stone mb-5 text-xs">
+                                    <p className="text-fsc-stone mb-5 text-xs">
                                         {unlockedCount} of {timeline.length} benefits unlocked
                                     </p>
 
                                     {/* Progress bar */}
-                                    <div className="bg-gpsc-cream-dark mb-6 h-1.5 w-full overflow-hidden rounded-full">
+                                    <div className="bg-fsc-cream-dark mb-6 h-1.5 w-full overflow-hidden rounded-full">
                                         <div
-                                            className="bg-gpsc-green h-full rounded-full transition-all duration-500"
+                                            className="bg-fsc-green h-full rounded-full transition-all duration-500"
                                             style={{ width: `${(unlockedCount / timeline.length) * 100}%` }}
                                         />
                                     </div>
@@ -911,7 +911,7 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                                     {/* Timeline items */}
                                     <div className="relative">
                                         {/* Vertical line */}
-                                        <div className="bg-gpsc-cream-dark absolute top-0 bottom-0 left-2.75 w-0.5" />
+                                        <div className="bg-fsc-cream-dark absolute top-0 bottom-0 left-2.75 w-0.5" />
 
                                         <div className="space-y-5">
                                             {timeline.map((item, i) => (
@@ -919,13 +919,13 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                                                     {/* Dot */}
                                                     <div
                                                         className={`absolute top-0.5 left-0 flex h-6 w-6 items-center justify-center rounded-full border-2 transition-colors ${
-                                                            item.unlocked ? "border-gpsc-green bg-gpsc-green" : "border-gpsc-cream-dark bg-white"
+                                                            item.unlocked ? "border-fsc-green bg-fsc-green" : "border-fsc-cream-dark bg-white"
                                                         }`}
                                                     >
                                                         {item.unlocked ? (
                                                             <ShieldCheck size={12} className="text-white" />
                                                         ) : (
-                                                            <ShieldOff size={12} className="text-gpsc-stone/50" />
+                                                            <ShieldOff size={12} className="text-fsc-stone/50" />
                                                         )}
                                                     </div>
 
@@ -933,16 +933,16 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                                                     <div>
                                                         <div
                                                             className={`text-sm leading-tight font-medium ${
-                                                                item.unlocked ? "text-gpsc-navy" : "text-gpsc-stone"
+                                                                item.unlocked ? "text-fsc-navy" : "text-fsc-stone"
                                                             }`}
                                                         >
                                                             {item.label}
                                                         </div>
-                                                        <div className="text-gpsc-stone mt-0.5 text-xs">
+                                                        <div className="text-fsc-stone mt-0.5 text-xs">
                                                             {item.months} month{item.months !== 1 ? "s" : ""} membership
                                                         </div>
                                                         {item.unlocked && (
-                                                            <span className="bg-gpsc-green/10 text-gpsc-green mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-medium">
+                                                            <span className="bg-fsc-green/10 text-fsc-green mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-medium">
                                                                 Unlocked
                                                             </span>
                                                         )}

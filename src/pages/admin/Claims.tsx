@@ -15,11 +15,11 @@ interface Props {
 }
 
 const statusColors: Record<string, string> = {
-    submitted: "bg-gpsc-navy/10 text-gpsc-navy",
-    under_review: "bg-amber-100 text-amber-700",
-    approved: "bg-gpsc-green/10 text-gpsc-green",
-    rejected: "bg-red-100 text-red-700",
-    released: "bg-gpsc-green/20 text-gpsc-green",
+    submitted: "bg-fsc-navy/10 text-fsc-navy",
+    under_review: "bg-[#C9922A]/10 text-[#A87820]",
+    approved: "bg-fsc-green/10 text-fsc-green",
+    rejected: "bg-[#C41E1E]/10 text-[#C41E1E]",
+    released: "bg-fsc-green/20 text-fsc-green",
 };
 
 const statusLabels: Record<string, string> = {
@@ -64,8 +64,8 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
         return (
             <div className="space-y-6">
                 <div className="animate-pulse">
-                    <div className="bg-gpsc-cream-dark mb-4 h-8 w-32 rounded"></div>
-                    <div className="bg-gpsc-cream-dark h-96 rounded-2xl"></div>
+                    <div className="bg-fsc-cream-dark mb-4 h-8 w-32 rounded"></div>
+                    <div className="bg-fsc-cream-dark h-96 rounded-2xl"></div>
                 </div>
             </div>
         );
@@ -83,33 +83,33 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
         <div className="space-y-6">
             <div className="flex flex-wrap items-end justify-between gap-4">
                 <div>
-                    <h1 className="font-display text-gpsc-navy text-3xl">Claims Operations</h1>
+                    <h1 className="font-display text-fsc-navy text-3xl">Claims Operations</h1>
                 </div>
                 <div className="flex gap-2">
                     <button
                         onClick={onExport}
-                        className="border-gpsc-navy text-gpsc-navy hover:bg-gpsc-navy flex items-center gap-2 rounded-full border px-5 py-2.5 text-sm font-medium transition-colors hover:text-white"
+                        className="border-fsc-navy text-fsc-navy hover:bg-fsc-navy flex items-center gap-2 rounded-full border px-5 py-2.5 text-sm font-medium transition-colors hover:text-white"
                     >
                         <Download size={14} /> Export
                     </button>
                 </div>
             </div>
 
-            <div className="border-gpsc-cream-dark overflow-hidden rounded-2xl border bg-white">
-                <div className="border-gpsc-cream-dark flex flex-wrap items-center justify-between gap-3 border-b p-4">
+            <div className="border-fsc-cream-dark overflow-hidden rounded-2xl border bg-white">
+                <div className="border-fsc-cream-dark flex flex-wrap items-center justify-between gap-3 border-b p-4">
                     <div className="flex flex-wrap items-center gap-2">
                         {/* Search bar */}
-                        <div className="border-gpsc-cream-dark focus-within:ring-gpsc-green flex items-center gap-2 rounded-lg border px-3 py-2 text-sm focus-within:ring-2">
-                            <Search size={14} className="text-gpsc-stone shrink-0" />
+                        <div className="border-fsc-cream-dark focus-within:ring-fsc-green flex items-center gap-2 rounded-lg border px-3 py-2 text-sm focus-within:ring-2">
+                            <Search size={14} className="text-fsc-stone shrink-0" />
                             <input
                                 type="text"
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 placeholder="Search by ID or benefit…"
-                                className="w-44 bg-transparent outline-none placeholder:text-gpsc-stone/60"
+                                className="w-44 bg-transparent outline-none placeholder:text-fsc-stone/60"
                             />
                             {search && (
-                                <button onClick={() => setSearch("")} className="text-gpsc-stone hover:text-gpsc-navy">
+                                <button onClick={() => setSearch("")} className="text-fsc-stone hover:text-fsc-navy">
                                     <X size={12} />
                                 </button>
                             )}
@@ -118,7 +118,7 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                         <select
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
-                            className="border-gpsc-cream-dark focus:ring-gpsc-green rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:outline-none"
+                            className="border-fsc-cream-dark focus:ring-fsc-green rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:outline-none"
                         >
                             <option value="all">All statuses</option>
                             <option value="submitted">Submitted</option>
@@ -130,20 +130,20 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                         <button
                             onClick={handleRefresh}
                             disabled={spinning}
-                            className="border-gpsc-cream-dark hover:bg-gpsc-cream/60 flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm transition-colors disabled:opacity-60"
+                            className="border-fsc-cream-dark hover:bg-fsc-cream/60 flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm transition-colors disabled:opacity-60"
                         >
                             <RefreshCw size={14} className={spinning ? "animate-spin" : ""} />
                             Refresh
                         </button>
                     </div>
-                    <div className="text-gpsc-stone bg-gpsc-cream rounded-full px-3 py-1 text-xs">
+                    <div className="text-fsc-stone bg-fsc-cream rounded-full px-3 py-1 text-xs">
                         {claims.filter((c) => c.status === "submitted" || c.status === "under_review").length} pending
                     </div>
                 </div>
 
                 <div className={`overflow-x-auto transition-opacity ${spinning ? "opacity-40" : ""}`}>
                     <table className="w-full text-sm">
-                        <thead className="bg-gpsc-cream/50 text-gpsc-stone text-xs tracking-wider uppercase">
+                        <thead className="bg-fsc-cream/50 text-fsc-stone text-xs tracking-wider uppercase">
                             <tr>
                                 <th className="p-4 text-left">Claimant</th>
                                 <th className="p-4 text-left">Benefit</th>
@@ -155,16 +155,16 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                         </thead>
                         <tbody>
                             {filtered.map((claim) => (
-                                <tr key={claim.id} className="border-gpsc-cream-dark hover:bg-gpsc-cream/40 border-t transition-colors">
+                                <tr key={claim.id} className="border-fsc-cream-dark hover:bg-fsc-cream/40 border-t transition-colors">
                                     <td className="p-4">
-                                        <div className="text-gpsc-navy">{claim.memberName || "Unknown"}</div>
-                                        <div className="text-gpsc-stone font-mono text-xs">Claim #{claim.id.slice(0, 8)}</div>
+                                        <div className="text-fsc-navy">{claim.memberName || "Unknown"}</div>
+                                        <div className="text-fsc-stone font-mono text-xs">Claim #{claim.id.slice(0, 8)}</div>
                                     </td>
-                                    <td className="text-gpsc-stone p-4">{claim.benefit}</td>
-                                    <td className="text-gpsc-stone p-4">{formatDate(claim.submitted)}</td>
-                                    <td className="text-gpsc-navy p-4 text-right font-medium">{formatCurrency(claim.amount)}</td>
+                                    <td className="text-fsc-stone p-4">{claim.benefit}</td>
+                                    <td className="text-fsc-stone p-4">{formatDate(claim.submitted)}</td>
+                                    <td className="text-fsc-navy p-4 text-right font-medium">{formatCurrency(claim.amount)}</td>
                                     <td className="p-4">
-                                        <span className={`rounded-full px-2 py-1 text-xs ${statusColors[claim.status] || "bg-gpsc-stone/10"}`}>
+                                        <span className={`rounded-full px-2 py-1 text-xs ${statusColors[claim.status] || "bg-fsc-stone/10"}`}>
                                             {statusLabels[claim.status] || claim.status}
                                         </span>
                                     </td>
@@ -172,7 +172,7 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                                         <div className="flex items-center justify-end gap-2">
                                             <button
                                                 onClick={() => setSelectedClaim(claim)}
-                                                className="text-gpsc-stone hover:bg-gpsc-cream rounded p-1 transition-colors"
+                                                className="text-fsc-stone hover:bg-fsc-cream rounded p-1 transition-colors"
                                                 title="View details"
                                             >
                                                 <Eye size={16} />
@@ -180,7 +180,7 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                                             {claim.status === "submitted" && (
                                                 <button
                                                     onClick={() => handleStartReview(claim.id)}
-                                                    className="rounded p-1 text-amber-600 transition-colors hover:bg-amber-50"
+                                                    className="rounded p-1 text-[#A87820] transition-colors hover:bg-[#C9922A]/10"
                                                     title="Start review"
                                                 >
                                                     <Clock size={16} />
@@ -190,14 +190,14 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                                                 <>
                                                     <button
                                                         onClick={() => onUpdateStatus(claim.id, "Rejected")}
-                                                        className="rounded p-1 text-red-500 transition-colors hover:bg-red-50"
+                                                        className="rounded p-1 text-[#C41E1E] transition-colors hover:bg-[#C41E1E]/10"
                                                         title="Reject"
                                                     >
                                                         <XCircle size={16} />
                                                     </button>
                                                     <button
                                                         onClick={() => onUpdateStatus(claim.id, "Approved")}
-                                                        className="rounded p-1 text-gpsc-green transition-colors hover:bg-gpsc-green/10"
+                                                        className="rounded p-1 text-fsc-green transition-colors hover:bg-fsc-green/10"
                                                         title="Approve"
                                                     >
                                                         <CheckCircle size={16} />
@@ -207,7 +207,7 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                                             {claim.status === "approved" && (
                                                 <button
                                                     onClick={() => onUpdateStatus(claim.id, "Released")}
-                                                    className="bg-gpsc-green hover:bg-gpsc-green-light rounded px-2 py-1 text-xs text-white transition-colors"
+                                                    className="bg-fsc-green hover:bg-fsc-green-light rounded px-2 py-1 text-xs text-white transition-colors"
                                                 >
                                                     Release
                                                 </button>
@@ -218,8 +218,32 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                             ))}
                             {filtered.length === 0 && (
                                 <tr>
-                                    <td colSpan={6} className="text-gpsc-stone p-8 text-center">
-                                        {search || statusFilter !== "all" ? "No claims match your filters" : "No claims found"}
+                                    <td colSpan={6}>
+                                        <div className="px-6 py-14 text-center">
+                                            {search || statusFilter !== "all" ? (
+                                                <>
+                                                    <div className="bg-fsc-cream mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full">
+                                                        <Search size={22} className="text-fsc-stone" />
+                                                    </div>
+                                                    <div className="font-display text-fsc-navy text-lg">No claims match</div>
+                                                    <div className="text-fsc-stone mt-1 text-sm">Try adjusting your search or status filter.</div>
+                                                    <button
+                                                        onClick={() => { setSearch(""); setStatusFilter("all"); }}
+                                                        className="text-fsc-green mt-4 text-sm hover:underline"
+                                                    >
+                                                        Clear filters
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <div className="bg-fsc-cream mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full">
+                                                        <FileText size={22} className="text-fsc-stone" />
+                                                    </div>
+                                                    <div className="font-display text-fsc-navy text-lg">No claims yet</div>
+                                                    <div className="text-fsc-stone mt-1 text-sm">Claims submitted by members will appear here.</div>
+                                                </>
+                                            )}
+                                        </div>
                                     </td>
                                 </tr>
                             )}
@@ -233,16 +257,16 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setSelectedClaim(null)}>
                     <div className="animate-fade-up mx-4 w-full max-w-lg rounded-2xl bg-white p-6" onClick={(e) => e.stopPropagation()}>
                         <div className="mb-4 flex items-center justify-between">
-                            <h2 className="font-display text-gpsc-navy text-xl">Claim Details</h2>
-                            <button onClick={() => setSelectedClaim(null)} className="text-gpsc-stone hover:text-gpsc-navy transition-colors">
+                            <h2 className="font-display text-fsc-navy text-xl">Claim Details</h2>
+                            <button onClick={() => setSelectedClaim(null)} className="text-fsc-stone hover:text-fsc-navy transition-colors">
                                 ✕
                             </button>
                         </div>
                         <div className="space-y-3">
-                            <div className="bg-gpsc-cream rounded-xl p-4">
+                            <div className="bg-fsc-cream rounded-xl p-4">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-gpsc-stone text-xs">Amount</span>
-                                    <span className="font-display text-gpsc-navy text-2xl">{formatCurrency(selectedClaim.amount)}</span>
+                                    <span className="text-fsc-stone text-xs">Amount</span>
+                                    <span className="font-display text-fsc-navy text-2xl">{formatCurrency(selectedClaim.amount)}</span>
                                 </div>
                                 <div className="mt-2">
                                     <span className={`rounded-full px-2 py-1 text-xs ${statusColors[selectedClaim.status]}`}>
@@ -251,41 +275,41 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                                 </div>
                             </div>
                             <div>
-                                <div className="text-gpsc-stone text-xs">Claimant</div>
-                                <div className="text-gpsc-navy">{selectedClaim.memberName || "Unknown"}</div>
-                                <div className="text-gpsc-stone font-mono text-xs">{selectedClaim.memberId}</div>
+                                <div className="text-fsc-stone text-xs">Claimant</div>
+                                <div className="text-fsc-navy">{selectedClaim.memberName || "Unknown"}</div>
+                                <div className="text-fsc-stone font-mono text-xs">{selectedClaim.memberId}</div>
                             </div>
                             <div>
-                                <div className="text-gpsc-stone text-xs">Claim ID</div>
-                                <div className="text-gpsc-navy font-mono text-sm">{selectedClaim.id}</div>
+                                <div className="text-fsc-stone text-xs">Claim ID</div>
+                                <div className="text-fsc-navy font-mono text-sm">{selectedClaim.id}</div>
                             </div>
                             <div>
-                                <div className="text-gpsc-stone text-xs">Benefit</div>
-                                <div className="text-gpsc-navy">{selectedClaim.benefit}</div>
+                                <div className="text-fsc-stone text-xs">Benefit</div>
+                                <div className="text-fsc-navy">{selectedClaim.benefit}</div>
                             </div>
                             {selectedClaim.description && (
                                 <div>
-                                    <div className="text-gpsc-stone text-xs">Reason</div>
-                                    <div className="text-gpsc-navy text-sm">{selectedClaim.description}</div>
+                                    <div className="text-fsc-stone text-xs">Reason</div>
+                                    <div className="text-fsc-navy text-sm">{selectedClaim.description}</div>
                                 </div>
                             )}
                             <div>
-                                <div className="text-gpsc-stone text-xs">Submitted</div>
-                                <div className="text-gpsc-navy">{formatDate(selectedClaim.submitted)}</div>
+                                <div className="text-fsc-stone text-xs">Submitted</div>
+                                <div className="text-fsc-navy">{formatDate(selectedClaim.submitted)}</div>
                             </div>
                             {selectedClaim.decided && (
                                 <div>
-                                    <div className="text-gpsc-stone text-xs">Decided</div>
-                                    <div className="text-gpsc-navy">{formatDate(selectedClaim.decided)}</div>
+                                    <div className="text-fsc-stone text-xs">Decided</div>
+                                    <div className="text-fsc-navy">{formatDate(selectedClaim.decided)}</div>
                                 </div>
                             )}
                             <div>
-                                <div className="text-gpsc-stone mb-2 text-xs">Documents</div>
+                                <div className="text-fsc-stone mb-2 text-xs">Documents</div>
                                 <div className="flex flex-wrap gap-2">
                                     {selectedClaim.documents.map((d, i) => (
                                         <span
                                             key={i}
-                                            className="bg-gpsc-cream text-gpsc-stone flex items-center gap-1 rounded-full px-3 py-1.5 text-xs"
+                                            className="bg-fsc-cream text-fsc-stone flex items-center gap-1 rounded-full px-3 py-1.5 text-xs"
                                         >
                                             <FileText size={10} /> {d}
                                         </span>
@@ -296,7 +320,7 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                         <div className="mt-6 flex gap-3">
                             <button
                                 onClick={() => setSelectedClaim(null)}
-                                className="border-gpsc-cream-dark text-gpsc-stone hover:bg-gpsc-cream/60 flex-1 rounded-lg border px-4 py-2 transition-colors"
+                                className="border-fsc-cream-dark text-fsc-stone hover:bg-fsc-cream/60 flex-1 rounded-lg border px-4 py-2 transition-colors"
                             >
                                 Close
                             </button>
@@ -306,7 +330,7 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                                         handleStartReview(selectedClaim.id);
                                         setSelectedClaim(null);
                                     }}
-                                    className="flex-1 rounded-lg bg-amber-600 px-4 py-2 font-medium text-white transition-colors hover:bg-amber-700"
+                                    className="bg-[#C9922A] hover:bg-[#A87820] flex-1 rounded-lg px-4 py-2 font-medium text-white transition-colors"
                                 >
                                     Start Review
                                 </button>
@@ -318,7 +342,7 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                                             onUpdateStatus(selectedClaim.id, "Rejected");
                                             setSelectedClaim(null);
                                         }}
-                                        className="flex-1 rounded-lg border border-red-500 px-4 py-2 font-medium text-red-500 transition-colors hover:bg-red-50"
+                                        className="flex-1 rounded-lg border border-[#C41E1E] px-4 py-2 font-medium text-[#C41E1E] transition-colors hover:bg-[#C41E1E]/10"
                                     >
                                         Reject
                                     </button>
@@ -327,7 +351,7 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                                             onUpdateStatus(selectedClaim.id, "Approved");
                                             setSelectedClaim(null);
                                         }}
-                                        className="bg-gpsc-green hover:bg-gpsc-green-light flex-1 rounded-lg px-4 py-2 font-medium text-white transition-colors"
+                                        className="bg-fsc-green hover:bg-fsc-green-light flex-1 rounded-lg px-4 py-2 font-medium text-white transition-colors"
                                     >
                                         Approve
                                     </button>
@@ -339,7 +363,7 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                                         onUpdateStatus(selectedClaim.id, "Released");
                                         setSelectedClaim(null);
                                     }}
-                                    className="bg-gpsc-navy hover:bg-gpsc-green flex-1 rounded-lg px-4 py-2 font-medium text-white transition-colors"
+                                    className="bg-fsc-navy hover:bg-fsc-green flex-1 rounded-lg px-4 py-2 font-medium text-white transition-colors"
                                 >
                                     Release Funds
                                 </button>

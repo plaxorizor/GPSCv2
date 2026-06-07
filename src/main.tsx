@@ -3,6 +3,8 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
+import ScrollToTop from "./components/ScrollToTop";
+import ScrollToTopButton from "./components/ScrollToTopButton";
 import AuthProvider from "./context/AuthProvider.tsx";
 
 import Home from "./pages/visitor/Home.tsx";
@@ -22,6 +24,7 @@ import { initializeApp } from "firebase/app";
 
 import "./index.css";
 import Dashboard from "./pages/Dashboard.tsx";
+import NotFound from "./pages/NotFound.tsx";
 
 initializeApp(firebaseConfig);
 
@@ -29,6 +32,8 @@ createRoot(document.getElementById("root")!).render(
     <React.StrictMode>
         <AuthProvider>
             <BrowserRouter>
+                <ScrollToTop />
+                <ScrollToTopButton />
                 <Routes>
                     <Route path="/" element={<Home />} />
 
@@ -62,6 +67,7 @@ createRoot(document.getElementById("root")!).render(
                             </ProtectedRoute>
                         }
                     />
+                    <Route path="*" element={<NotFound />} />
                 </Routes>
             </BrowserRouter>
         </AuthProvider>

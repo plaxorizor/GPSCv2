@@ -1,12 +1,15 @@
 import React from "react";
+import { useScrollReveal } from "../../hooks/useScrollReveal";
 
-export const HowItWorks: React.FC = () => (
-    <section className="gpsc-cream">
-        <div className="mx-auto max-w-6xl px-6 py-24 lg:px-8">
+export const HowItWorks: React.FC = () => {
+    const { ref, inView } = useScrollReveal();
+    return (
+    <section className="fsc-cream">
+        <div ref={ref} className={`mx-auto max-w-6xl px-6 py-24 lg:px-8 scroll-reveal ${inView ? "in-view" : ""}`}>
             <div className="grid gap-12 lg:grid-cols-12">
                 <div className="lg:col-span-4">
-                    <div className="text-gpsc-green mb-4 text-xs tracking-[0.2em] uppercase">How it works</div>
-                    <h2 className="font-display text-gpsc-navy text-4xl leading-tight">A simple path from joining to thriving.</h2>
+                    <div className="text-fsc-green mb-4 text-xs tracking-[0.2em] uppercase">How it works</div>
+                    <h2 className="font-display text-fsc-navy text-4xl leading-tight">A simple path from joining to thriving.</h2>
                 </div>
                 <div className="space-y-8 lg:col-span-8">
                     {[
@@ -32,12 +35,12 @@ export const HowItWorks: React.FC = () => (
                         },
                     ].map((step, i) => (
                         <div key={i} className="group flex gap-6">
-                            <div className="font-display text-gpsc-green/40 group-hover:text-gpsc-green w-16 shrink-0 text-4xl transition-colors">
+                            <div className="font-display text-fsc-green/40 group-hover:text-fsc-green w-16 shrink-0 text-4xl transition-colors">
                                 {step.n}
                             </div>
-                            <div className="border-gpsc-cream-dark flex-1 border-b pt-1 pb-8">
-                                <h3 className="font-display text-gpsc-navy mb-2 text-2xl">{step.title}</h3>
-                                <p className="text-gpsc-stone leading-relaxed">{step.desc}</p>
+                            <div className="border-fsc-cream-dark flex-1 border-b pt-1 pb-8">
+                                <h3 className="font-display text-fsc-navy mb-2 text-2xl">{step.title}</h3>
+                                <p className="text-fsc-stone leading-relaxed">{step.desc}</p>
                             </div>
                         </div>
                     ))}
@@ -45,4 +48,5 @@ export const HowItWorks: React.FC = () => (
             </div>
         </div>
     </section>
-);
+    );
+};

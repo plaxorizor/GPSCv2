@@ -108,9 +108,9 @@ export default function AddMemberModal({ onClose, onSuccess }: Props) {
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
                 <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
                     <div className="mb-4 text-center">
-                        <CheckCircle className="text-gpsc-green mx-auto mb-3" size={44} />
-                        <h2 className="font-display text-gpsc-navy text-xl">Member added</h2>
-                        <p className="text-gpsc-stone mt-1 text-sm">
+                        <CheckCircle className="text-fsc-green mx-auto mb-3" size={44} />
+                        <h2 className="font-display text-fsc-navy text-xl">Member added</h2>
+                        <p className="text-fsc-stone mt-1 text-sm">
                             {form.firstName} {form.lastName}{" "}
                             {result.activated ? (
                                 <>
@@ -126,8 +126,8 @@ export default function AddMemberModal({ onClose, onSuccess }: Props) {
                     </div>
 
                     {/* Credentials */}
-                    <div className="border-gpsc-cream-dark space-y-3 rounded-xl border p-4">
-                        <p className="text-gpsc-navy text-sm font-medium">Give these to the member privately:</p>
+                    <div className="border-fsc-cream-dark space-y-3 rounded-xl border p-4">
+                        <p className="text-fsc-navy text-sm font-medium">Give these to the member privately:</p>
                         <CredRow
                             label="Login"
                             value={result.loginEmail}
@@ -143,7 +143,7 @@ export default function AddMemberModal({ onClose, onSuccess }: Props) {
                         />
                     </div>
 
-                    <div className="mt-3 flex items-start gap-2 rounded-xl bg-amber-50 p-3 text-xs text-amber-800">
+                    <div className="mt-3 flex items-start gap-2 rounded-xl bg-[#C9922A]/10 p-3 text-xs text-[#A87820]">
                         <AlertTriangle size={14} className="mt-0.5 shrink-0" />
                         <span>
                             This password is shown <strong>once</strong>. Don't write it on the form. The member should change it on first login.
@@ -152,7 +152,7 @@ export default function AddMemberModal({ onClose, onSuccess }: Props) {
                         </span>
                     </div>
 
-                    <button onClick={onClose} className="bg-gpsc-green mt-5 w-full rounded-xl py-3 text-sm font-medium text-white">
+                    <button onClick={onClose} className="bg-fsc-green mt-5 w-full rounded-xl py-3 text-sm font-medium text-white">
                         Done
                     </button>
                 </div>
@@ -165,17 +165,17 @@ export default function AddMemberModal({ onClose, onSuccess }: Props) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
             <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white shadow-xl">
                 {/* Header */}
-                <div className="border-gpsc-cream-dark sticky top-0 flex items-center justify-between border-b bg-white p-6">
+                <div className="border-fsc-cream-dark sticky top-0 flex items-center justify-between border-b bg-white p-6">
                     <div className="flex items-center gap-3">
-                        <div className="bg-gpsc-navy/10 flex h-9 w-9 items-center justify-center rounded-xl">
-                            <UserPlus className="text-gpsc-navy" size={18} />
+                        <div className="bg-fsc-navy/10 flex h-9 w-9 items-center justify-center rounded-xl">
+                            <UserPlus className="text-fsc-navy" size={18} />
                         </div>
                         <div>
-                            <h2 className="font-display text-gpsc-navy font-semibold">Add / Encode Member</h2>
-                            <p className="text-gpsc-stone text-xs">From a paper application — no password needed.</p>
+                            <h2 className="font-display text-fsc-navy font-semibold">Add / Encode Member</h2>
+                            <p className="text-fsc-stone text-xs">From a paper application — no password needed.</p>
                         </div>
                     </div>
-                    <button onClick={onClose} className="text-gpsc-stone hover:text-gpsc-navy rounded-lg p-1">
+                    <button onClick={onClose} className="text-fsc-stone hover:text-fsc-navy rounded-lg p-1">
                         <X size={20} />
                     </button>
                 </div>
@@ -243,7 +243,7 @@ export default function AddMemberModal({ onClose, onSuccess }: Props) {
                     </div>
 
                     {/* Referral — required (golden rule), unless founder */}
-                    <div className="border-gpsc-cream-dark rounded-xl border p-3">
+                    <div className="border-fsc-cream-dark rounded-xl border p-3">
                         <Field label="Referral code (the referrer's code)" required={!isRoot}>
                             <input
                                 value={form.referralCode}
@@ -254,7 +254,7 @@ export default function AddMemberModal({ onClose, onSuccess }: Props) {
                             />
                         </Field>
                         {isSuperAdmin && (
-                            <label className="text-gpsc-stone mt-2 flex cursor-pointer items-center gap-2 text-xs">
+                            <label className="text-fsc-stone mt-2 flex cursor-pointer items-center gap-2 text-xs">
                                 <input
                                     type="checkbox"
                                     checked={isRoot}
@@ -265,7 +265,7 @@ export default function AddMemberModal({ onClose, onSuccess }: Props) {
                                             clearFieldError("referralCode");
                                         }
                                     }}
-                                    className="accent-gpsc-navy h-4 w-4"
+                                    className="accent-fsc-navy h-4 w-4"
                                 />
                                 Founder / root member (no referrer) — only for the very top of the tree
                             </label>
@@ -288,20 +288,20 @@ export default function AddMemberModal({ onClose, onSuccess }: Props) {
                         </Field>
                     </div>
 
-                    {error && <p className="text-sm text-red-500">{error}</p>}
+                    {error && <p className="text-sm text-[#C41E1E]">{error}</p>}
 
                     <div className="flex gap-3 pt-2">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="border-gpsc-cream-dark flex-1 rounded-xl border py-3 text-sm font-medium transition-colors hover:bg-gray-50"
+                            className="border-fsc-cream-dark flex-1 rounded-xl border py-3 text-sm font-medium transition-colors hover:bg-gray-50"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
                             disabled={loading}
-                            className="bg-gpsc-navy flex-1 rounded-xl py-3 text-sm font-medium text-white transition-opacity disabled:opacity-50"
+                            className="bg-fsc-navy flex-1 rounded-xl py-3 text-sm font-medium text-white transition-opacity disabled:opacity-50"
                         >
                             {loading ? "Creating…" : "Create Member"}
                         </button>
@@ -312,14 +312,14 @@ export default function AddMemberModal({ onClose, onSuccess }: Props) {
                 <style>{`
                     .input {
                         width: 100%;
-                        border: 1px solid var(--color-gpsc-cream-dark, #e5ddc8);
+                        border: 1px solid var(--color-fsc-cream-dark, #e5ddc8);
                         border-radius: 0.75rem;
                         padding: 0.6rem 0.75rem;
                         font-size: 0.875rem;
                         outline: none;
                         background: white;
                     }
-                    .input:focus { border-color: var(--color-gpsc-green, #4A8A2C); }
+                    .input:focus { border-color: var(--color-fsc-green, #4A8A2C); }
                     .input-error { border-color: #ef4444; background: #fef2f2; }
                     .input-error:focus { border-color: #ef4444; }
                 `}</style>
@@ -331,8 +331,8 @@ export default function AddMemberModal({ onClose, onSuccess }: Props) {
 function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
     return (
         <label className="block">
-            <span className="text-gpsc-navy mb-1.5 block text-sm font-medium">
-                {label} {required && <span className="text-red-500">*</span>}
+            <span className="text-fsc-navy mb-1.5 block text-sm font-medium">
+                {label} {required && <span className="text-[#C41E1E]">*</span>}
             </span>
             {children}
         </label>
@@ -342,11 +342,11 @@ function Field({ label, required, children }: { label: string; required?: boolea
 function CredRow({ label, value, onCopy, copied, mono }: { label: string; value: string; onCopy: () => void; copied: boolean; mono?: boolean }) {
     return (
         <div>
-            <div className="text-gpsc-stone text-xs">{label}</div>
+            <div className="text-fsc-stone text-xs">{label}</div>
             <div className="flex items-center justify-between gap-2">
-                <span className={`text-gpsc-navy text-sm ${mono ? "font-mono" : ""}`}>{value}</span>
-                <button onClick={onCopy} className="text-gpsc-stone hover:text-gpsc-navy shrink-0 transition-colors" title="Copy">
-                    {copied ? <Check size={15} className="text-gpsc-green" /> : <Copy size={15} />}
+                <span className={`text-fsc-navy text-sm ${mono ? "font-mono" : ""}`}>{value}</span>
+                <button onClick={onCopy} className="text-fsc-stone hover:text-fsc-navy shrink-0 transition-colors" title="Copy">
+                    {copied ? <Check size={15} className="text-fsc-green" /> : <Copy size={15} />}
                 </button>
             </div>
         </div>
