@@ -18,6 +18,7 @@ interface Props {
     approvedClaimsTotal: number;
     earningsTrend: EarningsTrendPoint[];
     onRequestPayout: () => void;
+    onComparePackages: () => void;
     eligibilityTimeline: Array<{ label: string; months: number; unlocked: boolean }>;
     recentCommissions: Array<{
         id: string;
@@ -33,38 +34,32 @@ interface Props {
 // ─── Upgrade Banner ───────────────────────────────────────────────────────────
 
 const PACKAGES = [
-    { name: "basic",   Icon: Check  },
-    { name: "Family",  Icon: Users  },
-    { name: "Premium", Icon: Crown  },
+    { name: "basic", Icon: Check },
+    { name: "Family", Icon: Users },
+    { name: "Premium", Icon: Crown },
 ] as const;
 
-const UpgradeBanner: React.FC<{ packageName: string }> = ({ packageName }) => {
+const UpgradeBanner: React.FC<{ packageName: string; onComparePackages: () => void }> = ({ packageName, onComparePackages }) => {
     const [dismissed, setDismissed] = useState(false);
 
-    const currentIndex = PACKAGES.findIndex(
-        (p) => p.name.toLowerCase() === packageName.toLowerCase()
-    );
+    const currentIndex = PACKAGES.findIndex((p) => p.name.toLowerCase() === packageName.toLowerCase());
 
     // Hide if already on Premium, not found, or dismissed
     if (dismissed || currentIndex === -1 || currentIndex === PACKAGES.length - 1) return null;
 
-    const nextPackage = PACKAGES[currentIndex + 1];
-
     return (
-        <div className="relative flex items-center gap-5 rounded-2xl border border-fsc-cream-dark bg-fsc-cream overflow-hidden px-6 py-5">
-            {/* Green left accent bar */}
-            <div className="absolute left-0 top-0 bottom-0 w-1 bg-fsc-green rounded-l-2xl" />
+        <div className="border-fsc-cream-dark bg-fsc-cream relative flex items-center gap-5 overflow-hidden rounded-2xl border px-6 py-5">
+            {/* Gold left accent bar */}
+            <div className="bg-fsc-green absolute top-0 bottom-0 left-0 w-1 rounded-l-2xl" />
 
             {/* Icon */}
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-fsc-cream-dark bg-white text-fsc-green">
+            <div className="border-fsc-cream-dark text-fsc-green flex h-11 w-11 shrink-0 items-center justify-center rounded-full border bg-white">
                 <Rocket size={20} />
             </div>
 
             {/* Body */}
-            <div className="flex-1 min-w-0">
-                <p className="font-display text-fsc-navy text-sm font-semibold">
-                    You're on {packageName} Care — unlock more benefits
-                </p>
+            <div className="min-w-0 flex-1">
+                <p className="font-display text-fsc-navy text-sm font-semibold">You're on {packageName} Care — unlock more benefits</p>
                 <p className="text-fsc-stone mt-0.5 text-xs leading-relaxed">
                     Upgrade to Family or Premium Care for higher commissions, deeper level coverage, and faster payouts.
                 </p>
@@ -74,19 +69,21 @@ const UpgradeBanner: React.FC<{ packageName: string }> = ({ packageName }) => {
                     {PACKAGES.map(({ name, Icon: PkgIcon }, i) => (
                         <React.Fragment key={name}>
                             <span
-                                className={`flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium border transition-colors ${
+                                className={`flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
                                     i === currentIndex
-                                        ? "bg-fsc-navy text-white border-fsc-navy"
+                                        ? "bg-fsc-navy border-fsc-navy text-white"
                                         : i === currentIndex + 1
-                                        ? "bg-fsc-green text-white border-fsc-green"
-                                        : "bg-white text-fsc-stone border-fsc-cream-dark"
+                                          ? "bg-fsc-green border-fsc-green text-white"
+                                          : "text-fsc-stone border-fsc-cream-dark bg-white"
                                 }`}
                             >
                                 <PkgIcon size={11} />
                                 {name}
                             </span>
                             {i < PACKAGES.length - 1 && (
-                                <span className="text-fsc-stone text-xs" aria-hidden="true">›</span>
+                                <span className="text-fsc-stone text-xs" aria-hidden="true">
+                                    ›
+                                </span>
                             )}
                         </React.Fragment>
                     ))}
@@ -95,17 +92,23 @@ const UpgradeBanner: React.FC<{ packageName: string }> = ({ packageName }) => {
 
             {/* Actions */}
             <div className="flex shrink-0 flex-col items-end gap-2">
-                <button className="rounded-xl bg-fsc-green px-4 py-2 text-xs font-medium text-white hover:bg-fsc-green/90 transition-colors whitespace-nowrap">
-                    Upgrade to {nextPackage.name} →
+                <button
+                    onClick={onComparePackages}
+                    className="bg-fsc-green hover:bg-fsc-green-light rounded-xl px-4 py-2 text-xs font-medium whitespace-nowrap text-white transition-colors"
+                >
+                    Upgrade →
                 </button>
-                <button className="text-xs text-fsc-stone underline underline-offset-2 hover:text-fsc-navy transition-colors">
+                <button
+                    onClick={onComparePackages}
+                    className="text-fsc-stone hover:text-fsc-navy text-xs underline underline-offset-2 transition-colors"
+                >
                     Compare packages
                 </button>
             </div>
 
             {/* Dismiss */}
             <button
-                className="absolute right-3 top-3 text-fsc-stone hover:text-fsc-navy transition-colors"
+                className="text-fsc-stone hover:text-fsc-navy absolute top-3 right-3 transition-colors"
                 onClick={() => setDismissed(true)}
                 aria-label="Dismiss upgrade banner"
             >
@@ -193,6 +196,7 @@ export const MemberOverview: React.FC<Props> = ({
     approvedClaimsTotal,
     earningsTrend,
     onRequestPayout,
+    onComparePackages,
     eligibilityTimeline,
     recentCommissions,
 }) => {
@@ -218,7 +222,7 @@ export const MemberOverview: React.FC<Props> = ({
             </div>
 
             {/* Upgrade Banner — hidden automatically for Premium members */}
-            <UpgradeBanner packageName={packageName} />
+            <UpgradeBanner packageName={packageName} onComparePackages={onComparePackages} />
 
             {/* Stat cards */}
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -240,7 +244,7 @@ export const MemberOverview: React.FC<Props> = ({
                 />
             </div>
 
-           {/* Eligibility Timeline + Referral card + Earnings Trend */}
+            {/* Eligibility Timeline + Referral card + Earnings Trend */}
             <div className="space-y-6">
                 <div className="grid gap-6 lg:grid-cols-3">
                     <div className="border-fsc-cream-dark rounded-2xl border bg-white p-6 lg:col-span-2">

@@ -14,11 +14,12 @@ export const Footer: React.FC = () => (
                                 <span className="text-white">Faith Shield </span>
                                 <span style={{ color: "#C41E1E" }}>Care</span>
                             </div>
-                            <div className="font-body text-[10px] italic text-white/50">Guided by Faith, Driven by Care</div>
+                            <div className="font-body text-[10px] text-white/50 italic">Guided by Faith, Driven by Care</div>
                         </div>
                     </div>
                     <p className="text-sm leading-relaxed text-white/60">
-                        A community-based membership organization providing affordable financial assistance, livelihood opportunities, and compassionate care — inspired by Christian values and the Bayanihan spirit.
+                        A community-based membership organization providing affordable financial assistance, livelihood opportunities, and
+                        compassionate care — inspired by Christian values and the Bayanihan spirit.
                     </p>
                 </div>
                 <div>
@@ -82,11 +83,6 @@ export const Footer: React.FC = () => (
                         <li>
                             <Link to="/faq" className="transition-colors hover:text-white">
                                 Data Privacy
-                            </Link>
-                        </li>
-                        <li>
-                            <Link to="/faq" className="transition-colors hover:text-white">
-                                Refund Policy
                             </Link>
                         </li>
                     </ul>

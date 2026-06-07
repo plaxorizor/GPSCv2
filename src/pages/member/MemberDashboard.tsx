@@ -1,5 +1,5 @@
 // member/index.tsx
-import { LayoutGrid, Wallet, FileText, Settings, Network } from "lucide-react";
+import { LayoutGrid, Wallet, FileText, Settings, Network, Layers } from "lucide-react";
 import { DashboardSidebar } from "./DashboardSidebar";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { MemberOverview } from "./Overview";
@@ -8,6 +8,7 @@ import { MemberEarnings } from "./Earnings";
 import { MemberClaims } from "./Claims";
 import { MemberBeneficiaries } from "./Beneficiaries";
 import { MemberProfile } from "./Profile";
+import { MemberPlan } from "./Plan";
 import type { Member, Commission, ReferralNode, EarningsTrendPoint, Claim, Payout, MemberStats } from "../../utils/types";
 
 import { getEligibilityTimeline } from "../../utils/eligibility";
@@ -84,6 +85,7 @@ export default function MemberDashboard({
     sidebarItems.push({ id: "overview", label: "Overview", icon: LayoutGrid });
     sidebarItems.push({ id: "referrals", label: "My Referrals", icon: Network, badge: totalReferralsCount });
     sidebarItems.push({ id: "earnings", label: "Earnings", icon: Wallet });
+    sidebarItems.push({ id: "plan", label: "Plans", icon: Layers });
     sidebarItems.push({ id: "claims", label: "Claims", icon: FileText, badge: claims.filter((c) => c.status !== "approved").length });
     // Basic members don't have beneficiaries
     if (member.package.toLowerCase() !== "basic") {
@@ -124,6 +126,7 @@ export default function MemberDashboard({
                         earningsTrend={earningsTrend}
                         //referralLink={referralLink}
                         onRequestPayout={onRequestPayout}
+                        onComparePackages={() => onSectionChange("plan")}
                         eligibilityTimeline={eligibilityTimeline}
                         recentCommissions={recentCommissions}
                     />
@@ -145,6 +148,7 @@ export default function MemberDashboard({
                         onRequestPayout={onRequestPayout}
                     />
                 )}
+                {currentSection === "plan" && <MemberPlan packageName={packageName} />}
                 {currentSection === "claims" && <MemberClaims claims={claims} onFileClaim={onFileClaim} />}
                 {currentSection === "beneficiaries" && <MemberBeneficiaries member={member} />}
                 {currentSection === "profile" && <MemberProfile onLogout={onLogout} user={member} onChangePassword={onChangePassword} />}

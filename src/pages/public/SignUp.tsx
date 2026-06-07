@@ -89,7 +89,7 @@ export default function SignUpLayout() {
     // Birth date split into Month / Day / Year dropdowns.
     const [birth, setBirth] = useState({ y: "", m: "", d: "" });
     const [consented, setConsented] = useState(false);
-    const [policyTab, setPolicyTab] = useState<"privacy" | "terms" | "refund">("privacy");
+    const [policyTab, setPolicyTab] = useState<"privacy" | "terms">("privacy");
 
     const [selectedPlan, setSelectedPlan] = useState(plans[0]);
     const [form, setForm] = useState({
@@ -120,18 +120,7 @@ export default function SignUpLayout() {
     // Required fields that failed validation on the last "Continue" — highlighted
     // red. Top-level keys match `form`; beneficiary keys are "ben-{index}-name" etc.
     const [invalidFields, setInvalidFields] = useState<Set<string>>(new Set());
-    // Derived: a field shows red only while it was flagged AND still has no value,
-    // so the highlight clears as the user types (no effect / setState needed).
-    const isInvalid = (key: string) => {
-        if (!invalidFields.has(key)) return false;
-        if (key.startsWith("ben-")) {
-            const [, idxStr, sub] = key.split("-");
-            const b = form.beneficiaries[Number(idxStr)];
-            return !(b && String((b as Record<string, string>)[sub] ?? "").trim());
-        }
-        const v = (form as Record<string, unknown>)[key];
-        return typeof v === "string" ? v.trim() === "" : !v;
-    };
+    const isInvalid = (key: string) => invalidFields.has(key);
 
     // Fields the user has blurred at least once — used to validate on focus loss
     // (not while still typing).
@@ -143,43 +132,60 @@ export default function SignUpLayout() {
     const passwordMismatch = touched.has("confirmPassword") && !!form.confirmPassword && form.password !== form.confirmPassword;
     const fieldCls = (key: string) => `${inputCls}${isInvalid(key) ? " !border-[#C41E1E]" : ""}`;
 
-    // Update one part of the birth date and keep form.birthDate (YYYY-MM-DD) in
-    // sync within the same event — no effect, no cascading render.
-    const handleBirthChange = (part: "y" | "m" | "d", value: string) => {
-        const nb = { ...birth, [part]: value };
-        setBirth(nb);
-        const next = nb.y && nb.m && nb.d ? `${nb.y}-${nb.m}-${nb.d}` : "";
-        setForm((prev) => ({ ...prev, birthDate: next }));
-    };
+    // Clear a field's red highlight as soon as it has a value again.
+    useEffect(() => {
+        setInvalidFields((prev) => {
+            if (prev.size === 0) return prev;
+            const next = new Set(prev);
+            for (const key of prev) {
+                if (key.startsWith("ben-")) {
+                    const [, idxStr, sub] = key.split("-");
+                    const b = form.beneficiaries[Number(idxStr)];
+                    if (b && String((b as Record<string, string>)[sub] ?? "").trim()) next.delete(key);
+                } else {
+                    const v = (form as Record<string, unknown>)[key];
+                    if (typeof v === "string" ? v.trim() !== "" : Boolean(v)) next.delete(key);
+                }
+            }
+            return next.size === prev.size ? prev : next;
+        });
+    }, [form]);
+
+    // Combine the Month/Day/Year dropdowns into form.birthDate (YYYY-MM-DD).
+    // Only set a value once all three are chosen; otherwise keep it empty.
+    useEffect(() => {
+        const next = birth.y && birth.m && birth.d ? `${birth.y}-${birth.m}-${birth.d}` : "";
+        setForm((prev) => (prev.birthDate === next ? prev : { ...prev, birthDate: next }));
+    }, [birth]);
 
     // Birth-date dropdown option lists.
-    const MONTHS = [
-        "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December",
-    ];
+    const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     const currentYear = new Date().getFullYear();
     const birthYears = Array.from({ length: 100 }, (_, i) => currentYear - 18 - i); // 18..117 yrs old
     const daysInMonth = birth.y && birth.m ? new Date(Number(birth.y), Number(birth.m), 0).getDate() : 31;
     const birthDays = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
-    // Barangays are lazy-loaded from the bundled dataset, tagged with the city
-    // they belong to. The effect only does the async fetch (setState lives in the
-    // resolved callback, which is allowed); options + loading are derived below.
-    const [barangayData, setBarangayData] = useState<{ cityCode: string; list: Barangay[] }>({ cityCode: "", list: [] });
+    // Barangay options for the selected city (lazy-loaded from the bundled dataset).
+    const [barangayOptions, setBarangayOptions] = useState<Barangay[]>([]);
+    const [loadingBarangays, setLoadingBarangays] = useState(false);
     useEffect(() => {
-        if (!form.cityCode) return;
+        if (!form.cityCode) {
+            setBarangayOptions([]);
+            return;
+        }
         let cancelled = false;
-        barangaysByCity(form.cityCode).then((list) => {
-            if (!cancelled) setBarangayData({ cityCode: form.cityCode, list });
-        });
+        setLoadingBarangays(true);
+        barangaysByCity(form.cityCode)
+            .then((list) => {
+                if (!cancelled) setBarangayOptions(list);
+            })
+            .finally(() => {
+                if (!cancelled) setLoadingBarangays(false);
+            });
         return () => {
             cancelled = true;
         };
     }, [form.cityCode]);
-    // Derived: only show options once the loaded data matches the selected city
-    // (avoids flashing the previous city's barangays); loading = mismatch.
-    const barangayOptions = barangayData.cityCode === form.cityCode ? barangayData.list : [];
-    const loadingBarangays = !!form.cityCode && barangayData.cityCode !== form.cityCode;
 
     // Cascading address handlers — selecting a parent resets its children.
     const handleProvinceChange = (provinceCode: string) => {
@@ -387,7 +393,7 @@ export default function SignUpLayout() {
             <style>{css}</style>
 
             <div className="fsc-signup-root min-h-screen px-6 py-12" style={{ backgroundColor: "#F2F3F5" }}>
-                <div className="mx-auto max-w-2xl signup-anim">
+                <div className="signup-anim mx-auto max-w-2xl">
                     {/* ── Header ── */}
                     <div className="mb-10 text-center">
                         <button type="button" onClick={() => navigate("/")} className="inline-flex cursor-pointer flex-col items-center">
@@ -412,9 +418,9 @@ export default function SignUpLayout() {
                             </p>
 
                             {/* Tab bar */}
-                            <div className="mb-5 flex rounded-xl overflow-hidden" style={{ border: "1px solid #D0D2D8" }}>
-                                {(["privacy", "terms", "refund"] as const).map((tab) => {
-                                    const labels = { privacy: "Privacy Policy", terms: "Terms & Conditions", refund: "Refund Policy" };
+                            <div className="mb-5 flex overflow-hidden rounded-xl" style={{ border: "1px solid #D0D2D8" }}>
+                                {(["privacy", "terms"] as const).map((tab) => {
+                                    const labels = { privacy: "Privacy Policy", terms: "Terms & Conditions" };
                                     const active = policyTab === tab;
                                     return (
                                         <button
@@ -425,7 +431,7 @@ export default function SignUpLayout() {
                                             style={{
                                                 backgroundColor: active ? "#1B2D6B" : "#F2F3F5",
                                                 color: active ? "#fff" : "#6B6862",
-                                                borderRight: tab !== "refund" ? "1px solid #D0D2D8" : undefined,
+                                                borderRight: tab !== "terms" ? "1px solid #D0D2D8" : undefined,
                                             }}
                                         >
                                             {labels[tab]}
@@ -436,43 +442,104 @@ export default function SignUpLayout() {
 
                             {/* Tab content */}
                             <div
-                                className="rounded-2xl p-5 mb-6 overflow-y-auto space-y-3 text-sm leading-relaxed"
+                                className="mb-6 space-y-3 overflow-y-auto rounded-2xl p-5 text-sm leading-relaxed"
                                 style={{ backgroundColor: "#F2F3F5", border: "1px solid #D0D2D8", maxHeight: "320px", color: "#4B4A47" }}
                             >
                                 {policyTab === "privacy" && (
                                     <>
-                                        <p><strong style={{ color: "#1B2D6B" }}>Last updated: June 2025</strong></p>
-                                        <p>Faith Shield Care ("we", "us", or "our") is committed to protecting your personal information. This Privacy Policy explains how we collect, use, and safeguard the data you provide when registering as a member.</p>
-                                        <p><strong style={{ color: "#1B2D6B" }}>Information We Collect</strong><br />We collect your name, email address, mobile number, birth date, civil status, location, referral code, and beneficiary details. Proof of payment that you send us for verification is handled separately and is not stored in your online account.</p>
-                                        <p><strong style={{ color: "#1B2D6B" }}>How We Use Your Information</strong><br />Your data is used to process your membership application, verify identity, manage your account, facilitate referral rewards, and communicate important updates.</p>
-                                        <p><strong style={{ color: "#1B2D6B" }}>Data Sharing</strong><br />We do not sell or rent your personal data. Information may be shared only with service providers necessary to operate our platform, or as required by law.</p>
-                                        <p><strong style={{ color: "#1B2D6B" }}>Data Security</strong><br />We use industry-standard security measures to protect your information. However, no online transmission is 100% secure and we cannot guarantee absolute security.</p>
-                                        <p><strong style={{ color: "#1B2D6B" }}>Your Rights</strong><br />You may request access to, correction of, or deletion of your personal data by contacting us at support@faithshieldcare.com.</p>
+                                        <p>
+                                            Faith Shield Care ("we", "us", or "our") is committed to protecting your personal information. This
+                                            Privacy Policy explains how we collect, use, and safeguard the data you provide when registering as a
+                                            member.
+                                        </p>
+                                        <p>
+                                            <strong style={{ color: "#1B2D6B" }}>Information We Collect</strong>
+                                            <br />
+                                            We collect your name, email address, mobile number, birth date, civil status, location, referral code, and
+                                            beneficiary details. Proof of payment that you send us for verification is handled separately and is not
+                                            stored in your online account.
+                                        </p>
+                                        <p>
+                                            <strong style={{ color: "#1B2D6B" }}>How We Use Your Information</strong>
+                                            <br />
+                                            Your data is used to process your membership application, verify identity, manage your account, facilitate
+                                            referral rewards, and communicate important updates.
+                                        </p>
+                                        <p>
+                                            <strong style={{ color: "#1B2D6B" }}>Data Sharing</strong>
+                                            <br />
+                                            We do not sell or rent your personal data. Information may be shared only with service providers necessary
+                                            to operate our platform, or as required by law.
+                                        </p>
+                                        <p>
+                                            <strong style={{ color: "#1B2D6B" }}>Data Security</strong>
+                                            <br />
+                                            We use industry-standard security measures to protect your information. However, no online transmission is
+                                            100% secure and we cannot guarantee absolute security.
+                                        </p>
+                                        <p>
+                                            <strong style={{ color: "#1B2D6B" }}>Your Rights</strong>
+                                            <br />
+                                            You may request access to, correction of, or deletion of your personal data by contacting us at
+                                            support@faithshieldcare.com.
+                                        </p>
                                     </>
                                 )}
                                 {policyTab === "terms" && (
                                     <>
-                                        <p><strong style={{ color: "#1B2D6B" }}>Last updated: June 2025</strong></p>
-                                        <p>By registering for a Faith Shield Care membership, you agree to be bound by these Terms &amp; Conditions. Please read them carefully before proceeding.</p>
-                                        <p><strong style={{ color: "#1B2D6B" }}>Eligibility</strong><br />Membership is open to individuals 18 years of age or older. By registering, you confirm that all information provided is accurate and truthful.</p>
-                                        <p><strong style={{ color: "#1B2D6B" }}>Membership Plans</strong><br />Each plan (Basic, Family, Premium) carries distinct benefits and referral structures. Plan details are subject to change with prior notice to members.</p>
-                                        <p><strong style={{ color: "#1B2D6B" }}>Referral Program</strong><br />Referral commissions are credited upon successful activation of referred members. Faith Shield Care reserves the right to adjust commission rates with reasonable notice.</p>
-                                        <p><strong style={{ color: "#1B2D6B" }}>Account Responsibility</strong><br />You are responsible for maintaining the confidentiality of your account credentials. Faith Shield Care is not liable for unauthorized access resulting from your failure to secure your account.</p>
-                                        <p><strong style={{ color: "#1B2D6B" }}>Termination</strong><br />Faith Shield Care reserves the right to suspend or terminate any account found to be in violation of these Terms or engaged in fraudulent activity.</p>
-                                        <p><strong style={{ color: "#1B2D6B" }}>Governing Law</strong><br />These Terms are governed by the laws of the Republic of the Philippines.</p>
-                                    </>
-                                )}
-                                {policyTab === "refund" && (
-                                    <>
-                                        <p><strong style={{ color: "#1B2D6B" }}>Last updated: June 2025</strong></p>
-                                        <p>Faith Shield Care strives to ensure member satisfaction. Please review our refund policy before completing your registration.</p>
-                                        <p><strong style={{ color: "#1B2D6B" }}>Cooling-Off Period</strong><br />Members may request a full refund within 7 calendar days of account activation, provided no referral commissions have been disbursed under their account.</p>
-                                        <p><strong style={{ color: "#1B2D6B" }}>Non-Refundable Circumstances</strong><br />Refunds will not be granted if the membership has been active for more than 7 days, if commissions have already been paid to the member, or if the account has been found in violation of our Terms &amp; Conditions.</p>
-                                        <p><strong style={{ color: "#1B2D6B" }}>How to Request a Refund</strong><br />To initiate a refund, contact our support team at support@faithshieldcare.com with your registered email and reason for the request. Approved refunds will be processed within 7–14 business days.</p>
-                                        <p><strong style={{ color: "#1B2D6B" }}>Plan Upgrades</strong><br />Payments made for plan upgrades are non-refundable once the upgraded plan has been activated.</p>
+                                        <p>
+                                            By registering for a Faith Shield Care membership, you agree to be bound by these Terms &amp; Conditions.
+                                            Please read them carefully before proceeding.
+                                        </p>
+                                        <p>
+                                            <strong style={{ color: "#1B2D6B" }}>Eligibility</strong>
+                                            <br />
+                                            Membership is open to individuals 18 years of age or older. By registering, you confirm that all
+                                            information provided is accurate and truthful.
+                                        </p>
+                                        <p>
+                                            <strong style={{ color: "#1B2D6B" }}>Membership Plans</strong>
+                                            <br />
+                                            Each plan (Basic, Family, Premium) carries distinct benefits and referral structures. Plan details are
+                                            subject to change with prior notice to members.
+                                        </p>
+                                        <p>
+                                            <strong style={{ color: "#1B2D6B" }}>Referral Program</strong>
+                                            <br />
+                                            Referral commissions are credited upon successful activation of referred members. Faith Shield Care
+                                            reserves the right to adjust commission rates with reasonable notice.
+                                        </p>
+                                        <p>
+                                            <strong style={{ color: "#1B2D6B" }}>Account Responsibility</strong>
+                                            <br />
+                                            You are responsible for maintaining the confidentiality of your account credentials. Faith Shield Care is
+                                            not liable for unauthorized access resulting from your failure to secure your account.
+                                        </p>
+                                        <p>
+                                            <strong style={{ color: "#1B2D6B" }}>Termination</strong>
+                                            <br />
+                                            Faith Shield Care reserves the right to suspend or terminate any account found to be in violation of these
+                                            Terms or engaged in fraudulent activity.
+                                        </p>
+                                        <p>
+                                            <strong style={{ color: "#1B2D6B" }}>Governing Law</strong>
+                                            <br />
+                                            These Terms are governed by the laws of the Republic of the Philippines.
+                                        </p>
                                     </>
                                 )}
                             </div>
+
+                            {/* Disclaimer */}
+                            <p
+                                className="mb-5 rounded-xl px-4 py-3 text-xs leading-relaxed"
+                                style={{ backgroundColor: "#F2F3F5", border: "1px solid #D0D2D8", color: "#6B6862" }}
+                            >
+                                <strong style={{ color: "#1B2D6B" }}>Disclaimer:</strong> The benefits presented, including coverage for natural
+                                calamity, accidental incidents, natural death, maternity-related assistance, and hospitalization, are governed by
+                                official policy contracts, benefit limitations, and company guidelines. Availability of benefits and claims approval
+                                are subject to plan provisions and evaluation.
+                            </p>
 
                             {/* Action buttons */}
                             <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
@@ -633,9 +700,7 @@ export default function SignUpLayout() {
                                                 {/* Middle Name & Suffix */}
                                                 <div className="grid gap-4 sm:grid-cols-2">
                                                     <div>
-                                                        <label className={labelCls}>
-                                                            Middle name
-                                                        </label>
+                                                        <label className={labelCls}>Middle name</label>
                                                         <input
                                                             value={form.middleName}
                                                             placeholder="Santos"
@@ -644,9 +709,7 @@ export default function SignUpLayout() {
                                                         />
                                                     </div>
                                                     <div>
-                                                        <label className={labelCls}>
-                                                            Suffix
-                                                        </label>
+                                                        <label className={labelCls}>Suffix</label>
                                                         <select
                                                             value={form.suffix}
                                                             className={inputCls}
@@ -674,7 +737,7 @@ export default function SignUpLayout() {
                                                                 type="email"
                                                                 value={form.email}
                                                                 placeholder="juandelacruz@example.com"
-                                                                className={`${fieldCls("email")}${emailMismatch ? " !border-[#C41E1E]" : ""}`}
+                                                                className={`${fieldCls("email")}${emailMismatch ? "!border-[#C41E1E]" : ""}`}
                                                                 onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
                                                             />
                                                         </div>
@@ -687,7 +750,7 @@ export default function SignUpLayout() {
                                                                 type="email"
                                                                 value={form.confirmEmail}
                                                                 placeholder="juandelacruz@example.com"
-                                                                className={`${fieldCls("confirmEmail")}${emailMismatch ? " !border-[#C41E1E]" : ""}`}
+                                                                className={`${fieldCls("confirmEmail")}${emailMismatch ? "!border-[#C41E1E]" : ""}`}
                                                                 onChange={(e) => setForm((prev) => ({ ...prev, confirmEmail: e.target.value }))}
                                                                 onBlur={() => markTouched("confirmEmail")}
                                                             />
@@ -710,7 +773,7 @@ export default function SignUpLayout() {
                                                                 isInvalid("mobile") ? "border-[#C41E1E]" : "border-[#D0D2D8]"
                                                             }`}
                                                         >
-                                                            <span className="flex select-none items-center gap-1 border-r border-[#D0D2D8] bg-[#F2F3F5] px-3 text-sm font-medium text-[#1B2D6B]">
+                                                            <span className="flex items-center gap-1 border-r border-[#D0D2D8] bg-[#F2F3F5] px-3 text-sm font-medium text-[#1B2D6B] select-none">
                                                                 +63
                                                             </span>
                                                             <input
@@ -738,7 +801,7 @@ export default function SignUpLayout() {
                                                                         required
                                                                         value={birth.m}
                                                                         className={`${selCls} col-span-5`}
-                                                                        onChange={(e) => handleBirthChange("m", e.target.value)}
+                                                                        onChange={(e) => setBirth((p) => ({ ...p, m: e.target.value }))}
                                                                     >
                                                                         <option value="">Month</option>
                                                                         {MONTHS.map((name, i) => (
@@ -751,7 +814,7 @@ export default function SignUpLayout() {
                                                                         required
                                                                         value={birth.d}
                                                                         className={`${selCls} col-span-3`}
-                                                                        onChange={(e) => handleBirthChange("d", e.target.value)}
+                                                                        onChange={(e) => setBirth((p) => ({ ...p, d: e.target.value }))}
                                                                     >
                                                                         <option value="">Day</option>
                                                                         {birthDays.map((d) => (
@@ -764,7 +827,7 @@ export default function SignUpLayout() {
                                                                         required
                                                                         value={birth.y}
                                                                         className={`${selCls} col-span-4`}
-                                                                        onChange={(e) => handleBirthChange("y", e.target.value)}
+                                                                        onChange={(e) => setBirth((p) => ({ ...p, y: e.target.value }))}
                                                                     >
                                                                         <option value="">Year</option>
                                                                         {birthYears.map((y) => (
@@ -817,7 +880,7 @@ export default function SignUpLayout() {
                                                             <button
                                                                 type="button"
                                                                 onClick={() => setShowPassword((v) => !v)}
-                                                                className="absolute inset-y-0 right-3 flex items-center text-[#6B6862] hover:text-[#1B2D6B] transition-colors"
+                                                                className="absolute inset-y-0 right-3 flex items-center text-[#6B6862] transition-colors hover:text-[#1B2D6B]"
                                                                 tabIndex={-1}
                                                                 aria-label={showPassword ? "Hide password" : "Show password"}
                                                             >
@@ -840,7 +903,7 @@ export default function SignUpLayout() {
                                                                 required
                                                                 type={showConfirmPassword ? "text" : "password"}
                                                                 value={form.confirmPassword}
-                                                                className={`${fieldCls("confirmPassword")}${passwordMismatch ? " !border-[#C41E1E]" : ""}`}
+                                                                className={`${fieldCls("confirmPassword")}${passwordMismatch ? "!border-[#C41E1E]" : ""}`}
                                                                 style={{ paddingRight: "2.75rem" }}
                                                                 onChange={(e) => setForm((prev) => ({ ...prev, confirmPassword: e.target.value }))}
                                                                 onBlur={() => markTouched("confirmPassword")}
@@ -848,7 +911,7 @@ export default function SignUpLayout() {
                                                             <button
                                                                 type="button"
                                                                 onClick={() => setShowConfirmPassword((v) => !v)}
-                                                                className="absolute inset-y-0 right-3 flex items-center text-[#6B6862] hover:text-[#1B2D6B] transition-colors"
+                                                                className="absolute inset-y-0 right-3 flex items-center text-[#6B6862] transition-colors hover:text-[#1B2D6B]"
                                                                 tabIndex={-1}
                                                                 aria-label={showConfirmPassword ? "Hide password" : "Show password"}
                                                             >
@@ -1120,26 +1183,40 @@ export default function SignUpLayout() {
                                                 Step 4 · Payment
                                             </h2>
                                             <p className="mb-6 text-sm" style={{ color: "#6B6862" }}>
-                                                Send your payment to one of the accounts below. After paying, send your receipt to us so we
-                                                can verify it and activate your account.
+                                                Send your payment to one of the accounts below. After paying, send your receipt to us so we can verify
+                                                it and activate your account.
                                             </p>
 
-                                            <div className="mb-6 flex items-center justify-between rounded-2xl px-5 py-4" style={{ backgroundColor: "#F2F3F5", border: "1px solid #D0D2D8" }}>
+                                            <div
+                                                className="mb-6 flex items-center justify-between rounded-2xl px-5 py-4"
+                                                style={{ backgroundColor: "#F2F3F5", border: "1px solid #D0D2D8" }}
+                                            >
                                                 <div>
-                                                    <p className="text-xs uppercase tracking-wider" style={{ color: "#6B6862" }}>Amount Due</p>
+                                                    <p className="text-xs tracking-wider uppercase" style={{ color: "#6B6862" }}>
+                                                        Amount Due
+                                                    </p>
                                                     <p className="font-display text-2xl font-semibold" style={{ color: "#1B2D6B" }}>
                                                         ₱{selectedPlan.price.toLocaleString("en-PH")}
                                                     </p>
                                                 </div>
-                                                <span className="rounded-full px-3 py-1 text-xs font-medium text-white" style={{ backgroundColor: "#C9922A" }}>
+                                                <span
+                                                    className="rounded-full px-3 py-1 text-xs font-medium text-white"
+                                                    style={{ backgroundColor: "#C9922A" }}
+                                                >
                                                     {selectedPlan.name} Care
                                                 </span>
                                             </div>
 
                                             <div className="mb-6 grid gap-4 sm:grid-cols-2">
                                                 {PAYMENT_INFO.accounts.map((acct) => (
-                                                    <div key={acct.label} className="flex flex-col items-center rounded-2xl p-5" style={{ border: "1px solid #D0D2D8", backgroundColor: "#fff" }}>
-                                                        <p className="mb-3 text-sm font-semibold" style={{ color: "#1B2D6B" }}>{acct.label}</p>
+                                                    <div
+                                                        key={acct.label}
+                                                        className="flex flex-col items-center rounded-2xl p-5"
+                                                        style={{ border: "1px solid #D0D2D8", backgroundColor: "#fff" }}
+                                                    >
+                                                        <p className="mb-3 text-sm font-semibold" style={{ color: "#1B2D6B" }}>
+                                                            {acct.label}
+                                                        </p>
                                                         {acct.qr ? (
                                                             <img
                                                                 src={acct.qr}
@@ -1148,12 +1225,25 @@ export default function SignUpLayout() {
                                                                 style={{ border: "1px solid #D0D2D8" }}
                                                             />
                                                         ) : (
-                                                            <div className="flex h-40 w-40 items-center justify-center rounded-xl text-xs" style={{ backgroundColor: "#F3F4F6", color: "#9CA3AF", border: "2px dashed #D1D5DB" }}>
+                                                            <div
+                                                                className="flex h-40 w-40 items-center justify-center rounded-xl text-xs"
+                                                                style={{ backgroundColor: "#F3F4F6", color: "#9CA3AF", border: "2px dashed #D1D5DB" }}
+                                                            >
                                                                 QR placeholder
                                                             </div>
                                                         )}
-                                                        <p className="mt-3 text-xs" style={{ color: "#6B6862" }}>Account name: <span className="font-medium" style={{ color: "#1B2D6B" }}>{acct.accountName}</span></p>
-                                                        <p className="text-xs" style={{ color: "#6B6862" }}>Number: <span className="font-medium" style={{ color: "#1B2D6B" }}>{acct.number}</span></p>
+                                                        <p className="mt-3 text-xs" style={{ color: "#6B6862" }}>
+                                                            Account name:{" "}
+                                                            <span className="font-medium" style={{ color: "#1B2D6B" }}>
+                                                                {acct.accountName}
+                                                            </span>
+                                                        </p>
+                                                        <p className="text-xs" style={{ color: "#6B6862" }}>
+                                                            Number:{" "}
+                                                            <span className="font-medium" style={{ color: "#1B2D6B" }}>
+                                                                {acct.number}
+                                                            </span>
+                                                        </p>
                                                     </div>
                                                 ))}
                                             </div>
@@ -1170,7 +1260,9 @@ export default function SignUpLayout() {
                                                 </p>
                                                 <ul className="mt-3 space-y-1 text-sm" style={{ color: "#1B2D6B" }}>
                                                     {PAYMENT_INFO.receiptContacts.map((c) => (
-                                                        <li key={c.label}>{c.label}: <span className="font-medium">{c.value}</span></li>
+                                                        <li key={c.label}>
+                                                            {c.label}: <span className="font-medium">{c.value}</span>
+                                                        </li>
                                                     ))}
                                                 </ul>
                                                 <p className="mt-3 text-xs" style={{ color: "#6B6862" }}>
@@ -1192,7 +1284,10 @@ export default function SignUpLayout() {
                                                 Membership Package
                                             </p>
                                             <div className="mb-5 space-y-2">
-                                                <div className="flex justify-between rounded-xl px-4 py-3 text-sm" style={{ backgroundColor: "#F2F3F5" }}>
+                                                <div
+                                                    className="flex justify-between rounded-xl px-4 py-3 text-sm"
+                                                    style={{ backgroundColor: "#F2F3F5" }}
+                                                >
                                                     <span style={{ color: "#6B6862" }}>Package</span>
                                                     <span className="font-medium" style={{ color: "#1B2D6B" }}>
                                                         {selectedPlan.name} Care — ₱{selectedPlan.price.toLocaleString("en-PH")}
@@ -1212,10 +1307,15 @@ export default function SignUpLayout() {
                                                     { label: "Email", value: form.email || "—" },
                                                     { label: "Mobile", value: form.mobile ? `+63 ${formatPHMobile(form.mobile)}` : "—" },
                                                     { label: "Birth Date", value: form.birthDate || "—" },
-                                                    { label: "Gender", value: form.gender ? form.gender.charAt(0).toUpperCase() + form.gender.slice(1) : "—" },
+                                                    {
+                                                        label: "Gender",
+                                                        value: form.gender ? form.gender.charAt(0).toUpperCase() + form.gender.slice(1) : "—",
+                                                    },
                                                     {
                                                         label: "Civil Status",
-                                                        value: form.civilStatus ? form.civilStatus.charAt(0).toUpperCase() + form.civilStatus.slice(1) : "—",
+                                                        value: form.civilStatus
+                                                            ? form.civilStatus.charAt(0).toUpperCase() + form.civilStatus.slice(1)
+                                                            : "—",
                                                     },
                                                     { label: "Street Address", value: form.streetAddress || "—" },
                                                     { label: "Barangay", value: form.barangay || "—" },
@@ -1240,7 +1340,10 @@ export default function SignUpLayout() {
                                                 Sponsor
                                             </p>
                                             <div className="mb-5 space-y-2">
-                                                <div className="flex justify-between rounded-xl px-4 py-3 text-sm" style={{ backgroundColor: "#F2F3F5" }}>
+                                                <div
+                                                    className="flex justify-between rounded-xl px-4 py-3 text-sm"
+                                                    style={{ backgroundColor: "#F2F3F5" }}
+                                                >
                                                     <span style={{ color: "#6B6862" }}>Referral code</span>
                                                     <span className="font-medium" style={{ color: "#1B2D6B" }}>
                                                         {form.referralCode || "—"}
@@ -1252,13 +1355,19 @@ export default function SignUpLayout() {
                                                 Payment
                                             </p>
                                             <div className="mb-5 space-y-2">
-                                                <div className="flex justify-between rounded-xl px-4 py-3 text-sm" style={{ backgroundColor: "#F2F3F5" }}>
+                                                <div
+                                                    className="flex justify-between rounded-xl px-4 py-3 text-sm"
+                                                    style={{ backgroundColor: "#F2F3F5" }}
+                                                >
                                                     <span style={{ color: "#6B6862" }}>Amount due</span>
                                                     <span className="font-medium" style={{ color: "#1B2D6B" }}>
                                                         ₱{selectedPlan.price.toLocaleString("en-PH")} · {selectedPlan.name} Care
                                                     </span>
                                                 </div>
-                                                <div className="rounded-xl px-4 py-3 text-xs" style={{ backgroundColor: "#F2F3F5", color: "#6B6862" }}>
+                                                <div
+                                                    className="rounded-xl px-4 py-3 text-xs"
+                                                    style={{ backgroundColor: "#F2F3F5", color: "#6B6862" }}
+                                                >
                                                     Send your receipt after signing up so we can verify your payment and activate your account.
                                                 </div>
                                             </div>
@@ -1270,7 +1379,11 @@ export default function SignUpLayout() {
                                                     </p>
                                                     <div className="mb-5 space-y-2">
                                                         {form.beneficiaries.map((b, i) => (
-                                                            <div key={i} className="rounded-xl px-4 py-3 text-sm" style={{ backgroundColor: "#F2F3F5" }}>
+                                                            <div
+                                                                key={i}
+                                                                className="rounded-xl px-4 py-3 text-sm"
+                                                                style={{ backgroundColor: "#F2F3F5" }}
+                                                            >
                                                                 <div className="flex justify-between">
                                                                     <span style={{ color: "#6B6862" }}>Beneficiary {i + 1}</span>
                                                                     <span className="font-medium" style={{ color: "#1B2D6B" }}>
@@ -1303,7 +1416,14 @@ export default function SignUpLayout() {
                                                             fill="none"
                                                             viewBox="0 0 24 24"
                                                         >
-                                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                                            <circle
+                                                                className="opacity-25"
+                                                                cx="12"
+                                                                cy="12"
+                                                                r="10"
+                                                                stroke="currentColor"
+                                                                strokeWidth="4"
+                                                            />
                                                             <path
                                                                 className="opacity-75"
                                                                 fill="currentColor"
@@ -1354,8 +1474,19 @@ export default function SignUpLayout() {
                                                             fill="none"
                                                             viewBox="0 0 24 24"
                                                         >
-                                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z" />
+                                                            <circle
+                                                                className="opacity-25"
+                                                                cx="12"
+                                                                cy="12"
+                                                                r="10"
+                                                                stroke="currentColor"
+                                                                strokeWidth="4"
+                                                            />
+                                                            <path
+                                                                className="opacity-75"
+                                                                fill="currentColor"
+                                                                d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"
+                                                            />
                                                         </svg>
                                                         Checking…
                                                     </>
