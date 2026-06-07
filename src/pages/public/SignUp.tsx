@@ -5,6 +5,7 @@ import { db } from "../../firebase/config";
 
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import logo from "../../components/ui/Logo.png";
+import { provinces, citiesByProvince, barangaysByCity, type Barangay } from "../../data/ph/phAddress";
 
 import { RadioGroup, Radio } from "@headlessui/react";
 import { ChevronLeft, ChevronRight, Plus, Eye, EyeOff } from "lucide-react";
@@ -97,15 +98,15 @@ export default function SignUpLayout() {
         password: "",
         confirmPassword: "",
         mobile: "",
-        telephone: "",
         birthDate: "",
-        birthPlace: "",
         gender: "",
         civilStatus: "",
         streetAddress: "",
-        barangay: "",
-        city: "",
         province: "",
+        provinceCode: "",
+        city: "",
+        cityCode: "",
+        barangay: "",
         postalCode: "",
         country: "Philippines",
         referralCode: refCode,
@@ -136,6 +137,45 @@ export default function SignUpLayout() {
             return next.size === prev.size ? prev : next;
         });
     }, [form]);
+
+    // Barangay options for the selected city (lazy-loaded from the bundled dataset).
+    const [barangayOptions, setBarangayOptions] = useState<Barangay[]>([]);
+    const [loadingBarangays, setLoadingBarangays] = useState(false);
+    useEffect(() => {
+        if (!form.cityCode) {
+            setBarangayOptions([]);
+            return;
+        }
+        let cancelled = false;
+        setLoadingBarangays(true);
+        barangaysByCity(form.cityCode)
+            .then((list) => {
+                if (!cancelled) setBarangayOptions(list);
+            })
+            .finally(() => {
+                if (!cancelled) setLoadingBarangays(false);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, [form.cityCode]);
+
+    // Cascading address handlers — selecting a parent resets its children.
+    const handleProvinceChange = (provinceCode: string) => {
+        const p = provinces.find((x) => x.province_code === provinceCode);
+        setForm((prev) => ({
+            ...prev,
+            provinceCode,
+            province: p?.province_name ?? "",
+            cityCode: "",
+            city: "",
+            barangay: "",
+        }));
+    };
+    const handleCityChange = (cityCode: string) => {
+        const c = citiesByProvince(form.provinceCode).find((x) => x.city_code === cityCode);
+        setForm((prev) => ({ ...prev, cityCode, city: c?.city_name ?? "", barangay: "" }));
+    };
 
     // Password strength
     const getPasswordStrength = (pwd: string): { score: number; label: string; color: string } => {
@@ -169,8 +209,10 @@ export default function SignUpLayout() {
             if (!form.birthDate) missing.add("birthDate");
             if (!form.gender) missing.add("gender");
             if (!form.civilStatus) missing.add("civilStatus");
-            if (!form.city.trim()) missing.add("city");
+            if (!form.streetAddress.trim()) missing.add("streetAddress");
             if (!form.province.trim()) missing.add("province");
+            if (!form.city.trim()) missing.add("city");
+            if (!form.barangay.trim()) missing.add("barangay");
             if (missing.size > 0) {
                 setInvalidFields(missing);
                 setError("Please fill in the required fields highlighted.");
@@ -271,13 +313,11 @@ export default function SignUpLayout() {
                 suffix: form.suffix || null,
                 email: form.email,
                 mobile: form.mobile,
-                telephone: form.telephone || null,
                 birthDate: form.birthDate,
-                birthPlace: form.birthPlace || null,
                 gender: form.gender,
                 civilStatus: form.civilStatus,
-                streetAddress: form.streetAddress || null,
-                barangay: form.barangay || null,
+                streetAddress: form.streetAddress,
+                barangay: form.barangay,
                 city: form.city,
                 province: form.province,
                 postalCode: form.postalCode || null,
@@ -613,34 +653,21 @@ export default function SignUpLayout() {
                                                     </div>
                                                 </div>
 
-                                                {/* Mobile & Alternate Contact */}
-                                                <div className="grid gap-4 sm:grid-cols-2">
-                                                    <div>
-                                                        <label className={labelCls}>
-                                                            Mobile number <span style={{ color: "#B91C1C" }}>*</span>
-                                                        </label>
-                                                        <input
-                                                            required
-                                                            value={form.mobile}
-                                                            placeholder="09XXXXXXXXX"
-                                                            className={fieldCls("mobile")}
-                                                            onChange={(e) => setForm((prev) => ({ ...prev, mobile: e.target.value }))}
-                                                        />
-                                                        <p className="mt-1 text-xs" style={{ color: "#6B6862" }}>
-                                                            Format: 09XX-XXX-XXXX
-                                                        </p>
-                                                    </div>
-                                                    <div>
-                                                        <label className={labelCls}>
-                                                            Telephone number (optional)
-                                                        </label>
-                                                        <input
-                                                            value={form.telephone}
-                                                            placeholder="(02) 1234-5678"
-                                                            className={inputCls}
-                                                            onChange={(e) => setForm((prev) => ({ ...prev, telephone: e.target.value }))}
-                                                        />
-                                                    </div>
+                                                {/* Mobile */}
+                                                <div>
+                                                    <label className={labelCls}>
+                                                        Mobile number <span style={{ color: "#B91C1C" }}>*</span>
+                                                    </label>
+                                                    <input
+                                                        required
+                                                        value={form.mobile}
+                                                        placeholder="09XXXXXXXXX"
+                                                        className={fieldCls("mobile")}
+                                                        onChange={(e) => setForm((prev) => ({ ...prev, mobile: e.target.value }))}
+                                                    />
+                                                    <p className="mt-1 text-xs" style={{ color: "#6B6862" }}>
+                                                        Format: 09XX-XXX-XXXX
+                                                    </p>
                                                 </div>
 
                                                 {/* Password Section */}
@@ -722,34 +749,21 @@ export default function SignUpLayout() {
                                                     </div>
                                                 </div>
 
-                                                {/* Personal Details Section */}
-                                                <div className="grid gap-4 sm:grid-cols-2">
-                                                    <div>
-                                                        <label className={labelCls}>
-                                                            Birth date <span style={{ color: "#B91C1C" }}>*</span>
-                                                        </label>
-                                                        <input
-                                                            required
-                                                            type="date"
-                                                            value={form.birthDate}
-                                                            className={fieldCls("birthDate")}
-                                                            onChange={(e) => setForm((prev) => ({ ...prev, birthDate: e.target.value }))}
-                                                        />
-                                                        <p className="mt-1 text-xs" style={{ color: "#6B6862" }}>
-                                                            Must be 18 years or older
-                                                        </p>
-                                                    </div>
-                                                    <div>
-                                                        <label className={labelCls}>
-                                                            Place of birth
-                                                        </label>
-                                                        <input
-                                                            value={form.birthPlace}
-                                                            placeholder="City, Province"
-                                                            className={inputCls}
-                                                            onChange={(e) => setForm((prev) => ({ ...prev, birthPlace: e.target.value }))}
-                                                        />
-                                                    </div>
+                                                {/* Birth date */}
+                                                <div>
+                                                    <label className={labelCls}>
+                                                        Birth date <span style={{ color: "#B91C1C" }}>*</span>
+                                                    </label>
+                                                    <input
+                                                        required
+                                                        type="date"
+                                                        value={form.birthDate}
+                                                        className={fieldCls("birthDate")}
+                                                        onChange={(e) => setForm((prev) => ({ ...prev, birthDate: e.target.value }))}
+                                                    />
+                                                    <p className="mt-1 text-xs" style={{ color: "#6B6862" }}>
+                                                        Must be 18 years or older
+                                                    </p>
                                                 </div>
 
                                                 {/* Gender & Civil Status */}
@@ -791,60 +805,88 @@ export default function SignUpLayout() {
                                                     </div>
                                                 </div>
 
-                                                {/* Address Information */}
-                                                <div className="grid gap-4 sm:grid-cols-2">
-                                                    <div>
-                                                        <label className={labelCls}>
-                                                            Street address
-                                                        </label>
-                                                        <input
-                                                            value={form.streetAddress}
-                                                            placeholder="123 Rizal Street"
-                                                            className={inputCls}
-                                                            onChange={(e) => setForm((prev) => ({ ...prev, streetAddress: e.target.value }))}
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <label className={labelCls}>
-                                                            Barangay
-                                                        </label>
-                                                        <input
-                                                            value={form.barangay}
-                                                            placeholder="Barangay name"
-                                                            className={inputCls}
-                                                            onChange={(e) => setForm((prev) => ({ ...prev, barangay: e.target.value }))}
-                                                        />
-                                                    </div>
+                                                {/* Address Information — cascading PH dropdowns */}
+                                                <div>
+                                                    <label className={labelCls}>
+                                                        Street address <span style={{ color: "#B91C1C" }}>*</span>
+                                                    </label>
+                                                    <input
+                                                        required
+                                                        value={form.streetAddress}
+                                                        placeholder="House no., street, subdivision"
+                                                        className={fieldCls("streetAddress")}
+                                                        onChange={(e) => setForm((prev) => ({ ...prev, streetAddress: e.target.value }))}
+                                                    />
                                                 </div>
 
                                                 <div className="grid gap-4 sm:grid-cols-2">
-                                                    <div>
-                                                        <label className={labelCls}>
-                                                            City / Municipality <span style={{ color: "#B91C1C" }}>*</span>
-                                                        </label>
-                                                        <input
-                                                            required
-                                                            value={form.city}
-                                                            placeholder="Davao City"
-                                                            className={fieldCls("city")}
-                                                            onChange={(e) => setForm((prev) => ({ ...prev, city: e.target.value }))}
-                                                        />
-                                                    </div>
                                                     <div>
                                                         <label className={labelCls}>
                                                             Province <span style={{ color: "#B91C1C" }}>*</span>
                                                         </label>
-                                                        <input
+                                                        <select
                                                             required
-                                                            value={form.province}
-                                                            placeholder="Davao del Sur"
+                                                            value={form.provinceCode}
                                                             className={fieldCls("province")}
-                                                            onChange={(e) => setForm((prev) => ({ ...prev, province: e.target.value }))}
-                                                        />
+                                                            onChange={(e) => handleProvinceChange(e.target.value)}
+                                                        >
+                                                            <option value="">Select province…</option>
+                                                            {provinces.map((p) => (
+                                                                <option key={p.province_code} value={p.province_code}>
+                                                                    {p.province_name}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                    <div>
+                                                        <label className={labelCls}>
+                                                            City / Municipality <span style={{ color: "#B91C1C" }}>*</span>
+                                                        </label>
+                                                        <select
+                                                            required
+                                                            disabled={!form.provinceCode}
+                                                            value={form.cityCode}
+                                                            className={fieldCls("city")}
+                                                            onChange={(e) => handleCityChange(e.target.value)}
+                                                        >
+                                                            <option value="">
+                                                                {form.provinceCode ? "Select city / municipality…" : "Select a province first"}
+                                                            </option>
+                                                            {citiesByProvince(form.provinceCode).map((c) => (
+                                                                <option key={c.city_code} value={c.city_code}>
+                                                                    {c.city_name}
+                                                                </option>
+                                                            ))}
+                                                        </select>
                                                     </div>
                                                 </div>
 
                                                 <div className="grid gap-4 sm:grid-cols-2">
+                                                    <div>
+                                                        <label className={labelCls}>
+                                                            Barangay <span style={{ color: "#B91C1C" }}>*</span>
+                                                        </label>
+                                                        <select
+                                                            required
+                                                            disabled={!form.cityCode || loadingBarangays}
+                                                            value={form.barangay}
+                                                            className={fieldCls("barangay")}
+                                                            onChange={(e) => setForm((prev) => ({ ...prev, barangay: e.target.value }))}
+                                                        >
+                                                            <option value="">
+                                                                {!form.cityCode
+                                                                    ? "Select a city first"
+                                                                    : loadingBarangays
+                                                                      ? "Loading…"
+                                                                      : "Select barangay…"}
+                                                            </option>
+                                                            {barangayOptions.map((b) => (
+                                                                <option key={b.brgy_code} value={b.brgy_name}>
+                                                                    {b.brgy_name}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
                                                     <div>
                                                         <label className={labelCls}>
                                                             Postal / ZIP code
@@ -856,16 +898,15 @@ export default function SignUpLayout() {
                                                             onChange={(e) => setForm((prev) => ({ ...prev, postalCode: e.target.value }))}
                                                         />
                                                     </div>
-                                                    <div>
-                                                        <label className={labelCls}>
-                                                            Country
-                                                        </label>
-                                                        <input
-                                                            value={form.country}
-                                                            className={inputCls}
-                                                            onChange={(e) => setForm((prev) => ({ ...prev, country: e.target.value }))}
-                                                        />
-                                                    </div>
+                                                </div>
+
+                                                <div>
+                                                    <label className={labelCls}>Country</label>
+                                                    <input
+                                                        value={form.country}
+                                                        className={inputCls}
+                                                        onChange={(e) => setForm((prev) => ({ ...prev, country: e.target.value }))}
+                                                    />
                                                 </div>
                                             </div>
                                         </div>
@@ -1088,9 +1129,7 @@ export default function SignUpLayout() {
                                                     { label: "Suffix", value: form.suffix || "—" },
                                                     { label: "Email", value: form.email || "—" },
                                                     { label: "Mobile", value: form.mobile || "—" },
-                                                    { label: "Telephone", value: form.telephone || "—" },
                                                     { label: "Birth date", value: form.birthDate || "—" },
-                                                    { label: "Birth place", value: form.birthPlace || "—" },
                                                     { label: "Gender", value: form.gender ? form.gender.charAt(0).toUpperCase() + form.gender.slice(1) : "—" },
                                                     {
                                                         label: "Civil status",
