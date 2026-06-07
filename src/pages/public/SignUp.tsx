@@ -456,7 +456,7 @@ export default function SignUpLayout() {
                                         <p><strong style={{ color: "#1B2D6B" }}>How We Use Your Information</strong><br />Your data is used to process your membership application, verify identity, manage your account, facilitate referral rewards, and communicate important updates.</p>
                                         <p><strong style={{ color: "#1B2D6B" }}>Data Sharing</strong><br />We do not sell or rent your personal data. Information may be shared only with service providers necessary to operate our platform, or as required by law.</p>
                                         <p><strong style={{ color: "#1B2D6B" }}>Data Security</strong><br />We use industry-standard security measures to protect your information. However, no online transmission is 100% secure and we cannot guarantee absolute security.</p>
-                                        <p><strong style={{ color: "#1B2D6B" }}>Your Rights</strong><br />You may request access to, correction of, or deletion of your personal data by contacting us at support@faithshield.care.</p>
+                                        <p><strong style={{ color: "#1B2D6B" }}>Your Rights</strong><br />You may request access to, correction of, or deletion of your personal data by contacting us at support@faithshieldcare.com.</p>
                                     </>
                                 )}
                                 {policyTab === "terms" && (
@@ -477,7 +477,7 @@ export default function SignUpLayout() {
                                         <p>Faith Shield Care strives to ensure member satisfaction. Please review our refund policy before completing your registration.</p>
                                         <p><strong style={{ color: "#1B2D6B" }}>Cooling-Off Period</strong><br />Members may request a full refund within 7 calendar days of account activation, provided no referral commissions have been disbursed under their account.</p>
                                         <p><strong style={{ color: "#1B2D6B" }}>Non-Refundable Circumstances</strong><br />Refunds will not be granted if the membership has been active for more than 7 days, if commissions have already been paid to the member, or if the account has been found in violation of our Terms &amp; Conditions.</p>
-                                        <p><strong style={{ color: "#1B2D6B" }}>How to Request a Refund</strong><br />To initiate a refund, contact our support team at support@faithshield.care with your registered email and reason for the request. Approved refunds will be processed within 7–14 business days.</p>
+                                        <p><strong style={{ color: "#1B2D6B" }}>How to Request a Refund</strong><br />To initiate a refund, contact our support team at support@faithshieldcare.com with your registered email and reason for the request. Approved refunds will be processed within 7–14 business days.</p>
                                         <p><strong style={{ color: "#1B2D6B" }}>Plan Upgrades</strong><br />Payments made for plan upgrades are non-refundable once the upgraded plan has been activated.</p>
                                     </>
                                 )}
