@@ -30,6 +30,8 @@ interface MemberDashboardProps {
     onFileClaim: () => void;
     onLogout: () => void;
     onChangePassword: () => void;
+    onRefreshCommissions?: () => void | Promise<void>;
+    onRefreshPayouts?: () => void | Promise<void>;
 }
 
 export default function MemberDashboard({
@@ -48,6 +50,8 @@ export default function MemberDashboard({
     onFileClaim,
     onLogout,
     onChangePassword,
+    onRefreshCommissions,
+    onRefreshPayouts,
 }: MemberDashboardProps) {
 
     // Stats from memberStats (always loaded with the overview — no extra fetch needed)
@@ -151,6 +155,8 @@ export default function MemberDashboard({
                         commissions={commissions}
                         payouts={payouts}
                         onRequestPayout={onRequestPayout}
+                        onRefreshCommissions={onRefreshCommissions}
+                        onRefreshPayouts={onRefreshPayouts}
                     />
                 )}
                 {currentSection === "plan" && <MemberPlan packageName={packageName} member={member} />}

@@ -1,5 +1,5 @@
-import React from "react";
-import { Wallet, Clock, TrendingUp } from "lucide-react";
+import React, { useState } from "react";
+import { Wallet, Clock, TrendingUp, RefreshCw } from "lucide-react";
 import { StatCard } from "./StatCard";
 import type { Commission, Payout } from "../../utils/types";
 import { formatCurrency, formatDate } from "../../utils/formatter";
@@ -14,12 +14,57 @@ interface Props {
     commissions: Commission[];
     payouts: Payout[];
     onRequestPayout: () => void;
+    onRefreshCommissions?: () => void | Promise<void>;
+    onRefreshPayouts?: () => void | Promise<void>;
 }
 
-export const MemberEarnings: React.FC<Props> = ({ availableToWithdraw, pendingHold, lifetimePaid, commissions, payouts, onRequestPayout }) => (
+export const MemberEarnings: React.FC<Props> = ({
+    availableToWithdraw,
+    pendingHold,
+    lifetimePaid,
+    commissions,
+    payouts,
+    onRequestPayout,
+    onRefreshCommissions,
+    onRefreshPayouts,
+}) => {
+    // Track WHICH refresh was triggered so only that control spins and only the
+    // relevant table dims (mirrors the admin pages). "all" = page-level refresh.
+    const [activeRefresh, setActiveRefresh] = useState<null | "all" | "commissions" | "payouts">(null);
+
+    const triggerRefresh = async (key: "all" | "commissions" | "payouts") => {
+        if (activeRefresh) return;
+        setActiveRefresh(key);
+        const started = Date.now();
+        const tasks: Array<void | Promise<void>> = [];
+        if (key === "all" || key === "commissions") tasks.push(onRefreshCommissions?.());
+        if (key === "all" || key === "payouts") tasks.push(onRefreshPayouts?.());
+        try {
+            await Promise.all(tasks);
+        } finally {
+            // Keep the spinner visible for a short minimum so a fast refetch still registers.
+            const elapsed = Date.now() - started;
+            setTimeout(() => setActiveRefresh(null), Math.max(0, 500 - elapsed));
+        }
+    };
+
+    const hasRefresh = !!(onRefreshCommissions || onRefreshPayouts);
+    const commissionsDimmed = activeRefresh === "commissions" || activeRefresh === "all";
+    const payoutsDimmed = activeRefresh === "payouts" || activeRefresh === "all";
+
+    return (
     <div className="space-y-6">
-        <div>
+        <div className="flex items-end justify-between">
             <h1 className="font-display text-fsc-navy text-3xl">Earnings</h1>
+            {hasRefresh && (
+                <button
+                    onClick={() => triggerRefresh("all")}
+                    disabled={activeRefresh === "all"}
+                    className="text-fsc-green flex items-center gap-1 text-xs transition-colors hover:underline disabled:opacity-60"
+                >
+                    <RefreshCw size={16} className={activeRefresh === "all" ? "animate-spin" : ""} /> Refresh
+                </button>
+            )}
         </div>
         <div className="grid gap-4 sm:grid-cols-3">
             <StatCard label="Available" value={formatCurrency(availableToWithdraw)} sub="Ready to claim" icon={Wallet} />
@@ -32,11 +77,23 @@ export const MemberEarnings: React.FC<Props> = ({ availableToWithdraw, pendingHo
                     <h2 className="font-display text-fsc-navy text-lg">Commissions</h2>
                     <p className="text-fsc-stone text-xs">Every commission earned, by source</p>
                 </div>
-                <button onClick={onRequestPayout} className="bg-fsc-green rounded-lg px-4 py-2 text-xs font-medium text-white">
-                    Request Payout
-                </button>
+                <div className="flex items-center gap-2">
+                    {onRefreshCommissions && (
+                        <button
+                            onClick={() => triggerRefresh("commissions")}
+                            disabled={activeRefresh === "commissions"}
+                            className="border-fsc-cream-dark hover:bg-fsc-cream/60 flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm transition-colors disabled:opacity-60"
+                        >
+                            <RefreshCw size={14} className={activeRefresh === "commissions" ? "animate-spin" : ""} />
+                            Refresh
+                        </button>
+                    )}
+                    <button onClick={onRequestPayout} className="bg-fsc-green rounded-lg px-4 py-2 text-xs font-medium text-white">
+                        Request Payout
+                    </button>
+                </div>
             </div>
-            <div className="overflow-x-auto">
+            <div className={`overflow-x-auto transition-opacity ${commissionsDimmed ? "opacity-40" : ""}`}>
                 <table className="w-full text-sm">
                     <thead className="bg-fsc-cream/50 text-fsc-stone text-xs tracking-wider uppercase">
                         <tr>
@@ -91,10 +148,20 @@ export const MemberEarnings: React.FC<Props> = ({ availableToWithdraw, pendingHo
             </div>
         </div>
         <div className="border-fsc-cream-dark overflow-hidden rounded-2xl border bg-white">
-            <div className="border-fsc-cream-dark border-b p-6">
+            <div className="border-fsc-cream-dark flex flex-wrap items-center justify-between gap-4 border-b p-6">
                 <h2 className="font-display text-fsc-navy text-lg">Payout history</h2>
+                {onRefreshPayouts && (
+                    <button
+                        onClick={() => triggerRefresh("payouts")}
+                        disabled={activeRefresh === "payouts"}
+                        className="border-fsc-cream-dark hover:bg-fsc-cream/60 flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm transition-colors disabled:opacity-60"
+                    >
+                        <RefreshCw size={14} className={activeRefresh === "payouts" ? "animate-spin" : ""} />
+                        Refresh
+                    </button>
+                )}
             </div>
-            <div className="overflow-x-auto">
+            <div className={`overflow-x-auto transition-opacity ${payoutsDimmed ? "opacity-40" : ""}`}>
                 <table className="w-full text-sm">
                     <thead className="bg-fsc-cream/50 text-fsc-stone text-xs tracking-wider uppercase">
                         <tr>
@@ -139,4 +206,5 @@ export const MemberEarnings: React.FC<Props> = ({ availableToWithdraw, pendingHo
             </div>
         </div>
     </div>
-);
+    );
+};

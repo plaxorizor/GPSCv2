@@ -217,6 +217,8 @@ export default function MemberArea() {
                 onFileClaim={handleFileClaim}
                 onLogout={() => setShowLogoutConfirm(true)}
                 onChangePassword={() => setShowChangePassword(true)}
+                onRefreshCommissions={refetchCommissions}
+                onRefreshPayouts={refetchPayouts}
             />
         </>
     );
