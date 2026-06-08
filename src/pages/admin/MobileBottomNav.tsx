@@ -1,5 +1,5 @@
 import React from "react";
-import { LayoutGrid, Users, FileText, DollarSign, Wallet, Settings as SettingsIcon, LogOut } from "lucide-react";
+import { LayoutGrid, Users, FileText, DollarSign, Wallet, ArrowUpCircle, Settings as SettingsIcon, LogOut } from "lucide-react";
 
 const tabs = [
     { id: "overview",    label: "Overview",     icon: LayoutGrid },
@@ -7,6 +7,7 @@ const tabs = [
     { id: "claims",      label: "Claims",       icon: FileText },
     { id: "commissions", label: "Commissions",  icon: DollarSign },
     { id: "payouts",     label: "Payouts",      icon: Wallet },
+    { id: "upgrades",    label: "Upgrades",     icon: ArrowUpCircle },
     { id: "settings",    label: "Settings",     icon: SettingsIcon },
     { id: "logout",      label: "Logout",       icon: LogOut },
 ];

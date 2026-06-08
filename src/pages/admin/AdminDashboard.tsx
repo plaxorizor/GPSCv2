@@ -1,6 +1,6 @@
 // admin/index.tsx
 import { useState } from "react";
-import { LayoutGrid, Users, FileText, DollarSign, Wallet, Settings as SettingsIcon } from "lucide-react";
+import { LayoutGrid, Users, FileText, DollarSign, Wallet, ArrowUpCircle, Settings as SettingsIcon } from "lucide-react";
 import { DashboardSidebar } from "./DashboardSidebar";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { Overview } from "./Overview";
@@ -8,6 +8,7 @@ import { Members } from "./Members";
 import { Claims } from "./Claims";
 import { Commissions } from "./Commissions";
 import { Payouts } from "./Payouts";
+import { Upgrades } from "./Upgrades";
 import { Settings } from "./Settings";
 import type { PendingCommission, CommissionRecord, AdminPayout } from "../../utils/types";
 import type { Claim } from "../../utils/types";
@@ -73,6 +74,7 @@ export default function AdminDashboard({
         { id: "claims",       label: "Claims",       icon: FileText,   badge: pendingClaimsCount },
         { id: "commissions",  label: "Commissions",  icon: DollarSign, badge: pendingCommissionsCount },
         { id: "payouts",      label: "Payouts",      icon: Wallet,     badge: pendingPayoutsCount },
+        { id: "upgrades",     label: "Upgrades",     icon: ArrowUpCircle, badge: null },
         { id: "settings",     label: "Settings",     icon: SettingsIcon, badge: null },
     ];
 
@@ -132,6 +134,7 @@ export default function AdminDashboard({
                         refreshing={refreshing?.payouts || false}
                     />
                 )}
+                {currentSection === "upgrades" && <Upgrades />}
                 {currentSection === "settings" && <Settings />}
             </main>
 
