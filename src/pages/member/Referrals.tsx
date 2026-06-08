@@ -1,11 +1,13 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { ZoomIn, ZoomOut, Crosshair, Maximize2, Minimize2, SlidersHorizontal, RotateCcw } from "lucide-react";
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Crosshair, ZoomIn, ZoomOut, SlidersHorizontal, RotateCcw } from "lucide-react";
+import { QRCode } from "react-qrcode-logo";
+import logo from "../../components/ui/Logo.png";
 import Tree from "react-d3-tree";
 import type { CustomNodeElementProps, RawNodeDatum } from "react-d3-tree";
 import { PACKAGE_INFO } from "../../utils/types";
 import type { Member, ReferralNode } from "../../utils/types";
 import { rankFromChildren, rankName } from "../../utils/rank";
-import ReferralCard from "./ReferralCard";
+import ReferralCard, { type ReferralCardHandle } from "./ReferralCard";
 
 interface Props {
     user: Member;
@@ -67,16 +69,49 @@ const makeToDatum =
 // Factory so the renderer knows whether collapsing is enabled — when it is, a
 // node with descendants becomes clickable and shows a +/− toggle badge.
 const makeRenderNode =
-    (collapsible: boolean) =>
-    ({ nodeDatum, toggleNode }: CustomNodeElementProps) => {
+    (onQrClick: () => void) =>
+    ({ nodeDatum }: CustomNodeElementProps) => {
         const a = (nodeDatum.attributes ?? {}) as Record<string, string | number | boolean>;
         const status = String(a.status ?? "inactive");
-        const isRoot = status === "root";
+
+        // Synthetic QR root — a scannable referral-link preview above the member.
+        // Rendered larger with a quiet zone for reliable scanning; click to expand.
+        if (status === "qr") {
+            const W = 220;
+            const H = 230;
+            return (
+                <g>
+                    <foreignObject x={-W / 2} y={-H / 2} width={W} height={H} style={{ overflow: "visible" }}>
+                        <button
+                            type="button"
+                            onClick={onQrClick}
+                            title="Expand / share QR"
+                            className="border-fsc-navy hover:bg-fsc-cream group flex h-full w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 bg-white p-3 shadow-sm transition-colors"
+                        >
+                            <QRCode
+                                value={String(a.qrValue ?? "")}
+                                size={168}
+                                quietZone={10}
+                                ecLevel="H"
+                                qrStyle="squares"
+                                eyeRadius={6}
+                                bgColor="#ffffff"
+                                fgColor="#0E1F3D"
+                                logoImage={logo}
+                                logoWidth={34}
+                                logoHeight={34}
+                                logoPadding={2}
+                                logoPaddingStyle="circle"
+                            />
+                            <span className="text-fsc-navy/50 text-[10px] font-bold tracking-widest uppercase">{String(a.code ?? "")}</span>
+                        </button>
+                    </foreignObject>
+                </g>
+            );
+        }
+
         const reachable = a.reachable !== false; // unreachable = beyond commission depth
         const s = styleFor(status);
-        const collapsed = Boolean((nodeDatum as unknown as { __rd3t?: { collapsed?: boolean } }).__rd3t?.collapsed);
-        const childCount = nodeDatum.children?.length ?? 0;
-        const canToggle = collapsible && !isRoot && (childCount > 0 || collapsed);
         const W = 214;
         const H = 56;
 
@@ -92,15 +127,12 @@ const makeRenderNode =
                         }}
                     >
                         <div
-                            onClick={canToggle ? () => toggleNode() : undefined}
                             style={{
                                 background: s.bg,
                                 borderColor: s.border,
                                 borderStyle: reachable ? "solid" : "dashed",
                             }}
-                            className={`flex h-full items-center gap-2.5 rounded-full border-2 pr-3 pl-1.5 ${
-                                canToggle ? "cursor-pointer" : ""
-                            }`}
+                            className="flex h-full items-center gap-2.5 rounded-full border-2 pr-3 pl-1.5"
                         >
                             <div
                                 style={{ background: s.accent }}
@@ -117,14 +149,6 @@ const makeRenderNode =
                                 </div>
                                 <div className="text-fsc-stone truncate text-[10px]">{String(a.subtitle ?? "")}</div>
                             </div>
-                            {canToggle && (
-                                <span
-                                    style={{ color: s.accent, borderColor: s.border }}
-                                    className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border bg-white text-xs font-bold leading-none"
-                                >
-                                    {collapsed ? "+" : "–"}
-                                </span>
-                            )}
                         </div>
                     </div>
                 </foreignObject>
@@ -135,33 +159,15 @@ const makeRenderNode =
 type Orientation = "vertical" | "horizontal";
 type PathStyle = "step" | "diagonal" | "straight" | "elbow";
 
+// Button-driven zoom range (scroll-zoom is disabled; buttons only).
 const MIN_ZOOM = 0.3;
 const MAX_ZOOM = 2;
 const ZOOM_STEP = 0.2;
-const DEFAULT_ZOOM = 0.8;
+const DEFAULT_ZOOM = 1; // start at 100%
 const clampZoom = (z: number) => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, z));
 
-// Small on/off switch used throughout the Customize panel.
-const PanelToggle: React.FC<{ label: string; desc?: string; checked: boolean; onChange: (v: boolean) => void }> = ({
-    label,
-    desc,
-    checked,
-    onChange,
-}) => (
-    <button type="button" onClick={() => onChange(!checked)} className="flex w-full items-start justify-between gap-3 text-left">
-        <span>
-            <span className="text-fsc-navy block">{label}</span>
-            {desc && <span className="text-fsc-stone block text-[11px] leading-tight">{desc}</span>}
-        </span>
-        <span
-            className={`mt-0.5 flex h-5 w-9 shrink-0 items-center rounded-full p-0.5 transition-colors ${
-                checked ? "bg-fsc-green" : "bg-fsc-cream-dark"
-            }`}
-        >
-            <span className={`h-4 w-4 rounded-full bg-white shadow transition-transform ${checked ? "translate-x-4" : ""}`} />
-        </span>
-    </button>
-);
+// Transitions are always on with this duration; drag/expand are always enabled.
+const TRANSITION_MS = 500;
 
 // Labelled range slider with a live value readout.
 const PanelSlider: React.FC<{
@@ -192,7 +198,14 @@ const PanelSlider: React.FC<{
 
 export const MemberReferrals: React.FC<Props> = ({ user, referralTree }) => {
     const containerRef = useRef<HTMLDivElement>(null);
+    const cardRef = useRef<ReferralCardHandle>(null); // to open the share modal from the QR node
     const [translate, setTranslate] = useState({ x: 0, y: 0 });
+    const [ready, setReady] = useState(false); // gate Tree until centered (no off-center flash)
+
+    // Show the member's referral QR as a scannable preview node above them, but
+    // only when active (a referral code exists — enforced by the golden rule).
+    const referralLink = `${window.location.origin}/signup?ref=${user.referralCode}`;
+    const showQrRoot = user.status === "active" && !!user.referralCode;
 
     // Live, in-page tree settings.
     const [orientation, setOrientation] = useState<Orientation>("vertical");
@@ -201,17 +214,6 @@ export const MemberReferrals: React.FC<Props> = ({ user, referralTree }) => {
     const [siblingSep, setSiblingSep] = useState(1.1); // gap between siblings
     const [levelDistance, setLevelDistance] = useState(1); // multiplier on depth gap
     const [zoom, setZoom] = useState(DEFAULT_ZOOM);
-    const [fullscreen, setFullscreen] = useState(false);
-
-    // Behavior toggles.
-    const [collapsible, setCollapsible] = useState(false);
-    const [initialDepth, setInitialDepth] = useState(2); // levels shown when collapsible
-    const [collapseNeighbors, setCollapseNeighbors] = useState(false);
-    const [draggable, setDraggable] = useState(true);
-    const [zoomable, setZoomable] = useState(true);
-    const [transitions, setTransitions] = useState(false);
-    const [transitionDuration, setTransitionDuration] = useState(500);
-
     const [showSettings, setShowSettings] = useState(false);
 
     // Restore every tree setting to its default.
@@ -221,13 +223,6 @@ export const MemberReferrals: React.FC<Props> = ({ user, referralTree }) => {
         setSpacing(1);
         setSiblingSep(1.1);
         setLevelDistance(1);
-        setCollapsible(false);
-        setInitialDepth(2);
-        setCollapseNeighbors(false);
-        setDraggable(true);
-        setZoomable(true);
-        setTransitions(false);
-        setTransitionDuration(500);
         setZoom(DEFAULT_ZOOM);
         recenter();
         remount();
@@ -245,43 +240,37 @@ export const MemberReferrals: React.FC<Props> = ({ user, referralTree }) => {
         const { width, height } = el.getBoundingClientRect();
         setTranslate(
             orientation === "vertical"
-                ? { x: width / 2, y: 80 }
-                : { x: 120, y: height / 2 },
+                ? { x: width / 2, y: showQrRoot ? 140 : 80 } // QR root is taller, start lower
+                : { x: showQrRoot ? 150 : 120, y: height / 2 },
         );
-    }, [orientation]);
+    }, [orientation, showQrRoot]);
 
-    useEffect(() => {
+    // Center the tree before paint whenever it (re)appears — on first load the
+    // referral data can arrive after mount, and the container size changes on
+    // orientation toggles. Gating on `ready` avoids an off-center flash
+    // (otherwise the Tree mounts at {0,0} = root pinned to top-left).
+    useLayoutEffect(() => {
+        if (referralTree.length === 0) return;
         recenter();
-        window.addEventListener("resize", recenter);
-        return () => window.removeEventListener("resize", recenter);
-    }, [recenter]);
+        remount();
+        setReady(true);
+    }, [referralTree.length, orientation, recenter, remount]);
 
-    // Re-center shortly after a fullscreen toggle (container size changed).
+    // Keep it centered on window resize.
     useEffect(() => {
-        const t = setTimeout(() => {
+        const onResize = () => {
             recenter();
             remount();
-        }, 50);
-        return () => clearTimeout(t);
-    }, [fullscreen, recenter, remount]);
+        };
+        window.addEventListener("resize", onResize);
+        return () => window.removeEventListener("resize", onResize);
+    }, [recenter, remount]);
 
-    const zoomBy = (delta: number) => {
-        setZoom((z) => clampZoom(+(z + delta).toFixed(2)));
-        remount();
-    };
     const resetView = () => {
         setZoom(DEFAULT_ZOOM);
         recenter();
         remount();
     };
-
-    // Close fullscreen with Escape.
-    useEffect(() => {
-        if (!fullscreen) return;
-        const onKey = (e: KeyboardEvent) => e.key === "Escape" && setFullscreen(false);
-        window.addEventListener("keydown", onKey);
-        return () => window.removeEventListener("keydown", onKey);
-    }, [fullscreen]);
 
     // --- Pan bounds -------------------------------------------------------
     // react-d3-tree has no translateExtent, so we constrain panning ourselves:
@@ -316,7 +305,6 @@ export const MemberReferrals: React.FC<Props> = ({ user, referralTree }) => {
 
         if (Math.abs(cx - t.translate.x) > 1 || Math.abs(cy - t.translate.y) > 1) {
             setTranslate({ x: cx, y: cy });
-            setZoom(z);
             remount(); // re-applies the clamped translate (props read on mount)
         }
     }, [remount]);
@@ -324,12 +312,32 @@ export const MemberReferrals: React.FC<Props> = ({ user, referralTree }) => {
     const handleTreeUpdate = useCallback(
         (target: { zoom: number; translate: { x: number; y: number } }) => {
             lastTransform.current = { zoom: target.zoom, translate: target.translate };
-            setZoom(target.zoom); // keep the % readout in sync with scroll-zoom
             clearTimeout(idleTimer.current);
             idleTimer.current = setTimeout(clampToBounds, 180);
         },
         [clampToBounds],
     );
+
+    // Zoom about the viewport center (not the root). The Tree's root sits at the
+    // transform origin, so we re-derive translate to keep the centered point fixed.
+    const zoomBy = (delta: number) => {
+        const zNew = clampZoom(+(zoom + delta).toFixed(2));
+        if (zNew === zoom) return;
+        const tOld = lastTransform.current?.translate ?? translate;
+        let tNew = tOld;
+        const el = containerRef.current;
+        if (el) {
+            const { width, height } = el.getBoundingClientRect();
+            const cx = width / 2;
+            const cy = height / 2;
+            const k = zNew / zoom;
+            tNew = { x: cx - (cx - tOld.x) * k, y: cy - (cy - tOld.y) * k };
+        }
+        lastTransform.current = { zoom: zNew, translate: tNew };
+        setZoom(zNew);
+        setTranslate(tNew);
+        remount();
+    };
 
     // Root subtitle: "Package Care · Rank". Package from the viewer's own plan;
     // rank computed from their active direct referrals.
@@ -345,7 +353,7 @@ export const MemberReferrals: React.FC<Props> = ({ user, referralTree }) => {
     const maxLevels = pkgInfo?.level ?? 1;
     const toDatum = makeToDatum(maxLevels);
 
-    const data: RawNodeDatum = {
+    const memberNode: RawNodeDatum = {
         name: `${user.firstName} ${user.lastName}`.trim(),
         attributes: {
             initials: (user.firstName.charAt(0) + user.lastName.charAt(0)).toUpperCase(),
@@ -357,15 +365,28 @@ export const MemberReferrals: React.FC<Props> = ({ user, referralTree }) => {
         children: referralTree.map(toDatum),
     };
 
-    const renderNode = makeRenderNode(collapsible);
+    // QR → You → downline (when the QR preview applies).
+    const data: RawNodeDatum = showQrRoot
+        ? {
+              name: "",
+              attributes: { status: "qr", qrValue: referralLink, code: user.referralCode, reachable: true },
+              children: [memberNode],
+          }
+        : memberNode;
+
+    // Always fully expanded (collapsing disabled). The QR root opens the share modal.
+    const renderNode = makeRenderNode(() => cardRef.current?.open());
 
     // Behavior props that need a Tree remount to take effect (react-d3-tree reads
-    // them when building its internal state). Layout sliders update live.
-    const behaviorKey = [orientation, collapsible, initialDepth, collapseNeighbors, draggable, zoomable, transitions, viewKey].join("-");
+    // them when building its internal state). Layout sliders update live; zoom is
+    // button-driven and applied via remount.
+    const behaviorKey = [orientation, zoom, viewKey].join("-");
 
-    // The Tree body, reused at two sizes (in-page card vs. fullscreen overlay).
+    // The wrapper always renders so it can be measured; the Tree itself waits for
+    // `ready` (set after the first centering pass) to avoid an off-center flash.
     const treeBody = (heightClass: string) => (
         <div ref={containerRef} className={`fsc-tree-wrap w-full ${heightClass}`}>
+            {ready && (
             <Tree
                 key={behaviorKey}
                 data={data}
@@ -379,18 +400,17 @@ export const MemberReferrals: React.FC<Props> = ({ user, referralTree }) => {
                         : { x: 160 * spacing, y: 260 * spacing }
                 }
                 separation={{ siblings: siblingSep, nonSiblings: siblingSep + 0.2 }}
-                depthFactor={(orientation === "vertical" ? 130 : 260) * levelDistance}
-                collapsible={collapsible}
-                initialDepth={collapsible ? initialDepth : undefined}
-                shouldCollapseNeighborNodes={collapseNeighbors}
-                draggable={draggable}
-                zoomable={zoomable}
-                enableLegacyTransitions={transitions}
-                transitionDuration={transitionDuration}
+                depthFactor={(orientation === "vertical" ? (showQrRoot ? 175 : 130) : 260) * levelDistance}
+                collapsible={false}
+                draggable
+                zoomable={false}
+                enableLegacyTransitions
+                transitionDuration={TRANSITION_MS}
                 scaleExtent={{ min: MIN_ZOOM, max: MAX_ZOOM }}
                 zoom={zoom}
                 onUpdate={handleTreeUpdate}
             />
+            )}
         </div>
     );
 
@@ -426,7 +446,7 @@ export const MemberReferrals: React.FC<Props> = ({ user, referralTree }) => {
                             <SlidersHorizontal size={14} /> Customize
                         </button>
 
-                        {/* Zoom controls */}
+                        {/* Zoom controls (buttons only — scroll-zoom disabled) */}
                         <div className="border-fsc-cream-dark flex items-center overflow-hidden rounded-full border bg-white">
                             <button
                                 type="button"
@@ -452,29 +472,18 @@ export const MemberReferrals: React.FC<Props> = ({ user, referralTree }) => {
                         <button
                             type="button"
                             onClick={resetView}
-                            title="Reset view"
+                            title="Re-center"
                             className="border-fsc-cream-dark text-fsc-stone hover:bg-fsc-cream flex items-center gap-1.5 rounded-full border px-3 py-1.5 transition-colors"
                         >
-                            <Crosshair size={14} /> Reset
-                        </button>
-
-                        <button
-                            type="button"
-                            onClick={() => setFullscreen((v) => !v)}
-                            title={fullscreen ? "Exit fullscreen" : "Fullscreen"}
-                            className="border-fsc-cream-dark text-fsc-stone hover:bg-fsc-cream flex items-center gap-1.5 rounded-full border px-3 py-1.5 transition-colors"
-                        >
-                            {fullscreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
-                            {fullscreen ? "Exit" : "Fullscreen"}
+                            <Crosshair size={14} /> Re-center
                         </button>
         </div>
     );
 
     const settingsPanel = showSettings && referralTree.length > 0 && (
-        <div className="border-fsc-cream-dark grid gap-x-8 gap-y-5 rounded-2xl border bg-white p-5 text-xs sm:grid-cols-2 lg:grid-cols-3">
-            {/* Layout */}
-            <div className="space-y-3">
-                <div className="text-fsc-navy font-display border-fsc-cream-dark border-b pb-1 text-sm">Layout</div>
+        <div className="border-fsc-cream-dark rounded-2xl border bg-white p-5 text-xs">
+            <div className="text-fsc-navy font-display border-fsc-cream-dark mb-3 border-b pb-1 text-sm">Layout</div>
+            <div className="grid gap-x-8 gap-y-4 sm:grid-cols-2 lg:grid-cols-4">
                 <label className="block">
                     <span className="text-fsc-stone mb-1 block">Connector style</span>
                     <select
@@ -492,58 +501,11 @@ export const MemberReferrals: React.FC<Props> = ({ user, referralTree }) => {
                 <PanelSlider label="Sibling gap" value={siblingSep} min={0.6} max={2.5} step={0.1} onChange={setSiblingSep} fmt={(v) => `${v.toFixed(1)}×`} />
                 <PanelSlider label="Level distance" value={levelDistance} min={0.6} max={2.5} step={0.1} onChange={setLevelDistance} fmt={(v) => `${v.toFixed(1)}×`} />
             </div>
-
-            {/* Behavior */}
-            <div className="space-y-3">
-                <div className="text-fsc-navy font-display border-fsc-cream-dark border-b pb-1 text-sm">Behavior</div>
-                <PanelToggle
-                    label="Collapsible branches"
-                    desc="Click a node to expand or collapse its downline"
-                    checked={collapsible}
-                    onChange={setCollapsible}
-                />
-                {collapsible && (
-                    <label className="flex items-center justify-between gap-3">
-                        <span className="text-fsc-stone">Initial depth shown</span>
-                        <input
-                            type="number"
-                            min={1}
-                            max={10}
-                            value={initialDepth}
-                            onChange={(e) => setInitialDepth(Math.min(10, Math.max(1, Number(e.target.value) || 1)))}
-                            className="border-fsc-cream-dark text-fsc-navy w-16 rounded-lg border px-2 py-1 text-center"
-                        />
-                    </label>
-                )}
-                <PanelToggle
-                    label="Collapse neighbors"
-                    desc="Auto-collapse other branches when one opens"
-                    checked={collapseNeighbors}
-                    onChange={setCollapseNeighbors}
-                />
-                <PanelToggle label="Drag to pan" checked={draggable} onChange={setDraggable} />
-                <PanelToggle label="Scroll to zoom" checked={zoomable} onChange={setZoomable} />
-            </div>
-
-            {/* Animation */}
-            <div className="space-y-3">
-                <div className="text-fsc-navy font-display border-fsc-cream-dark border-b pb-1 text-sm">Animation</div>
-                <PanelToggle label="Animated transitions" desc="Smoothly animate expand / collapse" checked={transitions} onChange={setTransitions} />
-                {transitions && (
-                    <PanelSlider
-                        label="Duration"
-                        value={transitionDuration}
-                        min={100}
-                        max={1500}
-                        step={50}
-                        onChange={setTransitionDuration}
-                        fmt={(v) => `${v}ms`}
-                    />
-                )}
+            <div className="border-fsc-cream-dark mt-4 border-t pt-3">
                 <button
                     type="button"
                     onClick={resetSettings}
-                    className="border-fsc-cream-dark text-fsc-stone hover:bg-fsc-cream mt-1 flex items-center gap-1.5 rounded-full border px-3 py-1.5 transition-colors"
+                    className="border-fsc-cream-dark text-fsc-stone hover:bg-fsc-cream flex items-center gap-1.5 rounded-full border px-3 py-1.5 transition-colors"
                 >
                     <RotateCcw size={13} /> Reset all settings
                 </button>
@@ -570,48 +532,34 @@ export const MemberReferrals: React.FC<Props> = ({ user, referralTree }) => {
     );
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-4">
             <style>{treeStyles}</style>
 
             <div className="flex flex-wrap items-center justify-between gap-3">
                 <h1 className="font-display text-fsc-navy text-3xl">My Referrals</h1>
-                {!fullscreen && toolbar}
+                {toolbar}
             </div>
 
-            {!fullscreen && settingsPanel}
+            {settingsPanel}
 
-            {!fullscreen && (
-                <div className="border-fsc-cream-dark rounded-2xl border bg-white p-2">
-                    {referralTree.length > 0 ? (
-                        <>
-                            {treeBody("h-[60vh] min-h-[420px]")}
-                            {legend}
-                            <p className="text-fsc-stone px-3 pb-2 text-center text-[11px]">
-                                Drag to pan · scroll or use +/− to zoom · open Customize for more
-                            </p>
-                        </>
-                    ) : (
-                        <div className="text-fsc-stone py-12 text-center">
-                            No referrals yet. Share your link to start building your network.
-                        </div>
-                    )}
-                </div>
-            )}
-
-            {fullscreen && referralTree.length > 0 && (
-                <div className="fixed inset-0 z-50 flex flex-col bg-white p-4">
-                    <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-                        <h2 className="font-display text-fsc-navy text-xl">My Referrals</h2>
-                        {toolbar}
+            <div className="border-fsc-cream-dark overflow-hidden rounded-2xl border bg-white">
+                {referralTree.length > 0 ? (
+                    <>
+                        {treeBody("h-[calc(100dvh-13rem)] min-h-[480px]")}
+                        {legend}
+                        <p className="text-fsc-stone px-3 pb-2 text-center text-[11px]">
+                            Drag to pan · open Customize for more
+                        </p>
+                    </>
+                ) : (
+                    <div className="text-fsc-stone py-12 text-center">
+                        No referrals yet. Share your link to start building your network.
                     </div>
-                    {settingsPanel && <div className="mb-3 max-h-[40vh] overflow-y-auto">{settingsPanel}</div>}
-                    {treeBody("min-h-0 flex-1")}
-                    {legend}
-                </div>
-            )}
+                )}
+            </div>
 
-            {/* Referral Link & QR */}
-            <ReferralCard member={user} />
+            {/* QR modal host — the visible card is hidden; the in-canvas QR node opens it */}
+            <ReferralCard ref={cardRef} member={user} showTrigger={false} />
         </div>
     );
 };

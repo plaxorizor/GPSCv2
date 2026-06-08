@@ -1,10 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import { Copy, Share2, Check, ExternalLink, X, Download } from "lucide-react";
 import { QRCode } from "react-qrcode-logo";
 import type { Member } from "../../utils/types";
 import logo from "../../components/ui/Logo.png";
 
-const ReferralCard: React.FC<{ member: Member }> = ({ member }) => {
+export interface ReferralCardHandle {
+    open: () => void;
+}
+
+const ReferralCard = forwardRef<ReferralCardHandle, { member: Member; showTrigger?: boolean }>(({ member, showTrigger = true }, ref) => {
     const referralLink = `${window.location.origin}/signup?ref=${member.referralCode}`;
 
     const [linkCopied, setLinkCopied]           = useState(false);
@@ -44,6 +48,8 @@ const ReferralCard: React.FC<{ member: Member }> = ({ member }) => {
         link.click();
     };
 
+    useImperativeHandle(ref, () => ({ open: () => setModalOpen(true) }), []);
+
     useEffect(() => {
         const handler = (e: KeyboardEvent) => {
             if (e.key === "Escape") setModalOpen(false);
@@ -54,7 +60,7 @@ const ReferralCard: React.FC<{ member: Member }> = ({ member }) => {
 
     return (
         <>
-            {member.status === "active" && (
+            {showTrigger && member.status === "active" && (
                 <div className="border-fsc-cream-dark flex items-center justify-center overflow-hidden rounded-2xl border">
                     <button
                         onClick={() => setModalOpen(true)}
@@ -182,5 +188,6 @@ const ReferralCard: React.FC<{ member: Member }> = ({ member }) => {
             )}
         </>
     );
-};
+});
+ReferralCard.displayName = "ReferralCard";
 export default ReferralCard;
