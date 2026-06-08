@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Crosshair, ZoomIn, ZoomOut, SlidersHorizontal, RotateCcw } from "lucide-react";
+import { Crosshair, ZoomIn, ZoomOut, SlidersHorizontal, RotateCcw, X } from "lucide-react";
 import { QRCode } from "react-qrcode-logo";
 import logo from "../../components/ui/Logo.png";
 import Tree from "react-d3-tree";
@@ -39,14 +39,6 @@ const NODE_STYLES: Record<string, NodeStyle> = {
     expired: { bg: "#F1F5F9", border: "#94A3B8", accent: "#64748B", dim: true }, // slate, faded
 };
 const styleFor = (status: string): NodeStyle => NODE_STYLES[status] ?? NODE_STYLES.inactive;
-
-// Legend entries shown under the tree.
-const LEGEND: { label: string; status: string }[] = [
-    { label: "Active", status: "active" },
-    { label: "Pending", status: "pending" },
-    { label: "Inactive", status: "inactive" },
-    { label: "Expired", status: "expired" },
-];
 
 // Convert our ReferralNode shape into react-d3-tree's RawNodeDatum, stashing the
 // display fields in `attributes`. `maxLevels` = the viewer's package commission
@@ -272,6 +264,14 @@ export const MemberReferrals: React.FC<Props> = ({ user, referralTree }) => {
         remount();
     };
 
+    // Close the settings modal with Escape.
+    useEffect(() => {
+        if (!showSettings) return;
+        const onKey = (e: KeyboardEvent) => e.key === "Escape" && setShowSettings(false);
+        window.addEventListener("keydown", onKey);
+        return () => window.removeEventListener("keydown", onKey);
+    }, [showSettings]);
+
     // --- Pan bounds -------------------------------------------------------
     // react-d3-tree has no translateExtent, so we constrain panning ourselves:
     // track the live transform via onUpdate, and once the user stops, if the
@@ -414,9 +414,65 @@ export const MemberReferrals: React.FC<Props> = ({ user, referralTree }) => {
         </div>
     );
 
-    const toolbar = referralTree.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2 text-xs">
-                        {/* Orientation toggle */}
+    // Floating top-left: Settings · Re-center · Zoom (icon-only).
+    const floatingControls = referralTree.length > 0 && (
+        <div className="absolute top-3 left-3 z-10 flex items-center gap-2">
+            <button
+                type="button"
+                onClick={() => setShowSettings(true)}
+                title="Tree settings"
+                className="border-fsc-cream-dark text-fsc-stone hover:bg-fsc-cream flex h-9 w-9 items-center justify-center rounded-full border bg-white shadow-sm transition-colors"
+            >
+                <SlidersHorizontal size={16} />
+            </button>
+            <button
+                type="button"
+                onClick={resetView}
+                title="Re-center the tree"
+                className="border-fsc-cream-dark text-fsc-stone hover:bg-fsc-cream flex h-9 w-9 items-center justify-center rounded-full border bg-white shadow-sm transition-colors"
+            >
+                <Crosshair size={16} />
+            </button>
+            <div className="border-fsc-cream-dark flex h-9 items-center overflow-hidden rounded-full border bg-white shadow-sm">
+                <button
+                    type="button"
+                    onClick={() => zoomBy(-ZOOM_STEP)}
+                    disabled={zoom <= MIN_ZOOM}
+                    title="Zoom out"
+                    className="text-fsc-stone hover:bg-fsc-cream flex h-full items-center px-2.5 transition-colors disabled:opacity-40"
+                >
+                    <ZoomOut size={16} />
+                </button>
+                <span className="text-fsc-stone w-11 text-center text-xs tabular-nums">{Math.round(zoom * 100)}%</span>
+                <button
+                    type="button"
+                    onClick={() => zoomBy(ZOOM_STEP)}
+                    disabled={zoom >= MAX_ZOOM}
+                    title="Zoom in"
+                    className="text-fsc-stone hover:bg-fsc-cream flex h-full items-center px-2.5 transition-colors disabled:opacity-40"
+                >
+                    <ZoomIn size={16} />
+                </button>
+            </div>
+        </div>
+    );
+
+    // Centered settings dialog — all tree options live here.
+    const settingsModal = showSettings && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowSettings(false)} />
+            <div className="relative z-10 w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+                <div className="mb-4 flex items-center justify-between">
+                    <h2 className="font-display text-fsc-navy text-lg">Tree Settings</h2>
+                    <button onClick={() => setShowSettings(false)} className="text-fsc-stone hover:text-fsc-navy transition-colors">
+                        <X size={18} />
+                    </button>
+                </div>
+
+                <div className="space-y-4 text-xs">
+                    {/* Orientation */}
+                    <div className="flex items-center justify-between gap-3">
+                        <span className="text-fsc-stone">Orientation</span>
                         <div className="border-fsc-cream-dark flex overflow-hidden rounded-full border">
                             {(["vertical", "horizontal"] as const).map((o) => (
                                 <button
@@ -431,135 +487,66 @@ export const MemberReferrals: React.FC<Props> = ({ user, referralTree }) => {
                                 </button>
                             ))}
                         </div>
+                    </div>
 
-                        {/* Customize panel toggle */}
-                        <button
-                            type="button"
-                            onClick={() => setShowSettings((v) => !v)}
-                            title="Customize tree"
-                            className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 transition-colors ${
-                                showSettings
-                                    ? "border-fsc-navy bg-fsc-navy text-white"
-                                    : "border-fsc-cream-dark text-fsc-stone hover:bg-fsc-cream"
-                            }`}
+                    {/* Connector style */}
+                    <label className="flex items-center justify-between gap-3">
+                        <span className="text-fsc-stone">Connector style</span>
+                        <select
+                            value={pathStyle}
+                            onChange={(e) => setPathStyle(e.target.value as PathStyle)}
+                            className="border-fsc-cream-dark text-fsc-navy w-40 rounded-lg border bg-white px-2 py-1.5"
                         >
-                            <SlidersHorizontal size={14} /> Customize
-                        </button>
+                            <option value="step">Step lines</option>
+                            <option value="diagonal">Curved lines</option>
+                            <option value="straight">Straight lines</option>
+                            <option value="elbow">Elbow lines</option>
+                        </select>
+                    </label>
 
-                        {/* Zoom controls (buttons only — scroll-zoom disabled) */}
-                        <div className="border-fsc-cream-dark flex items-center overflow-hidden rounded-full border bg-white">
-                            <button
-                                type="button"
-                                onClick={() => zoomBy(-ZOOM_STEP)}
-                                disabled={zoom <= MIN_ZOOM}
-                                title="Zoom out"
-                                className="text-fsc-stone hover:bg-fsc-cream px-2.5 py-1.5 transition-colors disabled:opacity-40"
-                            >
-                                <ZoomOut size={14} />
-                            </button>
-                            <span className="text-fsc-stone w-10 text-center tabular-nums">{Math.round(zoom * 100)}%</span>
-                            <button
-                                type="button"
-                                onClick={() => zoomBy(ZOOM_STEP)}
-                                disabled={zoom >= MAX_ZOOM}
-                                title="Zoom in"
-                                className="text-fsc-stone hover:bg-fsc-cream px-2.5 py-1.5 transition-colors disabled:opacity-40"
-                            >
-                                <ZoomIn size={14} />
-                            </button>
-                        </div>
+                    <div className="border-fsc-cream-dark space-y-3 border-t pt-3">
+                        <PanelSlider label="Node spacing" value={spacing} min={0.6} max={1.8} step={0.1} onChange={setSpacing} fmt={(v) => `${v.toFixed(1)}×`} />
+                        <PanelSlider label="Sibling gap" value={siblingSep} min={0.6} max={2.5} step={0.1} onChange={setSiblingSep} fmt={(v) => `${v.toFixed(1)}×`} />
+                        <PanelSlider label="Level distance" value={levelDistance} min={0.6} max={2.5} step={0.1} onChange={setLevelDistance} fmt={(v) => `${v.toFixed(1)}×`} />
+                    </div>
+                </div>
 
-                        <button
-                            type="button"
-                            onClick={resetView}
-                            title="Re-center"
-                            className="border-fsc-cream-dark text-fsc-stone hover:bg-fsc-cream flex items-center gap-1.5 rounded-full border px-3 py-1.5 transition-colors"
-                        >
-                            <Crosshair size={14} /> Re-center
-                        </button>
-        </div>
-    );
-
-    const settingsPanel = showSettings && referralTree.length > 0 && (
-        <div className="border-fsc-cream-dark rounded-2xl border bg-white p-5 text-xs">
-            <div className="text-fsc-navy font-display border-fsc-cream-dark mb-3 border-b pb-1 text-sm">Layout</div>
-            <div className="grid gap-x-8 gap-y-4 sm:grid-cols-2 lg:grid-cols-4">
-                <label className="block">
-                    <span className="text-fsc-stone mb-1 block">Connector style</span>
-                    <select
-                        value={pathStyle}
-                        onChange={(e) => setPathStyle(e.target.value as PathStyle)}
-                        className="border-fsc-cream-dark text-fsc-navy w-full rounded-lg border bg-white px-2 py-1.5"
+                <div className="border-fsc-cream-dark mt-5 flex justify-end border-t pt-4">
+                    <button
+                        type="button"
+                        onClick={resetSettings}
+                        className="border-fsc-cream-dark text-fsc-stone hover:bg-fsc-cream flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition-colors"
                     >
-                        <option value="step">Step lines</option>
-                        <option value="diagonal">Curved lines</option>
-                        <option value="straight">Straight lines</option>
-                        <option value="elbow">Elbow lines</option>
-                    </select>
-                </label>
-                <PanelSlider label="Node spacing" value={spacing} min={0.6} max={1.8} step={0.1} onChange={setSpacing} fmt={(v) => `${v.toFixed(1)}×`} />
-                <PanelSlider label="Sibling gap" value={siblingSep} min={0.6} max={2.5} step={0.1} onChange={setSiblingSep} fmt={(v) => `${v.toFixed(1)}×`} />
-                <PanelSlider label="Level distance" value={levelDistance} min={0.6} max={2.5} step={0.1} onChange={setLevelDistance} fmt={(v) => `${v.toFixed(1)}×`} />
+                        <RotateCcw size={13} /> Reset all settings
+                    </button>
+                </div>
             </div>
-            <div className="border-fsc-cream-dark mt-4 border-t pt-3">
-                <button
-                    type="button"
-                    onClick={resetSettings}
-                    className="border-fsc-cream-dark text-fsc-stone hover:bg-fsc-cream flex items-center gap-1.5 rounded-full border px-3 py-1.5 transition-colors"
-                >
-                    <RotateCcw size={13} /> Reset all settings
-                </button>
-            </div>
-        </div>
-    );
-
-    const legend = (
-        <div className="text-fsc-stone flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 px-3 pb-2 text-[11px]">
-            {LEGEND.map((l) => (
-                <span key={l.status} className="inline-flex items-center gap-1.5">
-                    <span
-                        className="h-2.5 w-2.5 rounded-full border"
-                        style={{ background: styleFor(l.status).bg, borderColor: styleFor(l.status).border }}
-                    />
-                    {l.label}
-                </span>
-            ))}
-            <span className="inline-flex items-center gap-1.5">
-                <span className="h-2.5 w-2.5 rounded-full border border-dashed border-[#94A3B8] bg-[#F1F5F9] opacity-50" />
-                Beyond your level
-            </span>
         </div>
     );
 
     return (
-        <div className="space-y-4">
+        <>
             <style>{treeStyles}</style>
 
-            <div className="flex flex-wrap items-center justify-between gap-3">
-                <h1 className="font-display text-fsc-navy text-3xl">My Referrals</h1>
-                {toolbar}
-            </div>
-
-            {settingsPanel}
-
-            <div className="border-fsc-cream-dark overflow-hidden rounded-2xl border bg-white">
+            {/* Full-bleed canvas: fixed layer that fills the viewport, clearing the
+                fixed sidebar on lg. No card/margins/rounding — just the canvas. */}
+            <div className="fixed inset-0 z-0 overflow-hidden bg-white lg:left-16">
                 {referralTree.length > 0 ? (
                     <>
-                        {treeBody("h-[calc(100dvh-13rem)] min-h-[480px]")}
-                        {legend}
-                        <p className="text-fsc-stone px-3 pb-2 text-center text-[11px]">
-                            Drag to pan · open Customize for more
-                        </p>
+                        {treeBody("h-full w-full")}
+                        {floatingControls}
                     </>
                 ) : (
-                    <div className="text-fsc-stone py-12 text-center">
+                    <div className="text-fsc-stone flex h-full items-center justify-center px-6 text-center">
                         No referrals yet. Share your link to start building your network.
                     </div>
                 )}
             </div>
 
+            {settingsModal}
+
             {/* QR modal host — the visible card is hidden; the in-canvas QR node opens it */}
             <ReferralCard ref={cardRef} member={user} showTrigger={false} />
-        </div>
+        </>
     );
 };
