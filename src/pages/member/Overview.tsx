@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Wallet, TrendingUp, Users, CheckCircle, Clock, Check, ShieldAlert, Rocket, Crown, X } from "lucide-react";
+import React from "react";
+import { Wallet, TrendingUp, Users, CheckCircle, Clock, Check, ShieldAlert, Rocket, Crown } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { StatCard } from "./StatCard";
 import { type Member, type EarningsTrendPoint } from "../../utils/types";
@@ -40,12 +40,10 @@ const PACKAGES = [
 ] as const;
 
 const UpgradeBanner: React.FC<{ packageName: string; onComparePackages: () => void }> = ({ packageName, onComparePackages }) => {
-    const [dismissed, setDismissed] = useState(false);
-
     const currentIndex = PACKAGES.findIndex((p) => p.name.toLowerCase() === packageName.toLowerCase());
 
-    // Hide if already on Premium, not found, or dismissed
-    if (dismissed || currentIndex === -1 || currentIndex === PACKAGES.length - 1) return null;
+    // Hide if already on Premium or package not found
+    if (currentIndex === -1 || currentIndex === PACKAGES.length - 1) return null;
 
     return (
         <div className="border-fsc-cream-dark bg-fsc-cream relative flex items-center gap-5 overflow-hidden rounded-2xl border px-6 py-5">
@@ -63,31 +61,6 @@ const UpgradeBanner: React.FC<{ packageName: string; onComparePackages: () => vo
                 <p className="text-fsc-stone mt-0.5 text-xs leading-relaxed">
                     Upgrade to Family or Premium Care for higher commissions, deeper level coverage, and faster payouts.
                 </p>
-
-                {/* Package progression pills */}
-                <div className="mt-2 flex flex-wrap items-center gap-2">
-                    {PACKAGES.map(({ name, Icon: PkgIcon }, i) => (
-                        <React.Fragment key={name}>
-                            <span
-                                className={`flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-                                    i === currentIndex
-                                        ? "bg-fsc-navy border-fsc-navy text-white"
-                                        : i === currentIndex + 1
-                                          ? "bg-fsc-green border-fsc-green text-white"
-                                          : "text-fsc-stone border-fsc-cream-dark bg-white"
-                                }`}
-                            >
-                                <PkgIcon size={11} />
-                                {name}
-                            </span>
-                            {i < PACKAGES.length - 1 && (
-                                <span className="text-fsc-stone text-xs" aria-hidden="true">
-                                    ›
-                                </span>
-                            )}
-                        </React.Fragment>
-                    ))}
-                </div>
             </div>
 
             {/* Actions */}
@@ -98,22 +71,9 @@ const UpgradeBanner: React.FC<{ packageName: string; onComparePackages: () => vo
                 >
                     Upgrade →
                 </button>
-                <button
-                    onClick={onComparePackages}
-                    className="text-fsc-stone hover:text-fsc-navy text-xs underline underline-offset-2 transition-colors"
-                >
-                    Compare packages
-                </button>
             </div>
 
             {/* Dismiss */}
-            <button
-                className="text-fsc-stone hover:text-fsc-navy absolute top-3 right-3 transition-colors"
-                onClick={() => setDismissed(true)}
-                aria-label="Dismiss upgrade banner"
-            >
-                <X size={14} />
-            </button>
         </div>
     );
 };
@@ -215,10 +175,39 @@ export const MemberOverview: React.FC<Props> = ({
                 <h1 className="font-display text-fsc-navy text-3xl">
                     {member.firstName} {member.lastName} <span className="text-fsc-stone text-sm">({member.status})</span>
                 </h1>
+                {/* Package progression pills */}
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                    {PACKAGES.map(({ name, Icon: PkgIcon }, i) => {
+                        const currentIndex = PACKAGES.findIndex((p) => p.name.toLowerCase() === packageName.toLowerCase());
+                        return (
+                            <React.Fragment key={name}>
+                                <span
+                                    className={`flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                                        i === currentIndex
+                                            ? "bg-fsc-navy border-fsc-navy text-white"
+                                            : i === currentIndex + 1
+                                              ? "bg-fsc-green border-fsc-green text-white"
+                                              : "text-fsc-stone border-fsc-cream-dark bg-white"
+                                    }`}
+                                >
+                                    <PkgIcon size={11} />
+                                    {name}
+                                </span>
+                                {i < PACKAGES.length - 1 && (
+                                    <span className="text-fsc-stone text-xs" aria-hidden="true">
+                                        ›
+                                    </span>
+                                )}
+                            </React.Fragment>
+                        );
+                    })}
+                </div>
+
                 <div className="text-fsc-stone mt-1 text-sm">
                     {rankName} · {packageName} Care
                 </div>
-                <div className="text-fsc-stone mt-1 text-sm">Member since: {member.dateCreated?.toDate?.()?.toLocaleDateString()}</div>
+
+                <div className="text-fsc-stone mt-2 text-sm">Member since: {member.dateCreated?.toDate?.()?.toLocaleDateString()}</div>
             </div>
 
             {/* Upgrade Banner — hidden automatically for Premium members */}

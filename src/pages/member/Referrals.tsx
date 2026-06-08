@@ -27,18 +27,41 @@ const treeStyles = `
 }
 `;
 
+// Status → colors. Soft tint background, solid accent for avatar + border.
+type NodeStyle = { bg: string; border: string; accent: string; dim?: boolean };
+const NODE_STYLES: Record<string, NodeStyle> = {
+    root: { bg: "#FFFFFF", border: "#1F3A5F", accent: "#1F3A5F" }, // navy
+    active: { bg: "#ECFDF3", border: "#16A34A", accent: "#16A34A" }, // green
+    pending: { bg: "#FFF7ED", border: "#F59E0B", accent: "#F59E0B" }, // orange
+    inactive: { bg: "#FEF2F2", border: "#EF4444", accent: "#EF4444" }, // red
+    expired: { bg: "#F1F5F9", border: "#94A3B8", accent: "#64748B", dim: true }, // slate, faded
+};
+const styleFor = (status: string): NodeStyle => NODE_STYLES[status] ?? NODE_STYLES.inactive;
+
+// Legend entries shown under the tree.
+const LEGEND: { label: string; status: string }[] = [
+    { label: "Active", status: "active" },
+    { label: "Pending", status: "pending" },
+    { label: "Inactive", status: "inactive" },
+    { label: "Expired", status: "expired" },
+];
+
 // Convert our ReferralNode shape into react-d3-tree's RawNodeDatum, stashing the
-// display fields in `attributes` (values must be string/number/boolean).
-const toDatum = (node: ReferralNode): RawNodeDatum => ({
-    name: `${node.firstName} ${node.lastName}`.trim(),
-    attributes: {
-        initials: node.initials,
-        subtitle: `${node.packageName ? node.packageName.charAt(0).toUpperCase() + node.packageName.slice(1) + " Care · " : ""}${node.rankName}`,
-        status: node.status,
-        meta: `Level ${node.level + 1} · ${node.commissionRate}%`,
-    },
-    children: node.downline.map(toDatum),
-});
+// display fields in `attributes`. `maxLevels` = the viewer's package commission
+// depth; nodes deeper than that are "unreachable" (greyed/blurred).
+const makeToDatum =
+    (maxLevels: number) =>
+    (node: ReferralNode): RawNodeDatum => ({
+        name: `${node.firstName} ${node.lastName}`.trim(),
+        attributes: {
+            initials: node.initials,
+            subtitle: `${node.packageName ? node.packageName.charAt(0).toUpperCase() + node.packageName.slice(1) + " Care · " : ""}${node.rankName}`,
+            status: node.status,
+            reachable: node.level < maxLevels,
+            meta: `Level ${node.level + 1} · ${node.commissionRate}%`,
+        },
+        children: node.downline.map(makeToDatum(maxLevels)),
+    });
 
 // Custom HTML card rendered inside an SVG <foreignObject> for each tree node.
 // Factory so the renderer knows whether collapsing is enabled — when it is, a
@@ -46,48 +69,63 @@ const toDatum = (node: ReferralNode): RawNodeDatum => ({
 const makeRenderNode =
     (collapsible: boolean) =>
     ({ nodeDatum, toggleNode }: CustomNodeElementProps) => {
-        const a = (nodeDatum.attributes ?? {}) as Record<string, string>;
-        const isRoot = a.status === "root";
+        const a = (nodeDatum.attributes ?? {}) as Record<string, string | number | boolean>;
+        const status = String(a.status ?? "inactive");
+        const isRoot = status === "root";
+        const reachable = a.reachable !== false; // unreachable = beyond commission depth
+        const s = styleFor(status);
         const collapsed = Boolean((nodeDatum as unknown as { __rd3t?: { collapsed?: boolean } }).__rd3t?.collapsed);
         const childCount = nodeDatum.children?.length ?? 0;
         const canToggle = collapsible && !isRoot && (childCount > 0 || collapsed);
-        const W = 230;
-        const H = 66;
+        const W = 214;
+        const H = 56;
 
         return (
             <g>
                 <foreignObject x={-W / 2} y={-H / 2} width={W} height={H} style={{ overflow: "visible" }}>
                     <div
-                        onClick={canToggle ? () => toggleNode() : undefined}
-                        className={`flex h-full items-center gap-3 rounded-xl border p-3 shadow-sm ${
-                            isRoot ? "border-fsc-navy/20 bg-fsc-cream" : "border-fsc-cream-dark bg-white"
-                        } ${canToggle ? "cursor-pointer" : ""}`}
+                        className="h-full"
+                        style={{
+                            // Unreachable nodes are greyed + softly blurred.
+                            filter: reachable ? undefined : "grayscale(1) blur(0.6px)",
+                            opacity: reachable ? 1 : 0.45,
+                        }}
                     >
                         <div
-                            className={`font-display flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs text-white ${
-                                isRoot ? "bg-fsc-navy" : "bg-fsc-green"
+                            onClick={canToggle ? () => toggleNode() : undefined}
+                            style={{
+                                background: s.bg,
+                                borderColor: s.border,
+                                borderStyle: reachable ? "solid" : "dashed",
+                            }}
+                            className={`flex h-full items-center gap-2.5 rounded-full border-2 pr-3 pl-1.5 ${
+                                canToggle ? "cursor-pointer" : ""
                             }`}
                         >
-                            {a.initials}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                            <div className="text-fsc-navy truncate text-sm font-medium">{nodeDatum.name}</div>
-                            <div className="text-fsc-stone truncate text-[11px]">{a.subtitle}</div>
-                        </div>
-                        {canToggle && (
-                            <span className="bg-fsc-navy/10 text-fsc-navy flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold leading-none">
-                                {collapsed ? "+" : "–"}
-                            </span>
-                        )}
-                        {!isRoot && (
-                            <span
-                                className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] ${
-                                    a.status === "active" ? "bg-fsc-green/10 text-fsc-green" : "bg-[#C9922A]/10 text-[#A87820]"
-                                }`}
+                            <div
+                                style={{ background: s.accent }}
+                                className="font-display flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs text-white"
                             >
-                                {a.status}
-                            </span>
-                        )}
+                                {String(a.initials ?? "")}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                                <div
+                                    className="text-fsc-navy truncate text-sm font-medium"
+                                    style={{ textDecoration: status === "expired" ? "line-through" : undefined }}
+                                >
+                                    {nodeDatum.name}
+                                </div>
+                                <div className="text-fsc-stone truncate text-[10px]">{String(a.subtitle ?? "")}</div>
+                            </div>
+                            {canToggle && (
+                                <span
+                                    style={{ color: s.accent, borderColor: s.border }}
+                                    className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border bg-white text-xs font-bold leading-none"
+                                >
+                                    {collapsed ? "+" : "–"}
+                                </span>
+                            )}
+                        </div>
                     </div>
                 </foreignObject>
             </g>
@@ -245,6 +283,54 @@ export const MemberReferrals: React.FC<Props> = ({ user, referralTree }) => {
         return () => window.removeEventListener("keydown", onKey);
     }, [fullscreen]);
 
+    // --- Pan bounds -------------------------------------------------------
+    // react-d3-tree has no translateExtent, so we constrain panning ourselves:
+    // track the live transform via onUpdate, and once the user stops, if the
+    // tree has been dragged past the edge (leaving < margin visible) we snap it
+    // back inside bounds. Keeps the tree from being lost in infinite empty space.
+    const lastTransform = useRef<{ zoom: number; translate: { x: number; y: number } } | null>(null);
+    const idleTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+    const clampToBounds = useCallback(() => {
+        const el = containerRef.current;
+        const g = el?.querySelector<SVGGElement>(".rd3t-g");
+        const t = lastTransform.current;
+        if (!el || !g || !t) return;
+        let bbox: DOMRect;
+        try {
+            bbox = g.getBBox();
+        } catch {
+            return; // not laid out yet
+        }
+        if (!bbox.width || !bbox.height) return;
+
+        const { width: cw, height: ch } = el.getBoundingClientRect();
+        const m = 110; // keep at least this many px of the tree on screen
+        const z = t.zoom;
+        const minX = m - (bbox.x + bbox.width) * z;
+        const maxX = cw - m - bbox.x * z;
+        const minY = m - (bbox.y + bbox.height) * z;
+        const maxY = ch - m - bbox.y * z;
+        const cx = Math.min(maxX, Math.max(minX, t.translate.x));
+        const cy = Math.min(maxY, Math.max(minY, t.translate.y));
+
+        if (Math.abs(cx - t.translate.x) > 1 || Math.abs(cy - t.translate.y) > 1) {
+            setTranslate({ x: cx, y: cy });
+            setZoom(z);
+            remount(); // re-applies the clamped translate (props read on mount)
+        }
+    }, [remount]);
+
+    const handleTreeUpdate = useCallback(
+        (target: { zoom: number; translate: { x: number; y: number } }) => {
+            lastTransform.current = { zoom: target.zoom, translate: target.translate };
+            setZoom(target.zoom); // keep the % readout in sync with scroll-zoom
+            clearTimeout(idleTimer.current);
+            idleTimer.current = setTimeout(clampToBounds, 180);
+        },
+        [clampToBounds],
+    );
+
     // Root subtitle: "Package Care · Rank". Package from the viewer's own plan;
     // rank computed from their active direct referrals.
     const pkgKey = (user.package?.toLowerCase() ?? "") as keyof typeof PACKAGE_INFO;
@@ -254,12 +340,18 @@ export const MemberReferrals: React.FC<Props> = ({ user, referralTree }) => {
         ? `${pkgKey.charAt(0).toUpperCase() + pkgKey.slice(1)} Care · ${memberRankName}`
         : memberRankName;
 
+    // Commission depth of the viewer's package — nodes deeper than this are
+    // "unreachable" (greyed). basic 1 · family 3 · premium 6.
+    const maxLevels = pkgInfo?.level ?? 1;
+    const toDatum = makeToDatum(maxLevels);
+
     const data: RawNodeDatum = {
         name: `${user.firstName} ${user.lastName}`.trim(),
         attributes: {
             initials: (user.firstName.charAt(0) + user.lastName.charAt(0)).toUpperCase(),
             subtitle: rootSubtitle,
             status: "root",
+            reachable: true,
             meta: "",
         },
         children: referralTree.map(toDatum),
@@ -297,6 +389,7 @@ export const MemberReferrals: React.FC<Props> = ({ user, referralTree }) => {
                 transitionDuration={transitionDuration}
                 scaleExtent={{ min: MIN_ZOOM, max: MAX_ZOOM }}
                 zoom={zoom}
+                onUpdate={handleTreeUpdate}
             />
         </div>
     );
@@ -458,6 +551,24 @@ export const MemberReferrals: React.FC<Props> = ({ user, referralTree }) => {
         </div>
     );
 
+    const legend = (
+        <div className="text-fsc-stone flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 px-3 pb-2 text-[11px]">
+            {LEGEND.map((l) => (
+                <span key={l.status} className="inline-flex items-center gap-1.5">
+                    <span
+                        className="h-2.5 w-2.5 rounded-full border"
+                        style={{ background: styleFor(l.status).bg, borderColor: styleFor(l.status).border }}
+                    />
+                    {l.label}
+                </span>
+            ))}
+            <span className="inline-flex items-center gap-1.5">
+                <span className="h-2.5 w-2.5 rounded-full border border-dashed border-[#94A3B8] bg-[#F1F5F9] opacity-50" />
+                Beyond your level
+            </span>
+        </div>
+    );
+
     return (
         <div className="space-y-6">
             <style>{treeStyles}</style>
@@ -474,6 +585,7 @@ export const MemberReferrals: React.FC<Props> = ({ user, referralTree }) => {
                     {referralTree.length > 0 ? (
                         <>
                             {treeBody("h-[60vh] min-h-[420px]")}
+                            {legend}
                             <p className="text-fsc-stone px-3 pb-2 text-center text-[11px]">
                                 Drag to pan · scroll or use +/− to zoom · open Customize for more
                             </p>
@@ -494,6 +606,7 @@ export const MemberReferrals: React.FC<Props> = ({ user, referralTree }) => {
                     </div>
                     {settingsPanel && <div className="mb-3 max-h-[40vh] overflow-y-auto">{settingsPanel}</div>}
                     {treeBody("min-h-0 flex-1")}
+                    {legend}
                 </div>
             )}
 
