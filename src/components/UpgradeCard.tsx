@@ -29,6 +29,7 @@ export default function UpgradeCard({ member }: { member: Member }) {
     const [pending, setPending] = useState<UpgradeRequest | null>(null);
     const [loadingPending, setLoadingPending] = useState(true);
     const [selected, setSelected] = useState<PackageKey | null>(null);
+    const [referenceNumber, setReferenceNumber] = useState("");
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState("");
     const [done, setDone] = useState(false);
@@ -45,9 +46,14 @@ export default function UpgradeCard({ member }: { member: Member }) {
 
     const submit = async () => {
         if (!selected) return;
+        if (!referenceNumber.trim()) {
+            setError("Please enter the reference number from your payment receipt.");
+            return;
+        }
         setSubmitting(true);
         setError("");
         try {
+            // TODO(backend): persist referenceNumber on the upgrade request so admins can verify it.
             await requestUpgrade({ memberId: member.uid, memberName, toPackage: selected });
             setDone(true);
         } catch (e) {
@@ -155,6 +161,24 @@ export default function UpgradeCard({ member }: { member: Member }) {
                         <CheckCircle size={14} className="mt-0.5 shrink-0" />
                         <span>On approval, your eligibility timeline restarts at 0 and your membership renews to 365 days.</span>
                     </div>
+
+                    {/* TODO(backend) */}
+                    <div className="mt-4">
+                        <label className="text-fsc-navy text-sm font-medium">
+                            Reference number <span className="text-[#C41E1E]">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            inputMode="numeric"
+                            placeholder="e.g. 1234 5678 9012"
+                            value={referenceNumber}
+                            onChange={(e) => setReferenceNumber(e.target.value)}
+                            className="border-fsc-cream-dark focus:border-fsc-green mt-1 w-full rounded-xl border bg-white px-3 py-2.5 text-sm outline-none"
+                        />
+                        <p className="text-fsc-stone mt-1 text-xs">
+                            Enter the reference number shown on your transaction receipt.
+                        </p>
+                    </div>
                 </div>
             )}
 
@@ -163,7 +187,7 @@ export default function UpgradeCard({ member }: { member: Member }) {
             <button
                 type="button"
                 onClick={submit}
-                disabled={!selected || submitting}
+                disabled={!selected || !referenceNumber.trim() || submitting}
                 className="bg-fsc-green mt-4 w-full rounded-xl py-3 text-sm font-medium text-white transition-opacity disabled:opacity-50"
             >
                 {submitting ? "Submitting…" : "Submit upgrade request"}
