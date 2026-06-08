@@ -10,6 +10,7 @@ import AuthProvider from "./context/AuthProvider.tsx";
 import Home from "./pages/visitor/Home.tsx";
 import SignIn from "./pages/public/SignIn";
 import SignUp from "./pages/public/SignUp.tsx";
+import ForgotPassword from "./pages/public/ForgotPassword.tsx";
 import About from "./pages/visitor/nav/About";
 import Membership from "./pages/visitor/nav/Membership";
 import Referral from "./pages/visitor/nav/Referral";
@@ -50,6 +51,14 @@ createRoot(document.getElementById("root")!).render(
                         element={
                             <GuestRoute>
                                 <SignUp />
+                            </GuestRoute>
+                        }
+                    />
+                    <Route
+                        path="/forgot-password"
+                        element={
+                            <GuestRoute>
+                                <ForgotPassword />
                             </GuestRoute>
                         }
                     />

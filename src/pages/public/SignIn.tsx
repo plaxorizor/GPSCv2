@@ -153,9 +153,9 @@ export default function SignIn() {
                                         )}
                                     </button>
                                 </div>
-                                <button type="button" className="mt-2 text-xs hover:underline" style={{ color: "#C9922A" }}>
+                                <Link to="/forgot-password" className="mt-2 inline-block text-xs hover:underline" style={{ color: "#C9922A" }}>
                                     Forgot password?
-                                </button>
+                                </Link>
                             </div>
 
                             <button
