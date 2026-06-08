@@ -46,10 +46,18 @@ export default function PendingUpgradesPanel({ onChange }: { onChange?: () => vo
                 {requests.map((r) => (
                     <div key={r.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
                         <div>
-                            <div className="text-fsc-navy font-medium">{r.memberName}</div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-fsc-navy font-medium">{r.memberName}</span>
+                                {r.basis === "full" && (
+                                    <span className="rounded-full bg-[#C9922A]/15 px-2 py-0.5 text-[10px] font-medium text-[#A87820]">
+                                        Full price · after grace
+                                    </span>
+                                )}
+                            </div>
                             <div className="text-fsc-stone text-xs">
                                 {packageLabel(r.fromPackage)} → <strong>{packageLabel(r.toPackage)}</strong> Care · pays{" "}
                                 {formatCurrency(r.amountDue)}
+                                {r.basis === "full" ? " (full)" : " (difference)"}
                             </div>
                         </div>
                         <div className="flex items-center gap-2">

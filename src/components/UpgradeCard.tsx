@@ -4,7 +4,7 @@ import type { Member } from "../utils/types";
 import { formatCurrency } from "../utils/formatter";
 import {
     upgradeTargets,
-    upgradeDifference,
+    upgradeCharge,
     graceDaysLeft,
     packageLabel,
     GRACE_DAYS,
@@ -24,7 +24,10 @@ export default function UpgradeCard({ member }: { member: Member }) {
     // Grace runs from activation; fall back to join date for legacy/seeded
     // members that have no dateActivated.
     const daysLeft = graceDaysLeft(member.dateActivated ?? member.dateCreated);
-    const eligible = member.status === "active" && targets.length > 0 && daysLeft > 0;
+    const inGrace = daysLeft > 0;
+    // Upgrade is allowed any time (active + a higher tier exists). Grace only
+    // changes the price: difference within grace, full package price after.
+    const eligible = member.status === "active" && targets.length > 0;
 
     const [pending, setPending] = useState<UpgradeRequest | null>(null);
     const [loadingPending, setLoadingPending] = useState(true);
@@ -59,7 +62,6 @@ export default function UpgradeCard({ member }: { member: Member }) {
         } catch (e) {
             const msg = e instanceof Error ? e.message : "";
             if (msg === "ALREADY_PENDING") setError("You already have a pending upgrade request.");
-            else if (msg === "GRACE_EXPIRED") setError("Your 90-day upgrade window has ended.");
             else setError("Could not submit the request. Please try again.");
         } finally {
             setSubmitting(false);
@@ -87,19 +89,8 @@ export default function UpgradeCard({ member }: { member: Member }) {
         );
     }
 
-    // ── Past the grace window (or top tier) — nothing to show ──
-    if (!eligible) {
-        if (targets.length === 0) return null; // already Premium
-        if (member.status !== "active") return null; // not active yet — no upgrade card
-        return (
-            <div className="border-fsc-cream-dark rounded-2xl border bg-white p-6">
-                <h2 className="font-display text-fsc-navy text-lg">Upgrade window closed</h2>
-                <p className="text-fsc-stone mt-1 text-sm">
-                    The 90-day upgrade window (pay only the difference) has ended. Contact an admin if you'd like to change your package.
-                </p>
-            </div>
-        );
-    }
+    // ── Top tier or not active — nothing to show ──
+    if (!eligible) return null;
 
     // ── Eligible — show upgrade options ──
     return (
@@ -109,14 +100,22 @@ export default function UpgradeCard({ member }: { member: Member }) {
                 <div>
                     <h2 className="font-display text-fsc-navy text-lg">Upgrade your coverage</h2>
                     <p className="text-fsc-stone text-sm">
-                        Pay only the difference — <strong>{daysLeft} day{daysLeft === 1 ? "" : "s"} left</strong> in your {GRACE_DAYS}-day window.
+                        {inGrace ? (
+                            <>
+                                Pay only the difference — <strong>{daysLeft} day{daysLeft === 1 ? "" : "s"} left</strong> in your {GRACE_DAYS}-day window.
+                            </>
+                        ) : (
+                            <>
+                                Your {GRACE_DAYS}-day discount window has ended — upgrade now by paying the <strong>full package price</strong>.
+                            </>
+                        )}
                     </p>
                 </div>
             </div>
 
             <div className="space-y-2">
                 {targets.map((t) => {
-                    const diff = upgradeDifference(member.package, t);
+                    const diff = upgradeCharge(member.package, t, inGrace);
                     const active = selected === t;
                     return (
                         <button
@@ -145,7 +144,7 @@ export default function UpgradeCard({ member }: { member: Member }) {
                     <p className="text-fsc-navy font-medium">How to upgrade</p>
                     <ol className="text-fsc-stone mt-2 list-decimal space-y-1 pl-4 text-xs">
                         <li>
-                            Send <strong>{formatCurrency(upgradeDifference(member.package, selected))}</strong> to one of:
+                            Send <strong>{formatCurrency(upgradeCharge(member.package, selected, inGrace))}</strong> to one of:
                             <ul className="mt-1 list-disc pl-4">
                                 {PAYMENT_ACCOUNTS.map((a) => (
                                     <li key={a.label}>

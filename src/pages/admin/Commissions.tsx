@@ -192,7 +192,16 @@ export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHis
                                             <div className="text-fsc-stone font-mono text-xs">{comm.recipientReferralCode}</div>
                                         )}
                                     </td>
-                                    <td className="text-fsc-stone p-4">{comm.fromMemberName}</td>
+                                    <td className="text-fsc-stone p-4">
+                                        <div className="flex items-center gap-2">
+                                            <span>{comm.fromMemberName}</span>
+                                            {comm.reason === "upgrade" && (
+                                                <span className="bg-fsc-navy/10 text-fsc-navy inline-block rounded-full px-2 py-0.5 text-[10px] font-medium">
+                                                    Upgrade
+                                                </span>
+                                            )}
+                                        </div>
+                                    </td>
                                     <td className="text-fsc-stone p-4">Level {comm.level}</td>
                                     <td className="text-fsc-navy p-4 text-right font-medium">{formatCurrency(comm.amount)}</td>
                                     <td className="text-fsc-stone p-4">{formatDate(comm.date)}</td>
@@ -307,7 +316,16 @@ export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHis
                                             <div className="text-fsc-stone font-mono text-xs">{comm.recipientReferralCode}</div>
                                         )}
                                     </td>
-                                    <td className="text-fsc-stone p-4">{comm.fromMemberName}</td>
+                                    <td className="text-fsc-stone p-4">
+                                        <div className="flex items-center gap-2">
+                                            <span>{comm.fromMemberName}</span>
+                                            {comm.reason === "upgrade" && (
+                                                <span className="bg-fsc-navy/10 text-fsc-navy inline-block rounded-full px-2 py-0.5 text-[10px] font-medium">
+                                                    Upgrade
+                                                </span>
+                                            )}
+                                        </div>
+                                    </td>
                                     <td className="text-fsc-stone p-4">Level {comm.level}</td>
                                     <td className="text-fsc-navy p-4 text-right font-medium">{formatCurrency(comm.amount)}</td>
                                     <td className="text-fsc-stone p-4">{formatDate(comm.date)}</td>

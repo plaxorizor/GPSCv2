@@ -147,6 +147,7 @@ export default function MemberArea() {
         fromMember: c.fromMember,
         fromMemberName: c.fromMemberName ?? "—",
         fromMemberCity: c.fromMemberCity ?? "—",
+        reason: c.reason === "upgrade" ? "upgrade" : "signup",
     }));
 
     // Claimable commissions = pending + eligible by time/level. Passed to the

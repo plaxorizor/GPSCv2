@@ -17,7 +17,8 @@ import {
     serverTimestamp,
 } from "firebase/firestore";
 import { db } from "./config";
-import { upgradeDifference, upgradeTargets, graceDaysLeft, type PackageKey } from "../utils/upgrade";
+import { upgradeCharge, upgradeTargets, isWithinGrace, type PackageKey } from "../utils/upgrade";
+import { triggerUpgradeCommissions } from "./transactions";
 
 export interface UpgradeRequest {
     id: string;
@@ -26,6 +27,7 @@ export interface UpgradeRequest {
     fromPackage: string;
     toPackage: string;
     amountDue: number;
+    basis: "difference" | "full"; // difference within grace, full price after
     status: "pending" | "approved" | "rejected";
     dateRequested: string;
     dateDecided: string | null;
@@ -43,7 +45,6 @@ export async function requestUpgrade(input: {
     const m = snap.data();
 
     if (m.status !== "active") throw new Error("NOT_ACTIVE");
-    if (graceDaysLeft(m.dateActivated ?? m.dateCreated) <= 0) throw new Error("GRACE_EXPIRED");
     if (!upgradeTargets(m.package).includes(input.toPackage)) throw new Error("INVALID_TARGET");
 
     // Block duplicate pending requests.
@@ -56,12 +57,17 @@ export async function requestUpgrade(input: {
     );
     if (!existing.empty) throw new Error("ALREADY_PENDING");
 
+    // Within the 90-day grace window: pay only the difference. After it: full price.
+    const inGrace = isWithinGrace(m.dateActivated ?? m.dateCreated);
+    const basis: "difference" | "full" = inGrace ? "difference" : "full";
+
     await addDoc(collection(db, "upgradeRequests"), {
         memberId: input.memberId,
         memberName: input.memberName,
         fromPackage: m.package,
         toPackage: input.toPackage,
-        amountDue: upgradeDifference(m.package, input.toPackage),
+        amountDue: upgradeCharge(m.package, input.toPackage, inGrace),
+        basis,
         status: "pending",
         dateRequested: serverTimestamp(),
         dateDecided: null,
@@ -84,6 +90,7 @@ export async function getPendingUpgradeForMember(memberId: string): Promise<Upgr
         fromPackage: data.fromPackage,
         toPackage: data.toPackage,
         amountDue: data.amountDue,
+        basis: data.basis ?? "difference",
         status: data.status,
         dateRequested: data.dateRequested?.toDate?.()?.toISOString?.() ?? "",
         dateDecided: data.dateDecided?.toDate?.()?.toISOString?.() ?? null,
@@ -103,6 +110,7 @@ export async function getPendingUpgradeRequests(): Promise<UpgradeRequest[]> {
                 fromPackage: data.fromPackage,
                 toPackage: data.toPackage,
                 amountDue: data.amountDue,
+                basis: data.basis ?? "difference",
                 status: data.status as "pending",
                 dateRequested: data.dateRequested?.toDate?.()?.toISOString?.() ?? "",
                 dateDecided: null,
@@ -112,11 +120,10 @@ export async function getPendingUpgradeRequests(): Promise<UpgradeRequest[]> {
 }
 
 // Admin approves: apply the upgrade. Changes package, RESETS eligibility
-// (dateEligibility = now), and RENEWS membership to 365 days.
-//
-// NOTE: whether the upline earns a commission on the upgrade difference is still
-// pending the client's decision — when confirmed, trigger it here on
-// `request.amountDue` (or the full new package) before/after the member update.
+// (dateEligibility = now), RENEWS membership to 365 days, and pays the upline a
+// commission on the amount the member actually paid — the DIFFERENCE if upgraded
+// within the grace window (base already paid commission at signup), or the FULL
+// new package price if upgraded after grace.
 export async function approveUpgrade(requestId: string): Promise<void> {
     const reqSnap = await getDoc(doc(db, "upgradeRequests", requestId));
     if (!reqSnap.exists()) throw new Error("REQUEST_NOT_FOUND");
@@ -142,6 +149,12 @@ export async function approveUpgrade(requestId: string): Promise<void> {
         status: "approved",
         dateDecided: serverTimestamp(),
     });
+
+    // Pay the upline on what the member paid. Re-derive authoritatively from the
+    // package pair + the basis recorded at request time (difference vs full),
+    // rather than trusting the stored amountDue number.
+    const charge = upgradeCharge(req.fromPackage as PackageKey, req.toPackage as PackageKey, req.basis !== "full");
+    await triggerUpgradeCommissions(req.memberId, charge);
 }
 
 export async function rejectUpgrade(requestId: string, reason: string = ""): Promise<void> {

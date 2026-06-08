@@ -44,6 +44,16 @@ export const graceDaysLeft = (dateActivated: Date | { toDate: () => Date } | nul
     return diff <= 0 ? 0 : Math.ceil(diff / DAY_MS);
 };
 
-// Can this member still upgrade by paying the difference?
-export const canUpgrade = (member: { status?: string; package?: string; dateActivated?: Date | { toDate: () => Date } | null }): boolean =>
-    member.status === "active" && upgradeTargets(member.package ?? "").length > 0 && graceDaysLeft(member.dateActivated) > 0;
+// Is the member still inside the 90-day grace window?
+export const isWithinGrace = (dateActivated: Date | { toDate: () => Date } | null | undefined): boolean =>
+    graceDaysLeft(dateActivated) > 0;
+
+// What a member pays to upgrade: only the DIFFERENCE within the grace window,
+// otherwise the FULL price of the new package.
+export const upgradeCharge = (from: string, to: string, inGrace: boolean): number =>
+    inGrace ? upgradeDifference(from, to) : packagePrice(to);
+
+// Can this member upgrade at all? Active + a higher tier exists. (Grace only
+// affects the PRICE now — difference vs full — not whether they can upgrade.)
+export const canUpgrade = (member: { status?: string; package?: string }): boolean =>
+    member.status === "active" && upgradeTargets(member.package ?? "").length > 0;

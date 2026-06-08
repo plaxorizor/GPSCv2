@@ -109,7 +109,14 @@ export const MemberEarnings: React.FC<Props> = ({
                             <tr key={c.id} className="border-fsc-cream-dark border-t">
                                 <td className="text-fsc-stone p-4">{formatDate(c.date)}</td>
                                 <td className="p-4">
-                                    <div className="text-fsc-navy">{c.fromMemberName}</div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-fsc-navy">{c.fromMemberName}</span>
+                                        {c.reason === "upgrade" && (
+                                            <span className="bg-fsc-navy/10 text-fsc-navy inline-block rounded-full px-2 py-0.5 text-[10px] font-medium">
+                                                Upgrade
+                                            </span>
+                                        )}
+                                    </div>
                                     <div className="text-fsc-stone text-xs">{c.fromMemberCity}</div>
                                 </td>
                                 <td className="text-fsc-stone p-4">L{c.level}</td>

@@ -60,6 +60,9 @@
 - [x] Admin confirms → package updated, eligibility + expiry reset (365 days)
 - [x] `UpgradeCard` component on member dashboard
 - [x] `PendingUpgradesPanel` on admin dashboard
+- [x] **After-grace upgrades** — upgrading is allowed any time; within 90-day grace the member pays the **difference**, after grace they pay the **full** new package price (`basis` stored on the request)
+- [x] **Commission-on-upgrade** — upline earns on what the member paid (difference within grace, full after); mirrors signup commission (level depth cap + 7-day hold), tagged `reason: "upgrade"`
+- [x] **"Upgrade" tag** shown on commission rows (member Earnings + admin Commissions); admin upgrades panel flags "Full price · after grace"
 
 ### Admin
 - [x] Add/Encode Member modal (matches sign-up form style)
@@ -86,13 +89,6 @@
 - [x] TypeScript build passes (`bunx tsc -b` clean)
 
 ---
-
-## 🚧 In Progress / Blocked
-
-### Commission-on-upgrade
-- [ ] Decide: does upgrading trigger a retroactive commission recalculation?
-- **Blocked:** waiting for client's answer
-- Hook is in `src/firebase/upgrades.ts → approveUpgrade()` (NOTE comment)
 
 ---
 

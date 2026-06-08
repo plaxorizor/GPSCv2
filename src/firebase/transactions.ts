@@ -25,21 +25,22 @@ const PACKAGE_MAX_LEVELS: Record<Package, number> = {
     premium: 6,
 };
 
-export const triggerCommissions = async (newMemberId: string, pkg: Package) => {
-    // Normalise casing — Firestore may store "Basic", "basic", etc.
-    const normPkg = pkg.toLowerCase() as Package;
-    const packagePrice = PACKAGE_AMOUNTS[normPkg];
-    if (!packagePrice) return; // unknown package, bail out safely
+// Core: walk up the `fromMemberId` member's upline and create a `pending`
+// commission for each upline, sized as `basisAmount × rate[level]`, capped by
+// the upline's own package depth (basic 1 / family 3 / premium 6). `reason`
+// distinguishes signup vs upgrade commissions on the docs.
+const distributeCommissions = async (fromMemberId: string, basisAmount: number, reason: "signup" | "upgrade") => {
+    if (!basisAmount || basisAmount <= 0) return;
 
-    // Fetch the new member's profile once so we can denormalise name/city
-    // onto every commission doc (avoids join queries on the dashboard)
-    const newMemberSnap = await getDoc(doc(db, "members", newMemberId));
-    const newMemberData = newMemberSnap.data();
+    // Fetch the source member's profile once so we can denormalise name/city
+    // onto every commission doc (avoids join queries on the dashboard).
+    const fromMemberSnap = await getDoc(doc(db, "members", fromMemberId));
+    const fromMemberData = fromMemberSnap.data();
     const fromMemberName =
-        `${newMemberData?.firstName ?? ""} ${newMemberData?.lastName ?? ""}`.trim() || "Unknown";
-    const fromMemberCity = (newMemberData?.city as string | undefined) ?? "";
+        `${fromMemberData?.firstName ?? ""} ${fromMemberData?.lastName ?? ""}`.trim() || "Unknown";
+    const fromMemberCity = (fromMemberData?.city as string | undefined) ?? "";
 
-    let currentUid = newMemberId;
+    let currentUid = fromMemberId;
 
     for (let level = 1; level <= 6; level++) {
         const memberSnap = await getDoc(doc(db, "members", currentUid));
@@ -56,21 +57,35 @@ export const triggerCommissions = async (newMemberId: string, pkg: Package) => {
 
         // Upline's package determines how deep they can earn
         if (level <= PACKAGE_MAX_LEVELS[uplinePackage]) {
-            const amount = packagePrice * COMMISSION_RATES[level];
+            const amount = basisAmount * COMMISSION_RATES[level];
             await addDoc(collection(db, "commissions"), {
                 earnedBy: referredBy,
-                fromMember: newMemberId,
+                fromMember: fromMemberId,
                 fromMemberName,
                 fromMemberCity,
                 level,
                 amount,
                 status: "pending",
+                reason,
                 dateCreated: serverTimestamp(),
             });
         }
 
         currentUid = referredBy;
     }
+};
+
+// Signup/activation: commission on the full package price.
+export const triggerCommissions = async (newMemberId: string, pkg: Package) => {
+    const packagePrice = PACKAGE_AMOUNTS[pkg.toLowerCase() as Package];
+    if (!packagePrice) return; // unknown package, bail out safely
+    await distributeCommissions(newMemberId, packagePrice, "signup");
+};
+
+// Upgrade: commission on the price difference only (the original package price
+// already paid commission at signup — avoids double-paying the base amount).
+export const triggerUpgradeCommissions = async (memberId: string, differenceAmount: number) => {
+    await distributeCommissions(memberId, differenceAmount, "upgrade");
 };
 
 export const createTransaction = async (memberId: string, pkg: Package) => {
