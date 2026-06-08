@@ -35,7 +35,6 @@ const PLANS = [
             "Local & international travel opportunity",
             "Livelihood project participation",
         ],
-        docs: ["Death Certificate", "Police Report (if accident)", "Valid ID", "Medical Certificate"],
     },
     {
         id: "family",
@@ -57,7 +56,6 @@ const PLANS = [
             "Local & international travel opportunity",
             "Livelihood project participation",
         ],
-        docs: ["Death Certificate", "Police Report", "Medical Certificate", "Valid ID"],
     },
     {
         id: "premium",
@@ -80,7 +78,6 @@ const PLANS = [
             "Local & international travel opportunity",
             "Livelihood project participation",
         ],
-        docs: ["Death Certificate", "Police Report", "Medical Certificate", "Valid ID", "Birth Certificate (NSO)", "Senior Citizen ID"],
     },
 ];
 
@@ -133,12 +130,6 @@ function PlanCard({ plan, isCurrent, isUpgrade, onChoose }: { plan: Plan; isCurr
                         </li>
                     ))}
                 </ul>
-
-                <div className="tier-divider mb-3 h-px" />
-                <div className="tier-more mb-2 text-xs font-medium tracking-[0.15em] uppercase">Required documents</div>
-                {plan.docs.map((d, di) => (
-                    <div key={di} className="tier-benefit-amt text-xs">• {d}</div>
-                ))}
 
                 <div className="mt-5">
                     {isCurrent ? (

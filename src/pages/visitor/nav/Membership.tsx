@@ -19,7 +19,6 @@ const PLANS = [
             "Local & international travel opportunity",
             "Livelihood project participation",
         ],
-        docs: ["Death Certificate", "Police Report (if accident)", "Valid ID", "Medical Certificate"],
     },
     {
         tier: "silver" as const,
@@ -40,7 +39,6 @@ const PLANS = [
             "Local & international travel opportunity",
             "Livelihood project participation",
         ],
-        docs: ["Death Certificate", "Police Report", "Medical Certificate", "Valid ID"],
     },
     {
         tier: "gold" as const,
@@ -62,13 +60,12 @@ const PLANS = [
             "Local & international travel opportunity",
             "Livelihood project participation",
         ],
-        docs: ["Death Certificate", "Police Report", "Medical Certificate", "Valid ID", "Birth Certificate (NSO)", "Senior Citizen ID"],
     },
 ];
 
 const MemberCard: React.FC<{ plan: (typeof PLANS)[0] }> = ({ plan }) => {
     const [hovered, setHovered] = useState(false);
-    const { tier, tag, name, price, benefits, docs, featured } = plan;
+    const { tier, tag, name, price, benefits, featured } = plan;
     const isFeatured = !!featured;
 
     const transform = isFeatured
@@ -114,12 +111,6 @@ const MemberCard: React.FC<{ plan: (typeof PLANS)[0] }> = ({ plan }) => {
                         </li>
                     ))}
                 </ul>
-
-                <div className="tier-divider mb-4 h-px" />
-                <div className="tier-more mb-2 text-xs font-medium tracking-[0.15em] uppercase">Required documents</div>
-                {docs.map((d, i) => (
-                    <div key={i} className="tier-benefit-amt text-xs">• {d}</div>
-                ))}
             </div>
         </div>
     );
