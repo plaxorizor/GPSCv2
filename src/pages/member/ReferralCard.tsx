@@ -103,7 +103,8 @@ const ReferralCard = forwardRef<ReferralCardHandle, { member: Member; showTrigge
                     <div className="relative z-10 flex w-full max-w-sm flex-col items-center gap-6 rounded-3xl bg-white p-8 shadow-2xl">
                         <button
                             onClick={() => setModalOpen(false)}
-                            className="text-fsc-stone hover:text-fsc-navy absolute top-4 right-4 transition-colors"
+                            aria-label="Close"
+                            className="text-fsc-stone hover:text-fsc-navy hover:bg-fsc-cream absolute top-3 right-3 rounded-lg p-2 transition-colors"
                         >
                             <X size={20} />
                         </button>
@@ -117,8 +118,8 @@ const ReferralCard = forwardRef<ReferralCardHandle, { member: Member; showTrigge
                             </p>
                         </div>
 
-                        {/* QR with logo */}
-                        <div className="bg-fsc-navy/5 flex justify-center rounded-2xl p-5">
+                        {/* QR with logo — canvas scales down on narrow screens */}
+                        <div className="bg-fsc-navy/5 flex w-full justify-center rounded-2xl p-4 [&>canvas]:h-auto [&>canvas]:max-w-full sm:p-5">
                             <QRCode
                                 id="qr-modal-canvas"
                                 value={referralLink}

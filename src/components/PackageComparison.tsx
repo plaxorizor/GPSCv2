@@ -236,9 +236,9 @@ export default function PackageComparison({ currentPackage, initialTarget = null
             {PAYMENT_INFO.accounts.filter((a) => a.label === selectedPaymentMethod).map((acct) => (
                 <div key={acct.label} className="flex flex-col items-center rounded-2xl p-6" style={{ border: "1px solid #D0D2D8", backgroundColor: "#fff" }}>
                     {acct.qr ? (
-                        <img src={acct.qr} alt={`${acct.label} QR code`} className="h-64 w-64 rounded-xl object-contain" style={{ border: "1px solid #D0D2D8" }} />
+                        <img src={acct.qr} alt={`${acct.label} QR code`} className="aspect-square w-full max-w-[16rem] rounded-xl object-contain" style={{ border: "1px solid #D0D2D8" }} />
                     ) : (
-                        <div className="flex h-64 w-64 items-center justify-center rounded-xl text-xs" style={{ backgroundColor: "#F3F4F6", color: "#9CA3AF", border: "2px dashed #D1D5DB" }}>
+                        <div className="flex aspect-square w-full max-w-[16rem] items-center justify-center rounded-xl text-xs" style={{ backgroundColor: "#F3F4F6", color: "#9CA3AF", border: "2px dashed #D1D5DB" }}>
                             QR placeholder
                         </div>
                     )}

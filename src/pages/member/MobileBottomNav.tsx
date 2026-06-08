@@ -17,7 +17,7 @@ interface Props {
 }
 
 export const MobileBottomNav: React.FC<Props> = ({ current, onChange, claimsBadge, referralsBadge }) => (
-    <nav className="border-fsc-cream-dark fixed inset-x-0 bottom-0 z-50 flex border-t bg-white lg:hidden">
+    <nav className="border-fsc-cream-dark fixed inset-x-0 bottom-0 z-50 flex border-t bg-white pb-[env(safe-area-inset-bottom)] lg:hidden">
         {tabs.map(({ id, label, icon: Icon }) => {
             const badge = id === "claims" ? claimsBadge : id === "referrals" ? referralsBadge : undefined;
             return (
