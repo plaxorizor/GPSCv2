@@ -87,7 +87,7 @@ export default function SignUpLayout() {
     // Birth date split into Month / Day / Year dropdowns.
     const [birth, setBirth] = useState({ y: "", m: "", d: "" });
     const [consented, setConsented] = useState(false);
-    const [policyTab, setPolicyTab] = useState<"privacy" | "terms" | "refund">("privacy");
+    const [policyTab, setPolicyTab] = useState<"privacy" | "terms">("privacy");
 
     const [selectedPlan, setSelectedPlan] = useState(plans[0]);
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(PAYMENT_INFO.accounts[0].label);
@@ -112,6 +112,7 @@ export default function SignUpLayout() {
         barangay: "",
         country: "Philippines",
         referralCode: refCode,
+        referenceNumber: "",
         beneficiaries: [{ name: "", relationship: "" }],
     });
 
@@ -309,6 +310,13 @@ export default function SignUpLayout() {
                 }
             }
         }
+        if (step === 4) {
+            if (!form.referenceNumber.trim()) {
+                setInvalidFields(new Set(["referenceNumber"]));
+                setError("Please enter the reference number from your payment receipt.");
+                return false;
+            }
+        }
         return true;
     };
 
@@ -412,8 +420,8 @@ export default function SignUpLayout() {
 
                             {/* Tab bar */}
                             <div className="mb-5 flex rounded-xl overflow-hidden" style={{ border: "1px solid #D0D2D8" }}>
-                                {(["privacy", "terms", "refund"] as const).map((tab) => {
-                                    const labels = { privacy: "Privacy Policy", terms: "Terms & Conditions", refund: "Refund Policy" };
+                                {(["privacy", "terms"] as const).map((tab) => {
+                                    const labels = { privacy: "Privacy Policy", terms: "Terms & Conditions" };
                                     const active = policyTab === tab;
                                     return (
                                         <button
@@ -424,7 +432,7 @@ export default function SignUpLayout() {
                                             style={{
                                                 backgroundColor: active ? "#1B2D6B" : "#F2F3F5",
                                                 color: active ? "#fff" : "#6B6862",
-                                                borderRight: tab !== "refund" ? "1px solid #D0D2D8" : undefined,
+                                                borderRight: tab !== "terms" ? "1px solid #D0D2D8" : undefined,
                                             }}
                                         >
                                             {labels[tab]}
@@ -459,16 +467,6 @@ export default function SignUpLayout() {
                                         <p><strong style={{ color: "#1B2D6B" }}>Account Responsibility</strong><br />You are responsible for maintaining the confidentiality of your account credentials. Faith Shield Care is not liable for unauthorized access resulting from your failure to secure your account.</p>
                                         <p><strong style={{ color: "#1B2D6B" }}>Termination</strong><br />Faith Shield Care reserves the right to suspend or terminate any account found to be in violation of these Terms or engaged in fraudulent activity.</p>
                                         <p><strong style={{ color: "#1B2D6B" }}>Governing Law</strong><br />These Terms are governed by the laws of the Republic of the Philippines.</p>
-                                    </>
-                                )}
-                                {policyTab === "refund" && (
-                                    <>
-                                        <p><strong style={{ color: "#1B2D6B" }}>Last updated: June 2025</strong></p>
-                                        <p>Faith Shield Care strives to ensure member satisfaction. Please review our refund policy before completing your registration.</p>
-                                        <p><strong style={{ color: "#1B2D6B" }}>Cooling-Off Period</strong><br />Members may request a full refund within 7 calendar days of account activation, provided no referral commissions have been disbursed under their account.</p>
-                                        <p><strong style={{ color: "#1B2D6B" }}>Non-Refundable Circumstances</strong><br />Refunds will not be granted if the membership has been active for more than 7 days, if commissions have already been paid to the member, or if the account has been found in violation of our Terms &amp; Conditions.</p>
-                                        <p><strong style={{ color: "#1B2D6B" }}>How to Request a Refund</strong><br />To initiate a refund, contact our support team at support@faithshieldcare.com with your registered email and reason for the request. Approved refunds will be processed within 7–14 business days.</p>
-                                        <p><strong style={{ color: "#1B2D6B" }}>Plan Upgrades</strong><br />Payments made for plan upgrades are non-refundable once the upgraded plan has been activated.</p>
                                     </>
                                 )}
                             </div>
@@ -1192,6 +1190,25 @@ export default function SignUpLayout() {
                                                         <li key={c.label}>{c.label}: <span className="font-medium">{c.value}</span></li>
                                                     ))}
                                                 </ul>
+                                                {/* TODO(backend */}
+                                                <div className="mt-4">
+                                                    <label className={labelCls}>
+                                                        Reference number <span style={{ color: "#C41E1E" }}>*</span>
+                                                    </label>
+                                                    <input
+                                                        required
+                                                        type="text"
+                                                        inputMode="numeric"
+                                                        placeholder="e.g. 1234 5678 9012"
+                                                        className={fieldCls("referenceNumber")}
+                                                        value={form.referenceNumber}
+                                                        onChange={(e) => setForm((prev) => ({ ...prev, referenceNumber: e.target.value }))}
+                                                    />
+                                                    <p className="mt-1 text-xs" style={{ color: "#6B6862" }}>
+                                                        Enter the reference number shown on your transaction receipt.
+                                                    </p>
+                                                </div>
+
                                                 <p className="mt-3 text-xs" style={{ color: "#6B6862" }}>
                                                     Your account stays <span className="font-medium">Pending</span> until our team verifies your
                                                     payment, usually within {PAYMENT_INFO.verificationDays}.
