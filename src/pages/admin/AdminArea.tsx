@@ -1,7 +1,9 @@
 // admin/AdminArea.tsx
+import { useState } from "react";
 import useAuth from "../../context/useAuth";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import AdminDashboard from "./AdminDashboard";
+import ConfirmDialog from "../../components/ConfirmDialog";
 
 import {
     activateMember,
@@ -17,6 +19,9 @@ import useAdminClaims from "../../hooks/useAdminClaims";
 
 export default function AdminArea() {
     const { currentUser, loading: authLoading } = useAuth();
+    const navigate = useNavigate();
+    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+    const [loggingOut, setLoggingOut] = useState(false);
 
     const {
         pendingCommissions,
@@ -82,9 +87,10 @@ export default function AdminArea() {
     };
 
     const handleLogout = async () => {
+        setLoggingOut(true);
         const { getAuth, signOut } = await import("firebase/auth");
         await signOut(getAuth());
-        return <Navigate to="/" />;
+        navigate("/");
     };
 
     // Check auth loading
@@ -102,6 +108,18 @@ export default function AdminArea() {
     }
 
     return (
+        <>
+        {showLogoutConfirm && (
+            <ConfirmDialog
+                title="Log out?"
+                message="You'll need to sign in again to access the admin dashboard."
+                confirmLabel="Log out"
+                danger
+                busy={loggingOut}
+                onConfirm={handleLogout}
+                onCancel={() => setShowLogoutConfirm(false)}
+            />
+        )}
         <AdminDashboard
             claims={claims}
             pendingCommissions={pendingCommissions}
@@ -129,7 +147,8 @@ export default function AdminArea() {
             onRejectPayout={handleRejectPayout}
             onExportMembers={handleExportMembers}
             onExportClaims={handleExportClaims}
-            onLogout={handleLogout}
+            onLogout={() => setShowLogoutConfirm(true)}
         />
+        </>
     );
 }

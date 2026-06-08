@@ -13,6 +13,7 @@ import MemberDashboard from "./MemberDashboard";
 import ChangePasswordModal from "../../components/ChangePasswordModal";
 import RequestPayoutModal from "../../components/RequestPayoutModal";
 import FileClaimModal from "../../components/FileClaimModal";
+import ConfirmDialog from "../../components/ConfirmDialog";
 import { PACKAGE_INFO } from "../../utils/types";
 import { rankFromChildren, rankName } from "../../utils/rank";
 import { isEligible } from "../../utils/commission";
@@ -37,6 +38,8 @@ export default function MemberArea() {
     const [showChangePassword, setShowChangePassword] = useState(false);
     const [showRequestPayout, setShowRequestPayout] = useState(false);
     const [showFileClaim, setShowFileClaim] = useState(false);
+    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+    const [loggingOut, setLoggingOut] = useState(false);
     const [pwChanged, setPwChanged] = useState(false);
 
     const { member, loading: memberLoading } = useMember();
@@ -160,6 +163,7 @@ export default function MemberArea() {
     const handleRequestPayout = () => setShowRequestPayout(true);
     const handleFileClaim = () => setShowFileClaim(true);
     const handleLogout = async () => {
+        setLoggingOut(true);
         const { getAuth, signOut } = await import("firebase/auth");
         await signOut(getAuth());
         navigate("/");
@@ -186,6 +190,17 @@ export default function MemberArea() {
                     onSuccess={refetchClaims}
                 />
             )}
+            {showLogoutConfirm && (
+                <ConfirmDialog
+                    title="Log out?"
+                    message="You'll need to sign in again to access your account."
+                    confirmLabel="Log out"
+                    danger
+                    busy={loggingOut}
+                    onConfirm={handleLogout}
+                    onCancel={() => setShowLogoutConfirm(false)}
+                />
+            )}
             <MemberDashboard
                 member={user}
                 memberStats={memberStats}
@@ -200,7 +215,7 @@ export default function MemberArea() {
                 onSectionChange={setCurrentSection}
                 onRequestPayout={handleRequestPayout}
                 onFileClaim={handleFileClaim}
-                onLogout={handleLogout}
+                onLogout={() => setShowLogoutConfirm(true)}
                 onChangePassword={() => setShowChangePassword(true)}
             />
         </>
