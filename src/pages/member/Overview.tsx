@@ -1,5 +1,5 @@
 import React from "react";
-import { Wallet, TrendingUp, Users, CheckCircle, Clock, Check, Heart, Rocket, Crown } from "lucide-react";
+import { Wallet, TrendingUp, Users, User, CheckCircle, Clock, Check, Heart, Rocket, Crown } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { StatCard } from "./StatCard";
 import { type Member, type EarningsTrendPoint } from "../../utils/types";
@@ -168,36 +168,12 @@ export const MemberOverview: React.FC<Props> = ({
                 <h1 className="font-display text-fsc-navy text-3xl">
                     {member.firstName} {member.lastName} <span className="text-fsc-stone text-sm">({member.status})</span>
                 </h1>
-                {/* Package progression pills */}
-                <div className="mt-2 flex flex-wrap items-center gap-2">
-                    {PACKAGES.map(({ name, Icon: PkgIcon }, i) => {
-                        const currentIndex = PACKAGES.findIndex((p) => p.name.toLowerCase() === packageName.toLowerCase());
-                        return (
-                            <React.Fragment key={name}>
-                                <span
-                                    className={`flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-                                        i === currentIndex
-                                            ? "bg-fsc-navy border-fsc-navy text-white"
-                                            : i === currentIndex + 1
-                                              ? "bg-fsc-green border-fsc-green text-white"
-                                              : "text-fsc-stone border-fsc-cream-dark bg-white"
-                                    }`}
-                                >
-                                    <PkgIcon size={11} />
-                                    {name}
-                                </span>
-                                {i < PACKAGES.length - 1 && (
-                                    <span className="text-fsc-stone text-xs" aria-hidden="true">
-                                        ›
-                                    </span>
-                                )}
-                            </React.Fragment>
-                        );
-                    })}
-                </div>
-
-                <div className="text-fsc-stone mt-1 text-sm">
-                    {rankName} · {packageName} Care
+                <div className="mt-2 flex items-center gap-2 text-sm">
+                    <span className="text-fsc-stone">{rankName} ·</span>
+                    <span className="bg-fsc-navy inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium text-white">
+                        {packageName.toLowerCase() === "basic" ? <User size={13} /> : <Users size={13} />}
+                        {packageName} Care
+                    </span>
                 </div>
 
                 <div className="text-fsc-stone mt-2 text-sm">Member since: {member.dateCreated?.toDate?.()?.toLocaleDateString()}</div>
