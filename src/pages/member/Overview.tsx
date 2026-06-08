@@ -1,5 +1,5 @@
 import React from "react";
-import { Wallet, TrendingUp, Users, CheckCircle, Clock, Check, ShieldAlert, Rocket, Crown } from "lucide-react";
+import { Wallet, TrendingUp, Users, CheckCircle, Clock, Check, Heart, Rocket, Crown } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { StatCard } from "./StatCard";
 import { type Member, type EarningsTrendPoint } from "../../utils/types";
@@ -78,69 +78,62 @@ const UpgradeBanner: React.FC<{ packageName: string; onComparePackages: () => vo
     );
 };
 
-// ─── Contestability Card ──────────────────────────────────────────────────────
+// ─── Beneficiaries Card ───────────────────────────────────────────────────────
 
-const ContestabilityCard: React.FC = () => (
-    <div className="border-fsc-cream-dark rounded-2xl border bg-white p-6">
-        <div className="mb-4 flex items-start justify-between">
-            <div>
-                <h2 className="font-display text-fsc-navy text-lg">Contestability Period</h2>
-                <p className="text-fsc-stone mt-0.5 text-xs">
-                    Claims may be investigated within the first 1 month of membership. Upgrade your package within this period.
-                </p>
+const initialsOf = (name: string): string =>
+    name
+        .trim()
+        .split(/\s+/)
+        .slice(0, 2)
+        .map((w) => w[0]?.toUpperCase() ?? "")
+        .join("");
+
+const BeneficiariesCard: React.FC<{ beneficiaries: Member["beneficiaries"] }> = ({ beneficiaries }) => {
+    const list = beneficiaries ?? [];
+    return (
+        <div className="border-fsc-cream-dark rounded-2xl border bg-white p-6">
+            <div className="mb-4 flex items-start justify-between">
+                <div>
+                    <h2 className="font-display text-fsc-navy text-lg">Beneficiaries</h2>
+                    <p className="text-fsc-stone mt-0.5 text-xs">People who will receive your benefits.</p>
+                </div>
+                <span className="bg-fsc-cream text-fsc-navy shrink-0 rounded-full px-3 py-1 text-xs font-medium">
+                    {list.length} {list.length === 1 ? "beneficiary" : "beneficiaries"}
+                </span>
             </div>
-            {/* TODO: swap className between active/cleared based on contestability status */}
-            <span className="shrink-0 rounded-full bg-[#C9922A]/10 px-3 py-1 text-xs font-medium text-[#A87820]">
-                {/* TODO: "Cleared" or "Active" */}
-                Active
-            </span>
-        </div>
 
-        <div className="text-fsc-stone mb-2 flex items-center justify-between text-xs">
-            <span>Day 1</span>
-            <span>Month 1</span>
+            {list.length === 0 ? (
+                <div className="px-6 py-10 text-center">
+                    <div className="bg-fsc-cream mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full">
+                        <Heart size={20} className="text-fsc-stone" />
+                    </div>
+                    <div className="text-fsc-navy text-sm font-medium">No beneficiaries yet</div>
+                    <div className="text-fsc-stone mt-1 text-xs">Add beneficiaries from your profile to keep your coverage up to date.</div>
+                </div>
+            ) : (
+                <div className="divide-fsc-cream-dark divide-y">
+                    {list.map((b, i) => (
+                        <div key={b.id ?? i} className="flex items-center gap-4 py-3 first:pt-0 last:pb-0">
+                            <div className="bg-fsc-cream-dark text-fsc-navy font-display flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs">
+                                {initialsOf(b.name) || <Heart size={14} />}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                                <div className="text-fsc-navy truncate text-sm font-medium">{b.name || "—"}</div>
+                                <div className="text-fsc-stone text-xs">{b.relationship || "—"}</div>
+                            </div>
+                            {b.coverage != null && (
+                                <div className="text-right">
+                                    <div className="text-fsc-navy text-sm font-medium">{formatCurrency(b.coverage)}</div>
+                                    <div className="text-fsc-stone text-xs">coverage</div>
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
-
-        <div className="bg-fsc-cream-dark relative h-3 w-full overflow-hidden rounded-full">
-            {/* TODO: set width to progress percentage, swap color class for cleared state */}
-            <div className="h-full w-1/2 rounded-full bg-[#C9922A] transition-all duration-700" />
-        </div>
-
-        <div className="mt-3 flex items-center justify-between text-xs">
-            {/* TODO: replace placeholder text with computed elapsed/remaining values */}
-            <span className="text-fsc-stone">— of 1 month elapsed</span>
-            <span className="flex items-center gap-1 text-[#A87820]">
-                <ShieldAlert size={12} /> — days remaining
-            </span>
-        </div>
-
-        <div className="border-fsc-cream-dark mt-4 grid grid-cols-3 gap-3 border-t pt-4">
-            <div>
-                <div className="text-fsc-stone text-xs">Period start</div>
-                {/* TODO: fill with member enrollment date */}
-                <div className="text-fsc-navy mt-0.5 text-sm">—</div>
-            </div>
-            <div>
-                <div className="text-fsc-stone text-xs">Period end</div>
-                {/* TODO: fill with enrollment date + 1 month */}
-                <div className="text-fsc-navy mt-0.5 text-sm">—</div>
-            </div>
-            <div>
-                <div className="text-fsc-stone text-xs">Progress</div>
-                {/* TODO: fill with percentage */}
-                <div className="text-fsc-navy mt-0.5 text-sm font-medium">—%</div>
-            </div>
-        </div>
-
-        <div className="mt-4 rounded-xl bg-[#C9922A]/8 px-4 py-3" style={{ background: "rgba(201,146,42,0.08)" }}>
-            <p className="text-xs font-medium text-[#A87820]">Upgrade required within 1 month</p>
-            <p className="text-fsc-stone mt-1 text-xs leading-relaxed">
-                Members must upgrade their package within the contestability period. Claims filed before an upgrade is completed may be subject to
-                investigation or denial.
-            </p>
-        </div>
-    </div>
-);
+    );
+};
 
 // ─── Main Overview ────────────────────────────────────────────────────────────
 
@@ -282,8 +275,8 @@ export const MemberOverview: React.FC<Props> = ({
                 </div>
             </div>
 
-            {/* Contestability Period */}
-            <ContestabilityCard />
+            {/* Beneficiaries */}
+            <BeneficiariesCard beneficiaries={member.beneficiaries} />
 
             {/* Recent Activity */}
             <div className="border-fsc-cream-dark rounded-2xl border bg-white p-6">
