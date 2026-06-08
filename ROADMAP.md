@@ -105,18 +105,15 @@
 - [ ] Replace placeholder GoTyme account numbers and QR images with real ones
 - [ ] Confirm live domain (`faithshield.care` tentative)
 
-### Eligibility timeline
-- [ ] Client confirmation needed for `assumed: true` milestones:
-  - Basic: hospital cash waiting period
-  - Family: death contestability period
-  - Premium: maternity / calamity waiting periods
 
 ### Firestore
 - [ ] **Publish updated `firestore.rules`** — `upgradeRequests` collection block must be deployed or upgrade requests will fail
+- [ ] **Publish Storage rules** — claim file uploads write to `claims/{memberId}/…`; members must be allowed to upload there or claim submission fails
 - [ ] Index any new collection queries as usage grows
 
 ### Features (not yet scoped)
-- [ ] Claims filing flow (member submits benefit claim + documents)
+- [x] Claims filing flow — per-benefit claim modal (auto/variable amount, required + optional docs, file upload to Storage)
+- [ ] Admin view of claim attachments (`uploads` stored on the claim doc; admin Claims UI doesn't render them yet)
 - [ ] Push / in-app notifications (new commission, payout status, upgrade approved)
 - [ ] Admin reports / export (CSV or PDF summary)
 - [ ] Member profile edit page

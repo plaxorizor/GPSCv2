@@ -17,6 +17,7 @@ import ConfirmDialog from "../../components/ConfirmDialog";
 import { PACKAGE_INFO } from "../../utils/types";
 import { rankFromChildren, rankName } from "../../utils/rank";
 import { isEligible } from "../../utils/commission";
+import { getClaimableBenefits } from "../../utils/eligibility";
 import type { Member, Commission, ReferralNode } from "../../utils/types";
 
 // Rank mapping based on rank number
@@ -187,6 +188,7 @@ export default function MemberArea() {
             {showFileClaim && (
                 <FileClaimModal
                     memberName={`${user.firstName} ${user.lastName}`.trim()}
+                    benefits={getClaimableBenefits(user.dateEligibility ?? user.dateActivated ?? user.dateCreated, user.package)}
                     onClose={() => setShowFileClaim(false)}
                     onSuccess={refetchClaims}
                 />
