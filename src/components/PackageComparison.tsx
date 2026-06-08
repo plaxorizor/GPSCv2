@@ -85,16 +85,9 @@ const PLANS = [
 type Plan = (typeof PLANS)[number];
 
 function PlanCard({ plan, isCurrent, isUpgrade, onChoose }: { plan: Plan; isCurrent: boolean; isUpgrade: boolean; onChoose: () => void }) {
-    const [hovered, setHovered] = useState(false);
-
-    const transform = plan.popular
-        ? hovered ? "scale(1.05) translateY(-6px)" : "scale(1.03)"
-        : hovered ? "translateY(-4px)" : "translateY(0)";
-    const boxShadow = hovered
-        ? "0 20px 48px rgba(0,0,0,0.12)"
-        : plan.popular
-        ? "0 8px 32px rgba(0,0,0,0.10)"
-        : "0 2px 12px rgba(0,0,0,0.06)";
+    // Popular card keeps a subtle static emphasis; no hover transform.
+    const transform = plan.popular ? "scale(1.03)" : "translateY(0)";
+    const boxShadow = plan.popular ? "0 8px 32px rgba(0,0,0,0.10)" : "0 2px 12px rgba(0,0,0,0.06)";
 
     return (
         <div className="relative">
@@ -108,9 +101,7 @@ function PlanCard({ plan, isCurrent, isUpgrade, onChoose }: { plan: Plan; isCurr
             )}
             <div
                 className={`tier-${plan.tier} rounded-2xl p-7 flex flex-col`}
-                style={{ transform, boxShadow, transition: "transform 0.25s ease, box-shadow 0.25s ease" }}
-                onMouseEnter={() => setHovered(true)}
-                onMouseLeave={() => setHovered(false)}
+                style={{ transform, boxShadow }}
             >
                 <div className="tier-coverage mb-1 text-xs font-medium tracking-[0.15em] uppercase">{plan.tag}</div>
                 <h3 className="tier-name font-display mb-4 text-3xl">{plan.name}</h3>
@@ -245,9 +236,9 @@ export default function PackageComparison({ currentPackage, initialTarget = null
             {PAYMENT_INFO.accounts.filter((a) => a.label === selectedPaymentMethod).map((acct) => (
                 <div key={acct.label} className="flex flex-col items-center rounded-2xl p-6" style={{ border: "1px solid #D0D2D8", backgroundColor: "#fff" }}>
                     {acct.qr ? (
-                        <img src={acct.qr} alt={`${acct.label} QR code`} className="h-64 w-64 rounded-xl object-contain" style={{ border: "1px solid #D0D2D8" }} />
+                        <img src={acct.qr} alt={`${acct.label} QR code`} className="aspect-square w-full max-w-[16rem] rounded-xl object-contain" style={{ border: "1px solid #D0D2D8" }} />
                     ) : (
-                        <div className="flex h-64 w-64 items-center justify-center rounded-xl text-xs" style={{ backgroundColor: "#F3F4F6", color: "#9CA3AF", border: "2px dashed #D1D5DB" }}>
+                        <div className="flex aspect-square w-full max-w-[16rem] items-center justify-center rounded-xl text-xs" style={{ backgroundColor: "#F3F4F6", color: "#9CA3AF", border: "2px dashed #D1D5DB" }}>
                             QR placeholder
                         </div>
                     )}
