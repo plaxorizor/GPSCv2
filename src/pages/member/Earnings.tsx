@@ -1,5 +1,5 @@
 import React from "react";
-import { Wallet, Clock, TrendingUp, Download } from "lucide-react";
+import { Wallet, Clock, TrendingUp } from "lucide-react";
 import { StatCard } from "./StatCard";
 import type { Commission, Payout } from "../../utils/types";
 import { formatCurrency, formatDate } from "../../utils/formatter";
@@ -32,14 +32,9 @@ export const MemberEarnings: React.FC<Props> = ({ availableToWithdraw, pendingHo
                     <h2 className="font-display text-fsc-navy text-lg">Commissions</h2>
                     <p className="text-fsc-stone text-xs">Every commission earned, by source</p>
                 </div>
-                <div className="flex gap-2">
-                    <button className="border-fsc-cream-dark flex items-center gap-1 rounded-lg border px-3 py-2 text-xs">
-                        <Download size={12} /> CSV
-                    </button>
-                    <button onClick={onRequestPayout} className="bg-fsc-green rounded-lg px-4 py-2 text-xs font-medium text-white">
-                        Request Payout
-                    </button>
-                </div>
+                <button onClick={onRequestPayout} className="bg-fsc-green rounded-lg px-4 py-2 text-xs font-medium text-white">
+                    Request Payout
+                </button>
             </div>
             <div className="overflow-x-auto">
                 <table className="w-full text-sm">

@@ -1,5 +1,5 @@
 import { getDoc, setDoc, doc, serverTimestamp } from "firebase/firestore";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { registerUser } from "../../firebase/auth";
 import { db } from "../../firebase/config";
 
@@ -55,9 +55,9 @@ const PAYMENT_INFO = {
     // `qr` is an optional image path (e.g. "/qr/gcash.png" in /public, or an
     // imported asset URL). Leave empty to show the "QR placeholder" box.
     accounts: [
-        { label: "GCash", accountName: "Faith Shield Care Official", number: "09XX-XXX-XXXX", qr: "" },
-        { label: "Maya", accountName: "Faith Shield Care Official", number: "09XX-XXX-XXXX", qr: "" },
-        { label: "GoTyme", accountName: "Faith Shield Care Official", number: "09XX-XXX-XXXX", qr: "" },
+        { label: "GCash",   accountName: "Faith Shield Care Official", number: "09XX-XXX-XXXX", qr: "" },
+        { label: "Maya",    accountName: "Faith Shield Care Official", number: "09XX-XXX-XXXX", qr: "" },
+        { label: "GoTyme",  accountName: "Faith Shield Care Official", number: "09XX-XXX-XXXX", qr: "" },
     ],
     // Where members send their proof of payment for manual verification.
     receiptContacts: [
@@ -87,10 +87,10 @@ export default function SignUpLayout() {
     // Birth date split into Month / Day / Year dropdowns.
     const [birth, setBirth] = useState({ y: "", m: "", d: "" });
     const [consented, setConsented] = useState(false);
-    const [policyTab, setPolicyTab] = useState<"privacy" | "terms">("privacy");
-    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(PAYMENT_INFO.accounts[0].label);
+    const [policyTab, setPolicyTab] = useState<"privacy" | "terms" | "refund">("privacy");
 
     const [selectedPlan, setSelectedPlan] = useState(plans[0]);
+    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(PAYMENT_INFO.accounts[0].label);
     const [form, setForm] = useState({
         package: "",
         firstName: "",
@@ -102,7 +102,6 @@ export default function SignUpLayout() {
         password: "",
         confirmPassword: "",
         mobile: "",
-        birthDate: "",
         gender: "",
         civilStatus: "",
         streetAddress: "",
@@ -119,7 +118,23 @@ export default function SignUpLayout() {
     // Required fields that failed validation on the last "Continue" — highlighted
     // red. Top-level keys match `form`; beneficiary keys are "ben-{index}-name" etc.
     const [invalidFields, setInvalidFields] = useState<Set<string>>(new Set());
-    const isInvalid = (key: string) => invalidFields.has(key);
+    // Derived: remove a field from the highlight as soon as it has a value again.
+    const effectiveInvalidFields = useMemo(() => {
+        if (invalidFields.size === 0) return invalidFields;
+        const next = new Set(invalidFields);
+        for (const key of invalidFields) {
+            if (key.startsWith("ben-")) {
+                const [, idxStr, sub] = key.split("-");
+                const b = form.beneficiaries[Number(idxStr)];
+                if (b && String((b as Record<string, string>)[sub] ?? "").trim()) next.delete(key);
+            } else {
+                const v = (form as Record<string, unknown>)[key];
+                if (typeof v === "string" ? v.trim() !== "" : Boolean(v)) next.delete(key);
+            }
+        }
+        return next;
+    }, [invalidFields, form]);
+    const isInvalid = (key: string) => effectiveInvalidFields.has(key);
 
     // Fields the user has blurred at least once — used to validate on focus loss
     // (not while still typing).
@@ -131,31 +146,8 @@ export default function SignUpLayout() {
     const passwordMismatch = touched.has("confirmPassword") && !!form.confirmPassword && form.password !== form.confirmPassword;
     const fieldCls = (key: string) => `${inputCls}${isInvalid(key) ? " !border-[#C41E1E]" : ""}`;
 
-    // Clear a field's red highlight as soon as it has a value again.
-    useEffect(() => {
-        setInvalidFields((prev) => {
-            if (prev.size === 0) return prev;
-            const next = new Set(prev);
-            for (const key of prev) {
-                if (key.startsWith("ben-")) {
-                    const [, idxStr, sub] = key.split("-");
-                    const b = form.beneficiaries[Number(idxStr)];
-                    if (b && String((b as Record<string, string>)[sub] ?? "").trim()) next.delete(key);
-                } else {
-                    const v = (form as Record<string, unknown>)[key];
-                    if (typeof v === "string" ? v.trim() !== "" : Boolean(v)) next.delete(key);
-                }
-            }
-            return next.size === prev.size ? prev : next;
-        });
-    }, [form]);
-
-    // Combine the Month/Day/Year dropdowns into form.birthDate (YYYY-MM-DD).
-    // Only set a value once all three are chosen; otherwise keep it empty.
-    useEffect(() => {
-        const next = birth.y && birth.m && birth.d ? `${birth.y}-${birth.m}-${birth.d}` : "";
-        setForm((prev) => (prev.birthDate === next ? prev : { ...prev, birthDate: next }));
-    }, [birth]);
+    // Derived from the three dropdowns — no effect needed.
+    const birthDate = birth.y && birth.m && birth.d ? `${birth.y}-${birth.m}-${birth.d}` : "";
 
     // Birth-date dropdown option lists.
     const MONTHS = [
@@ -171,22 +163,21 @@ export default function SignUpLayout() {
     const [barangayOptions, setBarangayOptions] = useState<Barangay[]>([]);
     const [loadingBarangays, setLoadingBarangays] = useState(false);
     useEffect(() => {
-        if (!form.cityCode) {
-            setBarangayOptions([]);
-            return;
-        }
         let cancelled = false;
-        setLoadingBarangays(true);
-        barangaysByCity(form.cityCode)
-            .then((list) => {
+        (async () => {
+            if (!form.cityCode) {
+                if (!cancelled) setBarangayOptions([]);
+                return;
+            }
+            if (!cancelled) setLoadingBarangays(true);
+            try {
+                const list = await barangaysByCity(form.cityCode);
                 if (!cancelled) setBarangayOptions(list);
-            })
-            .finally(() => {
+            } finally {
                 if (!cancelled) setLoadingBarangays(false);
-            });
-        return () => {
-            cancelled = true;
-        };
+            }
+        })();
+        return () => { cancelled = true; };
     }, [form.cityCode]);
 
     // Cascading address handlers — selecting a parent resets its children.
@@ -246,7 +237,7 @@ export default function SignUpLayout() {
             if (!form.password) missing.add("password");
             if (!form.confirmPassword) missing.add("confirmPassword");
             if (!form.mobile.trim()) missing.add("mobile");
-            if (!form.birthDate) missing.add("birthDate");
+            if (!birthDate) missing.add("birthDate");
             if (!form.gender) missing.add("gender");
             if (!form.civilStatus) missing.add("civilStatus");
             if (!form.streetAddress.trim()) missing.add("streetAddress");
@@ -277,11 +268,11 @@ export default function SignUpLayout() {
                 return false;
             }
             // Check age (must be 18+)
-            const birthDate = new Date(form.birthDate);
+            const birthDateObj = new Date(birthDate);
             const today = new Date();
-            let age = today.getFullYear() - birthDate.getFullYear();
-            const monthDiff = today.getMonth() - birthDate.getMonth();
-            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+            let age = today.getFullYear() - birthDateObj.getFullYear();
+            const monthDiff = today.getMonth() - birthDateObj.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDateObj.getDate())) {
                 age--;
             }
             if (age < 18) {
@@ -366,7 +357,7 @@ export default function SignUpLayout() {
                 suffix: form.suffix || null,
                 email: form.email,
                 mobile: form.mobile ? `+63${form.mobile}` : "",
-                birthDate: form.birthDate,
+                birthDate: birthDate,
                 gender: form.gender,
                 civilStatus: form.civilStatus,
                 streetAddress: form.streetAddress,
@@ -421,8 +412,8 @@ export default function SignUpLayout() {
 
                             {/* Tab bar */}
                             <div className="mb-5 flex rounded-xl overflow-hidden" style={{ border: "1px solid #D0D2D8" }}>
-                                {(["privacy", "terms"] as const).map((tab) => {
-                                    const labels = { privacy: "Privacy Policy", terms: "Terms & Conditions" };
+                                {(["privacy", "terms", "refund"] as const).map((tab) => {
+                                    const labels = { privacy: "Privacy Policy", terms: "Terms & Conditions", refund: "Refund Policy" };
                                     const active = policyTab === tab;
                                     return (
                                         <button
@@ -433,7 +424,7 @@ export default function SignUpLayout() {
                                             style={{
                                                 backgroundColor: active ? "#1B2D6B" : "#F2F3F5",
                                                 color: active ? "#fff" : "#6B6862",
-                                                borderRight: tab !== "terms" ? "1px solid #D0D2D8" : undefined,
+                                                borderRight: tab !== "refund" ? "1px solid #D0D2D8" : undefined,
                                             }}
                                         >
                                             {labels[tab]}
@@ -449,6 +440,7 @@ export default function SignUpLayout() {
                             >
                                 {policyTab === "privacy" && (
                                     <>
+                                        <p><strong style={{ color: "#1B2D6B" }}>Last updated: June 2025</strong></p>
                                         <p>Faith Shield Care ("we", "us", or "our") is committed to protecting your personal information. This Privacy Policy explains how we collect, use, and safeguard the data you provide when registering as a member.</p>
                                         <p><strong style={{ color: "#1B2D6B" }}>Information We Collect</strong><br />We collect your name, email address, mobile number, birth date, civil status, location, referral code, and beneficiary details. Proof of payment that you send us for verification is handled separately and is not stored in your online account.</p>
                                         <p><strong style={{ color: "#1B2D6B" }}>How We Use Your Information</strong><br />Your data is used to process your membership application, verify identity, manage your account, facilitate referral rewards, and communicate important updates.</p>
@@ -459,6 +451,7 @@ export default function SignUpLayout() {
                                 )}
                                 {policyTab === "terms" && (
                                     <>
+                                        <p><strong style={{ color: "#1B2D6B" }}>Last updated: June 2025</strong></p>
                                         <p>By registering for a Faith Shield Care membership, you agree to be bound by these Terms &amp; Conditions. Please read them carefully before proceeding.</p>
                                         <p><strong style={{ color: "#1B2D6B" }}>Eligibility</strong><br />Membership is open to individuals 18 years of age or older. By registering, you confirm that all information provided is accurate and truthful.</p>
                                         <p><strong style={{ color: "#1B2D6B" }}>Membership Plans</strong><br />Each plan (Basic, Family, Premium) carries distinct benefits and referral structures. Plan details are subject to change with prior notice to members.</p>
@@ -468,12 +461,17 @@ export default function SignUpLayout() {
                                         <p><strong style={{ color: "#1B2D6B" }}>Governing Law</strong><br />These Terms are governed by the laws of the Republic of the Philippines.</p>
                                     </>
                                 )}
+                                {policyTab === "refund" && (
+                                    <>
+                                        <p><strong style={{ color: "#1B2D6B" }}>Last updated: June 2025</strong></p>
+                                        <p>Faith Shield Care strives to ensure member satisfaction. Please review our refund policy before completing your registration.</p>
+                                        <p><strong style={{ color: "#1B2D6B" }}>Cooling-Off Period</strong><br />Members may request a full refund within 7 calendar days of account activation, provided no referral commissions have been disbursed under their account.</p>
+                                        <p><strong style={{ color: "#1B2D6B" }}>Non-Refundable Circumstances</strong><br />Refunds will not be granted if the membership has been active for more than 7 days, if commissions have already been paid to the member, or if the account has been found in violation of our Terms &amp; Conditions.</p>
+                                        <p><strong style={{ color: "#1B2D6B" }}>How to Request a Refund</strong><br />To initiate a refund, contact our support team at support@faithshieldcare.com with your registered email and reason for the request. Approved refunds will be processed within 7–14 business days.</p>
+                                        <p><strong style={{ color: "#1B2D6B" }}>Plan Upgrades</strong><br />Payments made for plan upgrades are non-refundable once the upgraded plan has been activated.</p>
+                                    </>
+                                )}
                             </div>
-
-                            {/* Disclaimer */}
-                            <p className="mb-5 rounded-xl px-4 py-3 text-xs leading-relaxed" style={{ backgroundColor: "#F2F3F5", border: "1px solid #D0D2D8", color: "#6B6862" }}>
-                                <strong style={{ color: "#1B2D6B" }}>Disclaimer:</strong> The benefits presented, including coverage for natural calamity, accidental incidents, natural death, maternity-related assistance, and hospitalization, are governed by official policy contracts, benefit limitations, and company guidelines. Availability of benefits and claims approval are subject to plan provisions and evaluation.
-                            </p>
 
                             {/* Action buttons */}
                             <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
@@ -1232,7 +1230,7 @@ export default function SignUpLayout() {
                                                     { label: "Suffix", value: form.suffix || "—" },
                                                     { label: "Email", value: form.email || "—" },
                                                     { label: "Mobile", value: form.mobile ? `+63 ${formatPHMobile(form.mobile)}` : "—" },
-                                                    { label: "Birth Date", value: form.birthDate || "—" },
+                                                    { label: "Birth Date", value: birthDate || "—" },
                                                     { label: "Gender", value: form.gender ? form.gender.charAt(0).toUpperCase() + form.gender.slice(1) : "—" },
                                                     {
                                                         label: "Civil Status",
