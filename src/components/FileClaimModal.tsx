@@ -25,6 +25,7 @@ export default function FileClaimModal({ memberName, benefits, onClose, onSucces
     const [customAmount, setCustomAmount] = useState(""); // for variable-amount benefits
     const [description, setDescription] = useState("");
     const [documents, setDocuments] = useState<string[]>([]);
+    const [otherDoc, setOtherDoc] = useState(""); // free-text "Others" document
     const [files, setFiles] = useState<File[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
@@ -39,6 +40,7 @@ export default function FileClaimModal({ memberName, benefits, onClose, onSucces
     const pickBenefit = (label: string) => {
         setBenefitLabel(label);
         setDocuments([]);
+        setOtherDoc("");
         const b = benefits.find((x) => x.label === label);
         setCustomAmount(b?.variableAmount ? String(b.amount) : "");
     };
@@ -55,11 +57,12 @@ export default function FileClaimModal({ memberName, benefits, onClose, onSucces
         setLoading(true);
         try {
             const uploads = files.length ? await uploadClaimFiles(currentUser.uid, files) : [];
+            const allDocs = otherDoc.trim() ? [...documents, otherDoc.trim()] : documents;
             await submitClaim(currentUser.uid, memberName, {
                 benefit: selected.label,
                 amount,
                 description: description.trim(),
-                documents,
+                documents: allDocs,
                 uploads,
             });
             setSuccess(true);
@@ -205,7 +208,7 @@ export default function FileClaimModal({ memberName, benefits, onClose, onSucces
                             />
                         </div>
 
-                        {/* Documents — required + optional for THIS benefit */}
+                        {/* Required documents for THIS benefit + an "Others" entry */}
                         <div>
                             <label className="text-fsc-navy mb-1.5 block text-sm font-medium">
                                 Supporting documents <span className="text-fsc-stone font-normal">(tick what you have)</span>
@@ -222,19 +225,13 @@ export default function FileClaimModal({ memberName, benefits, onClose, onSucces
                                         <span className="text-fsc-stone">{doc}</span>
                                     </label>
                                 ))}
-                                {selected.optionalDocuments.map((doc) => (
-                                    <label key={doc} className="flex cursor-pointer items-center gap-2 text-sm">
-                                        <input
-                                            type="checkbox"
-                                            checked={documents.includes(doc)}
-                                            onChange={() => toggleDoc(doc)}
-                                            className="accent-fsc-green h-4 w-4 rounded"
-                                        />
-                                        <span className="text-fsc-stone">
-                                            {doc} <span className="text-fsc-stone/60">· optional</span>
-                                        </span>
-                                    </label>
-                                ))}
+                                <input
+                                    type="text"
+                                    value={otherDoc}
+                                    onChange={(e) => setOtherDoc(e.target.value)}
+                                    placeholder="Others (optional)"
+                                    className="border-fsc-cream-dark focus:border-fsc-green mt-1 w-full rounded-xl border px-3 py-2 text-sm focus:outline-none"
+                                />
                             </div>
                         </div>
 

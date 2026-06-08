@@ -50,7 +50,6 @@ interface Props {
         unlocked: boolean;
         amount: number;
         documents: string[];
-        optionalDocuments: string[];
         variableAmount?: boolean;
     }>;
     recentCommissions: Array<{
@@ -294,7 +293,6 @@ export const MemberOverview: React.FC<Props> = ({
                                                         label: item.label,
                                                         amount: item.amount,
                                                         documents: item.documents,
-                                                        optionalDocuments: item.optionalDocuments,
                                                         variableAmount: item.variableAmount,
                                                     })
                                                 }

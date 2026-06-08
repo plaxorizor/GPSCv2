@@ -17,21 +17,12 @@ const DOC_CALAMITY = ["Valid ID", "Barangay Certificate", "Proof of Loss / Photo
 const DOC_BIRTHDAY = ["Valid ID"];
 const DOC_MATERNITY = ["Valid ID", "Medical Certificate", "Official Receipt / Billing Statement"];
 
-// Optional supporting documents — helpful but not required to file.
-const OPT_DEATH = ["Funeral Contract / Receipt", "Affidavit"];
-const OPT_HOSPITAL = ["Doctor's Prescription", "Laboratory Results"];
-const OPT_SENIOR = ["1×1 ID Photo"];
-const OPT_CALAMITY = ["Insurance / Damage Report"];
-const OPT_MATERNITY = ["Child's Birth Certificate"];
-const OPT_NONE: string[] = [];
-
 export interface EligibilityMilestone {
     label: string;
     months: number;
     days: number;
     amount: number; // headline claim payout (default / maximum for variable benefits)
     documents: string[]; // required supporting documents
-    optionalDocuments: string[]; // optional supporting documents
     variableAmount?: boolean; // payout varies (member enters the claimed amount)
 }
 
@@ -40,29 +31,29 @@ export type PackageKey = "basic" | "family" | "premium";
 export const ELIGIBILITY_BY_PACKAGE: Record<PackageKey, EligibilityMilestone[]> = {
     // Basic Care (₱698) — individual
     basic: [
-        { label: "Accidental Death Assistance", months: 1, days: 30, amount: 10_000, documents: DOC_DEATH_ACCIDENTAL, optionalDocuments: OPT_DEATH },
-        { label: "Hospital Cash Assistance", months: 6, days: 180, amount: 5_000, documents: DOC_HOSPITAL, optionalDocuments: OPT_HOSPITAL, variableAmount: true },
-        { label: "Senior Citizen Recognition Gift", months: 6, days: 180, amount: 5_000, documents: DOC_SENIOR, optionalDocuments: OPT_SENIOR, variableAmount: true },
-        { label: "Natural / Accidental Death (₱40k)", months: 10, days: 300, amount: 40_000, documents: DOC_DEATH_NATURAL, optionalDocuments: OPT_DEATH },
+        { label: "Accidental Death Assistance", months: 1, days: 30, amount: 10_000, documents: DOC_DEATH_ACCIDENTAL },
+        { label: "Hospital Cash Assistance", months: 6, days: 180, amount: 5_000, documents: DOC_HOSPITAL, variableAmount: true },
+        { label: "Senior Citizen Recognition Gift", months: 6, days: 180, amount: 5_000, documents: DOC_SENIOR, variableAmount: true },
+        { label: "Natural / Accidental Death (₱40k)", months: 10, days: 300, amount: 40_000, documents: DOC_DEATH_NATURAL },
     ],
     // Family Care (₱1,698) — family of 4
     family: [
-        { label: "Accidental Death Assistance", months: 1, days: 30, amount: 10_000, documents: DOC_DEATH_ACCIDENTAL, optionalDocuments: OPT_DEATH },
-        { label: "Hospital Cash Assistance", months: 6, days: 180, amount: 5_000, documents: DOC_HOSPITAL, optionalDocuments: OPT_HOSPITAL, variableAmount: true },
-        { label: "Senior Citizen Recognition Gift", months: 6, days: 180, amount: 5_000, documents: DOC_SENIOR, optionalDocuments: OPT_SENIOR, variableAmount: true },
-        { label: "Calamities Cash Assistance", months: 8, days: 240, amount: 5_000, documents: DOC_CALAMITY, optionalDocuments: OPT_CALAMITY },
-        { label: "Natural / Accidental Death", months: 10, days: 300, amount: 40_000, documents: DOC_DEATH_NATURAL, optionalDocuments: OPT_DEATH },
+        { label: "Accidental Death Assistance", months: 1, days: 30, amount: 10_000, documents: DOC_DEATH_ACCIDENTAL },
+        { label: "Hospital Cash Assistance", months: 6, days: 180, amount: 5_000, documents: DOC_HOSPITAL, variableAmount: true },
+        { label: "Senior Citizen Recognition Gift", months: 6, days: 180, amount: 5_000, documents: DOC_SENIOR, variableAmount: true },
+        { label: "Calamities Cash Assistance", months: 8, days: 240, amount: 5_000, documents: DOC_CALAMITY },
+        { label: "Natural / Accidental Death", months: 10, days: 300, amount: 40_000, documents: DOC_DEATH_NATURAL },
     ],
     // Premium Care (₱4,998) — family of 5
     premium: [
-        { label: "Accidental Death Assistance", months: 1, days: 30, amount: 20_000, documents: DOC_DEATH_ACCIDENTAL, optionalDocuments: OPT_DEATH },
-        { label: "Natural Death (₱40k)", months: 5, days: 150, amount: 40_000, documents: DOC_DEATH_NATURAL, optionalDocuments: OPT_DEATH },
-        { label: "Hospital Cash Assistance", months: 6, days: 180, amount: 10_000, documents: DOC_HOSPITAL, optionalDocuments: OPT_HOSPITAL, variableAmount: true },
-        { label: "Senior Citizen Recognition Gift", months: 6, days: 180, amount: 20_000, documents: DOC_SENIOR, optionalDocuments: OPT_SENIOR, variableAmount: true },
-        { label: "Birthday Care Gift", months: 8, days: 240, amount: 5_000, documents: DOC_BIRTHDAY, optionalDocuments: OPT_NONE },
-        { label: "Maternity Cash Assistance", months: 8, days: 240, amount: 20_000, documents: DOC_MATERNITY, optionalDocuments: OPT_MATERNITY, variableAmount: true },
-        { label: "Calamities Cash Assistance", months: 8, days: 240, amount: 10_000, documents: DOC_CALAMITY, optionalDocuments: OPT_CALAMITY },
-        { label: "Natural / Accidental Death (₱80k)", months: 10, days: 300, amount: 80_000, documents: DOC_DEATH_NATURAL, optionalDocuments: OPT_DEATH },
+        { label: "Accidental Death Assistance", months: 1, days: 30, amount: 20_000, documents: DOC_DEATH_ACCIDENTAL },
+        { label: "Natural Death (₱40k)", months: 5, days: 150, amount: 40_000, documents: DOC_DEATH_NATURAL },
+        { label: "Hospital Cash Assistance", months: 6, days: 180, amount: 10_000, documents: DOC_HOSPITAL, variableAmount: true },
+        { label: "Senior Citizen Recognition Gift", months: 6, days: 180, amount: 20_000, documents: DOC_SENIOR, variableAmount: true },
+        { label: "Birthday Care Gift", months: 8, days: 240, amount: 5_000, documents: DOC_BIRTHDAY },
+        { label: "Maternity Cash Assistance", months: 8, days: 240, amount: 20_000, documents: DOC_MATERNITY, variableAmount: true },
+        { label: "Calamities Cash Assistance", months: 8, days: 240, amount: 10_000, documents: DOC_CALAMITY },
+        { label: "Natural / Accidental Death (₱80k)", months: 10, days: 300, amount: 80_000, documents: DOC_DEATH_NATURAL },
     ],
 };
 
@@ -94,7 +85,6 @@ export interface ClaimBenefit {
     label: string;
     amount: number;
     documents: string[];
-    optionalDocuments: string[];
     variableAmount?: boolean;
 }
 
@@ -105,10 +95,4 @@ export const getClaimableBenefits = (
 ): ClaimBenefit[] =>
     getEligibilityTimeline(dateCreated, pkg)
         .filter((m) => m.unlocked)
-        .map(({ label, amount, documents, optionalDocuments, variableAmount }) => ({
-            label,
-            amount,
-            documents,
-            optionalDocuments,
-            variableAmount,
-        }));
+        .map(({ label, amount, documents, variableAmount }) => ({ label, amount, documents, variableAmount }));
