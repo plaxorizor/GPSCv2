@@ -94,8 +94,12 @@
 
 ## 📋 Backlog
 
-### Auth
+### Auth & access
+- [x] **Pending gate** — pending accounts can't reach the dashboard; see a "pending activation" holding screen until an admin activates them
+- [x] **Membership lifecycle** — active 365 days → 30-day inactive renewal grace → expired. Phases **derived from dates** (`utils/membership.ts`); expired members are blocked with a renewal gate; grace members keep access + see a renewal banner
 - [ ] Email-exists check on sign-up (re-add when project is on **Firebase Blaze plan**)
+- [ ] **(Blaze)** Nightly scheduled function to persist derived status + send expiry/grace reminder emails (until then, phase is computed on read)
+- [ ] Renewal payment flow (admin re-activates via `activateMember`, which already resets dates — but no member-facing "pay to renew" UI yet)
 
 ### Payments — provider undecided ⚠️
 - [ ] **Decide inbound payment provider** (client deciding):

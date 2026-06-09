@@ -10,6 +10,9 @@ import { useReferralTree } from "../../hooks/useReferralTree";
 import { usePayouts } from "../../hooks/usePayouts";
 import { useMemberClaims } from "../../hooks/useMemberClaims";
 import MemberDashboard from "./MemberDashboard";
+import PendingActivation from "./PendingActivation";
+import ExpiredMembership from "./ExpiredMembership";
+import { membershipPhase } from "../../utils/membership";
 import ChangePasswordModal from "../../components/ChangePasswordModal";
 import RequestPayoutModal from "../../components/RequestPayoutModal";
 import FileClaimModal from "../../components/FileClaimModal";
@@ -77,6 +80,14 @@ export default function MemberArea() {
             />
         );
     }
+
+    // Membership-lifecycle gating (derived from dates):
+    //  • pending  → awaiting admin activation (golden rule)
+    //  • expired  → past the 365-day term + 30-day grace; must renew
+    //  • active/grace → full dashboard access (grace members get a renewal banner)
+    const phase = membershipPhase(member);
+    if (phase === "pending") return <PendingActivation member={member} />;
+    if (phase === "expired") return <ExpiredMembership member={member} />;
 
     // 1. User object — matches Member interface exactly
     const user: Member = {
