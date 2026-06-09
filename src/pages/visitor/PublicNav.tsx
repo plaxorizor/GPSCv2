@@ -1,13 +1,34 @@
 import React, { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LogOut, LayoutDashboard } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import logoSrc from "../../components/ui/Logo.png";
+import useAuth from "../../context/useAuth";
+import useMember from "../../hooks/useMember";
 
 export default function PublicNav(): React.ReactElement {
     const navigate = useNavigate();
     const { pathname } = useLocation();
     const [mobileOpen, setMobileOpen] = useState(false);
     const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+
+    // Auth-aware header: a signed-in member sees their profile instead of the
+    // Log In / Sign Up buttons. Pending members get no Dashboard link (they
+    // can't access it yet); active members do.
+    const { currentUser } = useAuth();
+    const { member } = useMember();
+    const loggedIn = !!currentUser;
+    const status = member?.status;
+    const isActive = status === "active";
+    const firstName = member?.firstName || "Account";
+    const initials = `${member?.firstName?.[0] ?? ""}${member?.lastName?.[0] ?? ""}`.toUpperCase() || "M";
+    const statusLabel = isActive ? "Active member" : status === "pending" ? "Pending verification" : (status ?? "");
+
+    const handleLogout = async () => {
+        const { getAuth, signOut } = await import("firebase/auth");
+        await signOut(getAuth());
+        setMobileOpen(false);
+        navigate("/");
+    };
 
     const items = [
         { id: "home", label: "Home", path: "/" },
@@ -72,15 +93,47 @@ export default function PublicNav(): React.ReactElement {
                     </nav>
 
                     <div className="hidden lg:flex items-center gap-3">
-                        <Link to="/signin" className="text-sm text-fsc-navy hover:underline cursor-pointer">
-                            Log In
-                        </Link>
-                        <Link
-                            to="/signup"
-                            className="bg-fsc-navy text-white px-5 py-2.5 rounded-full text-sm font-medium hover:bg-fsc-green transition-colors cursor-pointer"
-                        >
-                            Sign Up
-                        </Link>
+                        {loggedIn ? (
+                            <>
+                                <div className="flex items-center gap-2">
+                                    <div className="bg-fsc-navy flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold text-white">
+                                        {initials}
+                                    </div>
+                                    <div className="leading-tight text-left">
+                                        <div className="text-fsc-navy text-sm font-medium">{firstName}</div>
+                                        <div className={`text-[10px] font-medium ${isActive ? "text-fsc-green" : "text-[#A87820]"}`}>
+                                            {statusLabel}
+                                        </div>
+                                    </div>
+                                </div>
+                                {isActive && (
+                                    <button
+                                        onClick={() => navigate("/dashboard")}
+                                        className="bg-fsc-navy text-white flex items-center gap-1.5 rounded-full px-5 py-2.5 text-sm font-medium transition-colors hover:bg-fsc-green cursor-pointer"
+                                    >
+                                        <LayoutDashboard size={15} /> Dashboard
+                                    </button>
+                                )}
+                                <button
+                                    onClick={handleLogout}
+                                    className="text-fsc-stone hover:text-fsc-navy flex items-center gap-1 text-sm cursor-pointer"
+                                >
+                                    <LogOut size={15} /> Log out
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <Link to="/signin" className="text-sm text-fsc-navy hover:underline cursor-pointer">
+                                    Log In
+                                </Link>
+                                <Link
+                                    to="/signup"
+                                    className="bg-fsc-navy text-white px-5 py-2.5 rounded-full text-sm font-medium hover:bg-fsc-green transition-colors cursor-pointer"
+                                >
+                                    Sign Up
+                                </Link>
+                            </>
+                        )}
                     </div>
 
                     <button
@@ -109,12 +162,44 @@ export default function PublicNav(): React.ReactElement {
                                 </button>
                             );
                         })}
-                        <Link to="/signin" className="mt-2 block pl-4 text-sm text-fsc-navy cursor-pointer">
-                            Log In
-                        </Link>
-                        <Link to="/signup" className="bg-fsc-navy text-white px-5 py-2 rounded-full text-sm inline-block cursor-pointer">
-                            Sign Up
-                        </Link>
+                        {loggedIn ? (
+                            <div className="border-fsc-cream-dark mt-2 space-y-2 border-t pt-3">
+                                <div className="flex items-center gap-2 pl-4">
+                                    <div className="bg-fsc-navy flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold text-white">
+                                        {initials}
+                                    </div>
+                                    <div className="leading-tight">
+                                        <div className="text-fsc-navy text-sm font-medium">{firstName}</div>
+                                        <div className={`text-[10px] font-medium ${isActive ? "text-fsc-green" : "text-[#A87820]"}`}>
+                                            {statusLabel}
+                                        </div>
+                                    </div>
+                                </div>
+                                {isActive && (
+                                    <button
+                                        onClick={() => { setMobileOpen(false); navigate("/dashboard"); }}
+                                        className="bg-fsc-navy text-white flex w-full items-center justify-center gap-1.5 rounded-full px-5 py-2 text-sm font-medium cursor-pointer"
+                                    >
+                                        <LayoutDashboard size={15} /> Dashboard
+                                    </button>
+                                )}
+                                <button
+                                    onClick={handleLogout}
+                                    className="text-fsc-stone flex w-full items-center gap-1 pl-4 text-sm cursor-pointer"
+                                >
+                                    <LogOut size={15} /> Log out
+                                </button>
+                            </div>
+                        ) : (
+                            <>
+                                <Link to="/signin" className="mt-2 block pl-4 text-sm text-fsc-navy cursor-pointer">
+                                    Log In
+                                </Link>
+                                <Link to="/signup" className="bg-fsc-navy text-white px-5 py-2 rounded-full text-sm inline-block cursor-pointer">
+                                    Sign Up
+                                </Link>
+                            </>
+                        )}
                     </div>
                 )}
             </div>
