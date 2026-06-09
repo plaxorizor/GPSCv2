@@ -12,6 +12,7 @@ import { MemberPlan } from "./Plan";
 import type { Member, Commission, ReferralNode, EarningsTrendPoint, Claim, Payout, MemberStats } from "../../utils/types";
 
 import { getEligibilityTimeline } from "../../utils/eligibility";
+import { membershipPhase } from "../../utils/membership";
 import { isEligible } from "../../utils/commission";
 
 interface MemberDashboardProps {
@@ -155,6 +156,7 @@ export default function MemberDashboard({
                         commissions={commissions}
                         payouts={payouts}
                         onRequestPayout={onRequestPayout}
+                        membershipActive={membershipPhase(member) === "active"}
                         onRefreshCommissions={onRefreshCommissions}
                         onRefreshPayouts={onRefreshPayouts}
                     />

@@ -75,6 +75,7 @@ export default function RequestPayoutModal({ claimableCommissions, memberName, o
             if (msg === "BELOW_MINIMUM") setError(`Minimum payout is ${formatCurrency(MIN_PAYOUT)}.`);
             else if (msg === "ALREADY_CLAIMED") setError("Some commissions were already claimed. Please reopen and try again.");
             else if (msg === "NOT_YET_ELIGIBLE") setError("Some commissions aren't claimable yet.");
+            else if (msg === "MEMBERSHIP_NOT_ACTIVE") setError("Renew your membership to request a payout.");
             else setError("Failed to submit request. Please try again.");
         } finally {
             setLoading(false);
