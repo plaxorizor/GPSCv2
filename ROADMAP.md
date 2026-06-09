@@ -118,12 +118,13 @@
 ### Features (not yet scoped)
 - [x] Claims filing flow — per-benefit claim modal (auto/variable amount, required + optional docs, file upload to Storage)
 - [ ] Admin view of claim attachments (`uploads` stored on the claim doc; admin Claims UI doesn't render them yet)
-- [ ] Push / in-app notifications (new commission, payout status, upgrade approved)
+- [ ] Push / in-app notifications / Toast Notification(new commission, payout status, upgrade approved)
 - [ ] Admin reports / export (CSV or PDF summary)
 - [ ] Member profile edit page
 - [ ] Password reset flow
 - [ ] Account expiry renewal (re-subscribe after `dateExpiry`)
 - [ ] Inactive member re-activation flow
+- [ ] Inbox Or Messaging Feature
 
 ---
 

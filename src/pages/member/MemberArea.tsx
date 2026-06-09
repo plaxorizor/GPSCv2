@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "../../firebase/config";
+import logo from "../../components/ui/Logo.png";
 
 import useMember from "../../hooks/useMember";
 import useMemberStats from "../../hooks/useMemberStats";
@@ -45,6 +46,7 @@ export default function MemberArea() {
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
     const [loggingOut, setLoggingOut] = useState(false);
     const [pwChanged, setPwChanged] = useState(false);
+    const [showWelcome, setShowWelcome] = useState(false);
 
     const { member, loading: memberLoading } = useMember();
     const { stats: memberStats, loading: statsLoading } = useMemberStats();
@@ -54,6 +56,18 @@ export default function MemberArea() {
     const { tree } = useReferralTree(currentSection === "referrals");
     const { payouts, refetch: refetchPayouts } = usePayouts(currentSection === "earnings");
     const { claims, refetch: refetchClaims } = useMemberClaims(currentSection === "claims");
+
+    // One-time welcome once a member is active (i.e. an admin has activated them).
+    // Keyed in localStorage by uid so it only appears the first time.
+    useEffect(() => {
+        if (member?.status !== "active") return;
+        if (!localStorage.getItem(`fsc-welcome-${member.uid}`)) setShowWelcome(true);
+    }, [member]);
+
+    const dismissWelcome = () => {
+        if (member) localStorage.setItem(`fsc-welcome-${member.uid}`, "1");
+        setShowWelcome(false);
+    };
 
     const isLoading = memberLoading || statsLoading;
     if (isLoading) {
@@ -184,6 +198,7 @@ export default function MemberArea() {
 
     return (
         <>
+            {showWelcome && <WelcomeModal firstName={user.firstName} onClose={dismissWelcome} />}
             {showChangePassword && <ChangePasswordModal onClose={() => setShowChangePassword(false)} />}
             {showRequestPayout && (
                 <RequestPayoutModal
@@ -235,5 +250,43 @@ export default function MemberArea() {
                 onRefreshPayouts={refetchPayouts}
             />
         </>
+    );
+}
+
+// Shown once when a member's account becomes active (after admin activation).
+function WelcomeModal({ firstName, onClose }: { firstName?: string; onClose: () => void }) {
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm" onClick={onClose}>
+            <div
+                className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-3xl bg-white p-8 text-center shadow-xl"
+                onClick={(e) => e.stopPropagation()}
+            >
+                <img src={logo} alt="Faith Shield Care" className="mx-auto mb-5 h-16 w-16 rounded-full object-contain" />
+                <h2 className="font-display text-fsc-navy text-2xl">
+                    Welcome to the Faith Shield Care Family{firstName ? `, ${firstName}` : ""}
+                </h2>
+                <div className="text-fsc-stone mt-4 space-y-4 text-left text-sm leading-relaxed">
+                    <p>
+                        We sincerely appreciate your trust and confidence in choosing us as your partner in securing your future and
+                        protecting what matters most.
+                    </p>
+                    <p>
+                        As part of our growing family, you can expect our unwavering commitment to providing care, support, and reliable
+                        service every step of the way. We are honored to be part of your journey toward greater peace of mind, financial
+                        security, and protection for you and your loved ones.
+                    </p>
+                    <p>
+                        Thank you for joining Faith Shield Care. We look forward to serving you with excellence, integrity, and compassion.
+                    </p>
+                </div>
+                <p className="font-display text-fsc-green mt-6 text-lg italic">Care Beyond Protection</p>
+                <button
+                    onClick={onClose}
+                    className="bg-fsc-green mt-6 w-full rounded-xl py-3 text-sm font-medium text-white transition-opacity hover:opacity-90"
+                >
+                    Get started
+                </button>
+            </div>
+        </div>
     );
 }
