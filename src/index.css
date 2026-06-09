@@ -50,6 +50,14 @@ body, html, #root { font-family: 'DM Sans', system-ui, sans-serif; }
 .hover\:bg-fsc-cream-dark:hover { background-color: #E2E4E8; }
 .hover\:bg-fsc-red:hover        { background-color: #A31818; }
 
+/* Hover text colors. The base .text-fsc-* classes above are unlayered, so they
+   beat Tailwind's layered hover:text-* utilities (unlayered always wins the
+   cascade). These must be hand-written too — and the custom fsc colors aren't in
+   Tailwind's theme, so hover:text-fsc-* wouldn't generate at all otherwise. */
+.hover\:text-white:hover        { color: #ffffff; }
+.hover\:text-fsc-navy:hover     { color: #1B2D6B; }
+.hover\:text-fsc-green:hover    { color: #C9922A; }
+
 /* -- Grain overlay ----------------------------------------------------- */
 .grain-overlay {
     background-image: radial-gradient(circle at 1px 1px, rgba(27,45,107,0.04) 1px, transparent 0);
