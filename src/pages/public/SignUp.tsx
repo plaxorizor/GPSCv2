@@ -448,7 +448,6 @@ export default function SignUpLayout() {
                             >
                                 {policyTab === "privacy" && (
                                     <>
-                                        <p><strong style={{ color: "#1B2D6B" }}>Last updated: June 2025</strong></p>
                                         <p>Faith Shield Care ("we", "us", or "our") is committed to protecting your personal information. This Privacy Policy explains how we collect, use, and safeguard the data you provide when registering as a member.</p>
                                         <p><strong style={{ color: "#1B2D6B" }}>Information We Collect</strong><br />We collect your name, email address, mobile number, birth date, civil status, location, referral code, and beneficiary details. Proof of payment that you send us for verification is handled separately and is not stored in your online account.</p>
                                         <p><strong style={{ color: "#1B2D6B" }}>How We Use Your Information</strong><br />Your data is used to process your membership application, verify identity, manage your account, facilitate referral rewards, and communicate important updates.</p>
@@ -459,7 +458,6 @@ export default function SignUpLayout() {
                                 )}
                                 {policyTab === "terms" && (
                                     <>
-                                        <p><strong style={{ color: "#1B2D6B" }}>Last updated: June 2025</strong></p>
                                         <p>By registering for a Faith Shield Care membership, you agree to be bound by these Terms &amp; Conditions. Please read them carefully before proceeding.</p>
                                         <p><strong style={{ color: "#1B2D6B" }}>Eligibility</strong><br />Membership is open to individuals 18 years of age or older. By registering, you confirm that all information provided is accurate and truthful.</p>
                                         <p><strong style={{ color: "#1B2D6B" }}>Membership Plans</strong><br />Each plan (Basic, Family, Premium) carries distinct benefits and referral structures. Plan details are subject to change with prior notice to members.</p>
