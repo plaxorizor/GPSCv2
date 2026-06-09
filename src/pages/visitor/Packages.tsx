@@ -27,17 +27,8 @@ const PackageCard: React.FC<{
 
     return (
         <div className="relative">
-            {isFeatured && (
-                <div
-                    className="absolute -top-3 left-1/2 z-10 -translate-x-1/2 rounded-full px-4 py-1 text-xs font-semibold whitespace-nowrap text-white"
-                    style={{ background: "#C9922A", boxShadow: "0 2px 8px rgba(201,146,42,0.35)" }}
-                >
-                    ✦ Most popular
-                </div>
-            )}
-
             <div
-                className={`tier-${tier} rounded-2xl p-8`}
+                className={`tier-${tier} relative rounded-2xl p-8`}
                 style={{
                     transform:  isFeatured
                         ? hovered ? "scale(1.05) translateY(-6px)" : "scale(1.03)"
@@ -52,6 +43,15 @@ const PackageCard: React.FC<{
                 onMouseEnter={() => setHovered(true)}
                 onMouseLeave={() => setHovered(false)}
             >
+                {isFeatured && (
+                    <div
+                        className="absolute -top-3 left-1/2 z-10 -translate-x-1/2 rounded-full px-4 py-1 text-xs font-semibold whitespace-nowrap text-white"
+                        style={{ background: "#C9922A", boxShadow: "0 2px 8px rgba(201,146,42,0.35)" }}
+                    >
+                        ✦ Most popular
+                    </div>
+                )}
+
                 <div className="tier-coverage mb-1 text-xs font-medium tracking-[0.15em] uppercase">{pkg.coverage}</div>
                 <h3 className="tier-name font-display mb-1 text-3xl">{pkg.name}</h3>
                 <p className="tier-tagline font-display mb-6 text-sm italic">{pkg.tagline}</p>

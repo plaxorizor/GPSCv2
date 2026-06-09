@@ -16,6 +16,9 @@ import Membership from "./pages/visitor/nav/Membership";
 import Referral from "./pages/visitor/nav/Referral";
 import FAQ from "./pages/visitor/nav/FAQ";
 import Contact from "./pages/visitor/nav/Contact";
+import PrivacyPolicy from "./pages/visitor/nav/PrivacyPolicy";
+import TermsOfService from "./pages/visitor/nav/TermsOfService";
+import DataPrivacy from "./pages/visitor/nav/DataPrivacy";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import GuestRoute from "./components/GuestRoute";
@@ -67,6 +70,9 @@ createRoot(document.getElementById("root")!).render(
                     <Route path="/contact" element={<Contact />} />
                     <Route path="/about" element={<About />} />
                     <Route path="/membership" element={<Membership />} />
+                    <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                    <Route path="/terms-of-service" element={<TermsOfService />} />
+                    <Route path="/data-privacy" element={<DataPrivacy />} />
 
                     <Route
                         path="/dashboard"

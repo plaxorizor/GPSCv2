@@ -79,20 +79,21 @@ const MemberCard: React.FC<{ plan: (typeof PLANS)[0] }> = ({ plan }) => {
 
     return (
         <div className="relative">
-            {isFeatured && (
-                <div
-                    className="absolute -top-3 left-1/2 z-10 -translate-x-1/2 rounded-full px-4 py-1 text-xs font-semibold whitespace-nowrap text-white"
-                    style={{ background: "#C9922A", boxShadow: "0 2px 8px rgba(201,146,42,0.35)" }}
-                >
-                    ✦ Most popular
-                </div>
-            )}
             <div
-                className={`tier-${tier} rounded-2xl p-8 flex flex-col`}
+                className={`tier-${tier} relative rounded-2xl p-8 flex flex-col`}
                 style={{ transform, boxShadow, transition: "transform 0.25s ease, box-shadow 0.25s ease" }}
                 onMouseEnter={() => setHovered(true)}
                 onMouseLeave={() => setHovered(false)}
             >
+                {isFeatured && (
+                    <div
+                        className="absolute -top-3 left-1/2 z-10 -translate-x-1/2 rounded-full px-4 py-1 text-xs font-semibold whitespace-nowrap text-white"
+                        style={{ background: "#C9922A", boxShadow: "0 2px 8px rgba(201,146,42,0.35)" }}
+                    >
+                        ✦ Most popular
+                    </div>
+                )}
+
                 <div className="tier-coverage mb-1 text-xs font-medium tracking-[0.15em] uppercase">{tag}</div>
                 <h3 className="tier-name font-display mb-4 text-3xl">{name}</h3>
 

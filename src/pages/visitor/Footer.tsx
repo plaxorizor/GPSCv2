@@ -71,17 +71,17 @@ export const Footer: React.FC = () => (
                     <div className="mb-4 text-xs tracking-wider text-white/40 uppercase">Legal</div>
                     <ul className="space-y-2 text-sm text-white/70">
                         <li>
-                            <Link to="/faq" className="transition-colors hover:text-white">
+                            <Link to="/privacy-policy" className="transition-colors hover:text-white">
                                 Privacy Policy
                             </Link>
                         </li>
                         <li>
-                            <Link to="/faq" className="transition-colors hover:text-white">
+                            <Link to="/terms-of-service" className="transition-colors hover:text-white">
                                 Terms of Service
                             </Link>
                         </li>
                         <li>
-                            <Link to="/faq" className="transition-colors hover:text-white">
+                            <Link to="/data-privacy" className="transition-colors hover:text-white">
                                 Data Privacy
                             </Link>
                         </li>
