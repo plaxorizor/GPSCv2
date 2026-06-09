@@ -450,6 +450,7 @@ export default function SignUpLayout() {
                             >
                                 {policyTab === "privacy" && (
                                     <>
+<<<<<<< HEAD
                                         <p>
                                             <strong style={{ color: "#1B2D6B" }}>Last updated: June 2025</strong>
                                         </p>
@@ -489,10 +490,19 @@ export default function SignUpLayout() {
                                             You may request access to, correction of, or deletion of your personal data by contacting us at
                                             support@faithshieldcare.com.
                                         </p>
+=======
+                                        <p>Faith Shield Care ("we", "us", or "our") is committed to protecting your personal information. This Privacy Policy explains how we collect, use, and safeguard the data you provide when registering as a member.</p>
+                                        <p><strong style={{ color: "#1B2D6B" }}>Information We Collect</strong><br />We collect your name, email address, mobile number, birth date, civil status, location, referral code, and beneficiary details. Proof of payment that you send us for verification is handled separately and is not stored in your online account.</p>
+                                        <p><strong style={{ color: "#1B2D6B" }}>How We Use Your Information</strong><br />Your data is used to process your membership application, verify identity, manage your account, facilitate referral rewards, and communicate important updates.</p>
+                                        <p><strong style={{ color: "#1B2D6B" }}>Data Sharing</strong><br />We do not sell or rent your personal data. Information may be shared only with service providers necessary to operate our platform, or as required by law.</p>
+                                        <p><strong style={{ color: "#1B2D6B" }}>Data Security</strong><br />We use industry-standard security measures to protect your information. However, no online transmission is 100% secure and we cannot guarantee absolute security.</p>
+                                        <p><strong style={{ color: "#1B2D6B" }}>Your Rights</strong><br />You may request access to, correction of, or deletion of your personal data by contacting us at support@faithshieldcare.com.</p>
+>>>>>>> a9ccd7e3b5814404475296cf70c9d4a3ff5bab1a
                                     </>
                                 )}
                                 {policyTab === "terms" && (
                                     <>
+<<<<<<< HEAD
                                         <p>
                                             <strong style={{ color: "#1B2D6B" }}>Last updated: June 2025</strong>
                                         </p>
@@ -535,6 +545,15 @@ export default function SignUpLayout() {
                                             <br />
                                             These Terms are governed by the laws of the Republic of the Philippines.
                                         </p>
+=======
+                                        <p>By registering for a Faith Shield Care membership, you agree to be bound by these Terms &amp; Conditions. Please read them carefully before proceeding.</p>
+                                        <p><strong style={{ color: "#1B2D6B" }}>Eligibility</strong><br />Membership is open to individuals 18 years of age or older. By registering, you confirm that all information provided is accurate and truthful.</p>
+                                        <p><strong style={{ color: "#1B2D6B" }}>Membership Plans</strong><br />Each plan (Basic, Family, Premium) carries distinct benefits and referral structures. Plan details are subject to change with prior notice to members.</p>
+                                        <p><strong style={{ color: "#1B2D6B" }}>Referral Program</strong><br />Referral commissions are credited upon successful activation of referred members. Faith Shield Care reserves the right to adjust commission rates with reasonable notice.</p>
+                                        <p><strong style={{ color: "#1B2D6B" }}>Account Responsibility</strong><br />You are responsible for maintaining the confidentiality of your account credentials. Faith Shield Care is not liable for unauthorized access resulting from your failure to secure your account.</p>
+                                        <p><strong style={{ color: "#1B2D6B" }}>Termination</strong><br />Faith Shield Care reserves the right to suspend or terminate any account found to be in violation of these Terms or engaged in fraudulent activity.</p>
+                                        <p><strong style={{ color: "#1B2D6B" }}>Governing Law</strong><br />These Terms are governed by the laws of the Republic of the Philippines.</p>
+>>>>>>> a9ccd7e3b5814404475296cf70c9d4a3ff5bab1a
                                     </>
                                 )}
                             </div>

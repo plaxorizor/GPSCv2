@@ -13,15 +13,11 @@ export default function ScrollToTopButton() {
         <button
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             aria-label="Scroll to top"
-            style={{
-                opacity: visible ? 1 : 0,
-                pointerEvents: visible ? "auto" : "none",
-                transition: "opacity 0.3s ease, transform 0.3s ease",
-                transform: visible ? "translateY(0)" : "translateY(12px)",
-            }}
-            className="bg-fsc-navy hover:bg-fsc-green fixed bottom-20 right-4 z-50 flex h-11 w-11 cursor-pointer items-center justify-center rounded-full text-white shadow-lg lg:bottom-6 lg:right-6"
+            className={`group bg-fsc-navy hover:bg-fsc-green fixed bottom-20 right-4 z-50 flex h-11 w-11 cursor-pointer items-center justify-center rounded-full text-white shadow-lg transition-all duration-300 ease-out hover:scale-110 hover:shadow-xl active:scale-95 lg:bottom-6 lg:right-6 ${
+                visible ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-3 opacity-0"
+            }`}
         >
-            <ArrowUp size={18} />
+            <ArrowUp size={18} className="transition-transform duration-200 group-hover:-translate-y-0.5" />
         </button>
     );
 }
