@@ -16,10 +16,11 @@ interface Props {
 }
 
 // Offline payment destinations (same accounts used for membership / upgrades).
+// `qr` is an optional image path; leave empty to show the "QR placeholder" box.
 const PAYMENT_ACCOUNTS = [
-    { label: "GCash", value: "09XX-XXX-XXXX" },
-    { label: "Maya", value: "09XX-XXX-XXXX" },
-    { label: "GoTyme", value: "09XX-XXX-XXXX" },
+    { label: "GCash", accountName: "Faith Shield Care Official", number: "09XX-XXX-XXXX", qr: "" },
+    { label: "Maya", accountName: "Faith Shield Care Official", number: "09XX-XXX-XXXX", qr: "" },
+    { label: "GoTyme", accountName: "Faith Shield Care Official", number: "09XX-XXX-XXXX", qr: "" },
 ];
 
 export const MemberPlan: React.FC<Props> = ({ packageName, member }) => {
@@ -151,6 +152,7 @@ function RenewModal({
 }) {
     const fee = packagePrice(toPackage);
     const [referenceNumber, setReferenceNumber] = useState("");
+    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(PAYMENT_ACCOUNTS[0].label);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState("");
     const [done, setDone] = useState(false);
@@ -217,19 +219,50 @@ function RenewModal({
                 </div>
 
                 <ol className="text-fsc-stone mt-4 list-decimal space-y-2 pl-4 text-sm">
-                    <li>
-                        Send <strong>{peso(fee)}</strong> to one of:
-                        <ul className="mt-1 list-disc pl-4 text-xs">
-                            {PAYMENT_ACCOUNTS.map((a) => (
-                                <li key={a.label}>
-                                    {a.label}: <span className="font-medium">{a.value}</span>
-                                </li>
-                            ))}
-                        </ul>
-                    </li>
+                    <li>Send <strong>{peso(fee)}</strong> using one of the payment methods below.</li>
                     <li>Send your proof of payment to the admin (Messenger / email), including your full name.</li>
                     <li>Submit the request below — an admin confirms and re-activates your account for 365 days.</li>
                 </ol>
+
+                {/* Payment method selector */}
+                <div className="mt-4 flex gap-2">
+                    {PAYMENT_ACCOUNTS.map((acct) => {
+                        const active = selectedPaymentMethod === acct.label;
+                        return (
+                            <button
+                                key={acct.label}
+                                type="button"
+                                onClick={() => setSelectedPaymentMethod(acct.label)}
+                                className={`flex-1 rounded-xl border py-2.5 text-sm font-medium transition-colors ${
+                                    active
+                                        ? "border-fsc-navy bg-fsc-navy text-white"
+                                        : "border-fsc-cream-dark bg-fsc-cream/40 text-fsc-stone hover:bg-fsc-cream"
+                                }`}
+                            >
+                                {acct.label}
+                            </button>
+                        );
+                    })}
+                </div>
+
+                {/* QR holder for the selected method */}
+                {PAYMENT_ACCOUNTS.filter((a) => a.label === selectedPaymentMethod).map((acct) => (
+                    <div key={acct.label} className="border-fsc-cream-dark mt-3 flex flex-col items-center rounded-2xl border bg-white p-5">
+                        {acct.qr ? (
+                            <img src={acct.qr} alt={`${acct.label} QR code`} className="aspect-square w-full max-w-[14rem] rounded-xl object-contain" />
+                        ) : (
+                            <div className="border-fsc-cream-dark bg-fsc-cream/40 text-fsc-stone flex aspect-square w-full max-w-[14rem] items-center justify-center rounded-xl border-2 border-dashed text-xs">
+                                QR placeholder
+                            </div>
+                        )}
+                        <p className="text-fsc-stone mt-3 text-xs">
+                            Account name: <span className="text-fsc-navy font-medium">{acct.accountName}</span>
+                        </p>
+                        <p className="text-fsc-stone text-xs">
+                            Number: <span className="text-fsc-navy font-medium">{acct.number}</span>
+                        </p>
+                    </div>
+                ))}
 
                 <div className="mt-4">
                     <label className="text-fsc-navy text-sm font-medium">
