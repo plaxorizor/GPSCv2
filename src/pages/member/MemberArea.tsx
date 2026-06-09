@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "../../firebase/config";
-import logo from "../../components/ui/Logo.png";
 
 import useMember from "../../hooks/useMember";
 import useMemberStats from "../../hooks/useMemberStats";
@@ -23,6 +22,8 @@ import { rankFromChildren, rankName } from "../../utils/rank";
 import { isEligible } from "../../utils/commission";
 import { getClaimableBenefits } from "../../utils/eligibility";
 import type { Member, Commission, ReferralNode } from "../../utils/types";
+
+import WelcomeModal from "./Welcome";
 
 // Rank mapping based on rank number
 // const getRankName = (rank: number): string => {
@@ -46,7 +47,6 @@ export default function MemberArea() {
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
     const [loggingOut, setLoggingOut] = useState(false);
     const [pwChanged, setPwChanged] = useState(false);
-    const [showWelcome, setShowWelcome] = useState(false);
 
     const { member, loading: memberLoading } = useMember();
     const { stats: memberStats, loading: statsLoading } = useMemberStats();
@@ -56,6 +56,8 @@ export default function MemberArea() {
     const { tree } = useReferralTree(currentSection === "referrals");
     const { payouts, refetch: refetchPayouts } = usePayouts(currentSection === "earnings");
     const { claims, refetch: refetchClaims } = useMemberClaims(currentSection === "claims");
+
+    const [showWelcome, setShowWelcome] = useState(false);
 
     // One-time welcome once a member is active (i.e. an admin has activated them).
     // Keyed in localStorage by uid so it only appears the first time.
@@ -121,6 +123,11 @@ export default function MemberArea() {
         referralCode: member.referralCode,
         beneficiaries: member.beneficiaries ?? [],
         isAdmin: member.isAdmin ?? false,
+        // Lifecycle dates — needed by the dashboard for expiry / grace / eligibility.
+        dateActivated: member.dateActivated,
+        dateExpiry: member.dateExpiry,
+        dateEligibility: member.dateEligibility,
+        dateContestabilityEnd: member.dateContestabilityEnd,
     };
 
     // 2. Package display info — normalise to lowercase before lookup so
@@ -187,7 +194,11 @@ export default function MemberArea() {
     const earningsTrend = memberStats?.earningsTrend ?? [];
 
     // 7. Handlers
-    const handleRequestPayout = () => setShowRequestPayout(true);
+    // Only active memberships can withdraw — grace/expired must renew first.
+    const handleRequestPayout = () => {
+        if (phase !== "active") return;
+        setShowRequestPayout(true);
+    };
     const handleFileClaim = () => setShowFileClaim(true);
     const handleLogout = async () => {
         setLoggingOut(true);
@@ -198,7 +209,7 @@ export default function MemberArea() {
 
     return (
         <>
-            {showWelcome && <WelcomeModal firstName={user.firstName} onClose={dismissWelcome} />}
+            {showWelcome && <WelcomeModal onClose={dismissWelcome} />}
             {showChangePassword && <ChangePasswordModal onClose={() => setShowChangePassword(false)} />}
             {showRequestPayout && (
                 <RequestPayoutModal
@@ -250,43 +261,5 @@ export default function MemberArea() {
                 onRefreshPayouts={refetchPayouts}
             />
         </>
-    );
-}
-
-// Shown once when a member's account becomes active (after admin activation).
-function WelcomeModal({ firstName, onClose }: { firstName?: string; onClose: () => void }) {
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm" onClick={onClose}>
-            <div
-                className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-3xl bg-white p-8 text-center shadow-xl"
-                onClick={(e) => e.stopPropagation()}
-            >
-                <img src={logo} alt="Faith Shield Care" className="mx-auto mb-5 h-16 w-16 rounded-full object-contain" />
-                <h2 className="font-display text-fsc-navy text-2xl">
-                    Welcome to the Faith Shield Care Family{firstName ? `, ${firstName}` : ""}
-                </h2>
-                <div className="text-fsc-stone mt-4 space-y-4 text-left text-sm leading-relaxed">
-                    <p>
-                        We sincerely appreciate your trust and confidence in choosing us as your partner in securing your future and
-                        protecting what matters most.
-                    </p>
-                    <p>
-                        As part of our growing family, you can expect our unwavering commitment to providing care, support, and reliable
-                        service every step of the way. We are honored to be part of your journey toward greater peace of mind, financial
-                        security, and protection for you and your loved ones.
-                    </p>
-                    <p>
-                        Thank you for joining Faith Shield Care. We look forward to serving you with excellence, integrity, and compassion.
-                    </p>
-                </div>
-                <p className="font-display text-fsc-green mt-6 text-lg italic">Care Beyond Protection</p>
-                <button
-                    onClick={onClose}
-                    className="bg-fsc-green mt-6 w-full rounded-xl py-3 text-sm font-medium text-white transition-opacity hover:opacity-90"
-                >
-                    Get started
-                </button>
-            </div>
-        </div>
     );
 }

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import {
-    Wallet, TrendingUp, Users, User, CheckCircle, Check, Heart, Rocket, Crown,
+    Wallet, TrendingUp, Users, CheckCircle, Check, Heart, Rocket, Crown,
     ShieldCheck, Stethoscope, Award, Cake, Baby, CloudRainWind, Sparkles, CalendarClock, type LucideIcon,
 } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
@@ -224,36 +224,31 @@ export const MemberOverview: React.FC<Props> = ({
             {/* Member header */}
             <div>
                 <h1 className="font-display text-fsc-navy text-3xl">
-                    {member.firstName} {member.lastName} <span className="text-fsc-stone text-sm">({phase})</span>
+                    {member.firstName} {member.lastName} <span className="text-fsc-stone text-base font-normal">({rankName})</span>
                 </h1>
-                {phase === "active" && expiresIn != null && expiresIn <= 60 && (
-                    <p className="text-fsc-stone mt-0.5 text-xs">
-                        Membership expires in {expiresIn} day{expiresIn === 1 ? "" : "s"}.
-                    </p>
-                )}
-                <div className="mt-2 flex items-center gap-2 text-sm">
-                    <span className="text-fsc-stone">{rankName} ·</span>
-                    <span className="bg-fsc-navy inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium text-white">
-                        {packageName.toLowerCase() === "basic" ? <User size={13} /> : <Users size={13} />}
-                        {packageName} Care
-                    </span>
-                </div>
-
-                <div className="text-fsc-stone mt-2 text-sm">Member since: {member.dateCreated?.toDate?.()?.toLocaleDateString()}</div>
+                <p className="mt-1 text-sm">
+                    <span className="text-fsc-navy font-medium">{packageName} Care</span>
+                    {phase === "active" && expiresIn != null && (
+                        <span className="text-fsc-stone">
+                            {" · "}Membership expires in {expiresIn} day{expiresIn === 1 ? "" : "s"}
+                        </span>
+                    )}
+                    {phase === "grace" && <span className="text-[#A87820]">{" · "}In renewal grace</span>}
+                </p>
             </div>
 
-            {/* Upgrade Banner — hidden automatically for Premium members */}
-            <UpgradeBanner packageName={packageName} onComparePackages={onComparePackages} />
+            {/* Upgrade Banner — Premium members and lapsed (grace) members don't see it */}
+            {phase === "active" && <UpgradeBanner packageName={packageName} onComparePackages={onComparePackages} />}
 
             {/* Stat cards */}
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <StatCard
                     label="Available to withdraw"
                     value={formatCurrency(availableToWithdraw)}
-                    sub="Cleared & ready"
+                    sub={phase === "active" ? "Cleared & ready" : "Renew to withdraw"}
                     icon={Wallet}
-                    actionLabel="Request payout"
-                    onAction={onRequestPayout}
+                    actionLabel={phase === "active" ? "Request payout" : undefined}
+                    onAction={phase === "active" ? onRequestPayout : undefined}
                 />
                 <StatCard label="Total Earned" value={formatCurrency(totalEarned)} sub="Lifetime Commissions" icon={TrendingUp} />
                 <StatCard label="Active Referrals" value={activeReferralsCount.toString()} sub={`${totalReferralsCount} total`} icon={Users} />

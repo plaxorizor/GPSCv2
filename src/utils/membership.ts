@@ -38,12 +38,19 @@ export const graceEndDate = (m: MemberLike): Date | null => {
 
 export const membershipPhase = (m: MemberLike): MembershipPhase => {
     if (m.status === "pending") return "pending";
+
     const exp = expiryDate(m);
-    if (!exp) return "active"; // activated but no dates yet — treat as active
     const now = Date.now();
-    if (now < exp.getTime()) return "active";
-    if (now < exp.getTime() + RENEWAL_GRACE_DAYS * DAY_MS) return "grace";
-    return "expired";
+    if (exp) {
+        if (now >= exp.getTime() + RENEWAL_GRACE_DAYS * DAY_MS) return "expired";
+        if (now >= exp.getTime()) return "grace";
+    }
+
+    // An admin (or a future scheduled job) can mark a member "inactive" to place
+    // them in the renewal grace even if their stored expiry hasn't lapsed yet.
+    if (m.status === "inactive") return "grace";
+
+    return "active";
 };
 
 // Whole days until expiry (positive while active, ≤0 after).
@@ -52,10 +59,11 @@ export const daysUntilExpiry = (m: MemberLike): number | null => {
     return exp ? Math.ceil((exp.getTime() - Date.now()) / DAY_MS) : null;
 };
 
-// Whole days left in the renewal grace window (0 once it's over).
+// Whole days left in the renewal grace window. Clamped to [0, 30] so a member
+// marked inactive before their stored expiry lapses still shows a sane count.
 export const graceDaysRemaining = (m: MemberLike): number => {
     const ge = graceEndDate(m);
-    if (!ge) return 0;
+    if (!ge) return RENEWAL_GRACE_DAYS;
     const d = Math.ceil((ge.getTime() - Date.now()) / DAY_MS);
-    return d > 0 ? d : 0;
+    return Math.max(0, Math.min(d, RENEWAL_GRACE_DAYS));
 };

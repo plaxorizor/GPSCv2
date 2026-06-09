@@ -14,6 +14,7 @@ interface Props {
     commissions: Commission[];
     payouts: Payout[];
     onRequestPayout: () => void;
+    membershipActive?: boolean; // payouts are blocked unless the membership is active
     onRefreshCommissions?: () => void | Promise<void>;
     onRefreshPayouts?: () => void | Promise<void>;
 }
@@ -25,6 +26,7 @@ export const MemberEarnings: React.FC<Props> = ({
     commissions,
     payouts,
     onRequestPayout,
+    membershipActive = true,
     onRefreshCommissions,
     onRefreshPayouts,
 }) => {
@@ -88,7 +90,12 @@ export const MemberEarnings: React.FC<Props> = ({
                             Refresh
                         </button>
                     )}
-                    <button onClick={onRequestPayout} className="bg-fsc-green rounded-lg px-4 py-2 text-xs font-medium text-white">
+                    <button
+                        onClick={onRequestPayout}
+                        disabled={!membershipActive}
+                        title={membershipActive ? undefined : "Renew your membership to request a payout"}
+                        className="bg-fsc-green rounded-lg px-4 py-2 text-xs font-medium text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
+                    >
                         Request Payout
                     </button>
                 </div>

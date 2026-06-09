@@ -10,6 +10,7 @@
 import { collection, doc, getDoc, serverTimestamp, writeBatch } from "firebase/firestore";
 import { db } from "./config";
 import { feeFor, netAfterFee, isEligible, MIN_PAYOUT } from "../utils/commission";
+import { membershipPhase } from "../utils/membership";
 
 export interface RequestPayoutInput {
     memberId: string;
@@ -23,6 +24,11 @@ export interface RequestPayoutInput {
 export async function requestPayout(input: RequestPayoutInput): Promise<{ gross: number; fee: number; net: number }> {
     const { memberId, commissionIds } = input;
     if (commissionIds.length === 0) throw new Error("NO_COMMISSIONS_SELECTED");
+
+    // Only active memberships can withdraw — grace/expired members must renew first.
+    const memberSnap = await getDoc(doc(db, "members", memberId));
+    if (!memberSnap.exists()) throw new Error("MEMBER_NOT_FOUND");
+    if (membershipPhase(memberSnap.data()) !== "active") throw new Error("MEMBERSHIP_NOT_ACTIVE");
 
     // Load + validate every selected commission (must belong to the member,
     // be claimable, and be eligible by time/level).
