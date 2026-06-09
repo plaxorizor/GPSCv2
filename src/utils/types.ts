@@ -69,7 +69,7 @@ export interface Commission {
     fromMember: string;
     fromMemberName: string;
     fromMemberCity: string;
-    reason?: "signup" | "upgrade"; // how the commission was generated
+    reason?: "signup" | "upgrade" | "renewal"; // how the commission was generated
 }
 
 export type ClaimStatus = "approved" | "under_review" | "submitted" | "rejected" | "released";
@@ -192,7 +192,7 @@ export interface CommissionRecord {
     status: "paid" | "payable" | "pending";
     date: string;
     reference?: string | null;
-    reason?: "signup" | "upgrade";
+    reason?: "signup" | "upgrade" | "renewal";
 }
 
 export interface PendingCommission {
@@ -205,7 +205,7 @@ export interface PendingCommission {
     level: number;
     amount: number;
     date: string;
-    reason?: "signup" | "upgrade";
+    reason?: "signup" | "upgrade" | "renewal";
 }
 
 export interface Benefit {

@@ -12,7 +12,7 @@ export interface Commission {
     level: number;
     amount: number;
     status: "pending" | "requested" | "paid";
-    reason?: "signup" | "upgrade"; // how the commission was generated
+    reason?: "signup" | "upgrade" | "renewal"; // how the commission was generated
     dateCreated: any; // Firestore Timestamp
 }
 

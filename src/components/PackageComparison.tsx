@@ -70,7 +70,10 @@ interface Props {
     currentPackage: string;
     phase: "active" | "grace"; // renewal lifecycle
     inUpgradeGrace: boolean; // within the 90-day upgrade window (pay the difference)
-    onRenew?: () => void;
+    canUpgrade?: boolean; // false hides upgrade buttons (e.g. an upgrade is already pending)
+    canRenew?: boolean; // false hides renew buttons (e.g. a renewal is already pending)
+    onUpgrade?: (planId: string) => void;
+    onRenew?: (planId: string) => void;
 }
 
 // ── PlanCard ──────────────────────────────────────────────────────────────────
@@ -80,6 +83,9 @@ function PlanCard({
     phase,
     inUpgradeGrace,
     currentPackage,
+    canUpgrade,
+    canRenew,
+    onUpgrade,
     onRenew,
 }: {
     plan: Plan;
@@ -87,7 +93,10 @@ function PlanCard({
     phase: "active" | "grace";
     inUpgradeGrace: boolean;
     currentPackage: string;
-    onRenew?: () => void;
+    canUpgrade?: boolean;
+    canRenew?: boolean;
+    onUpgrade?: (planId: string) => void;
+    onRenew?: (planId: string) => void;
 }) {
     // When active & this is an upgrade, the headline price reflects our upgrade
     // calculation (difference within the 90-day window, otherwise full price).
@@ -141,20 +150,34 @@ function PlanCard({
                     ))}
                 </ul>
 
-                {/* Footer — Renew CTA during grace, otherwise a standing badge */}
+                {/* Footer — Renew during grace · Upgrade when active · badge otherwise */}
                 <div className="mt-5">
                     {phase === "grace" ? (
-                        <button
-                            type="button"
-                            onClick={onRenew}
-                            className="bg-fsc-green w-full rounded-xl py-2.5 text-sm font-medium text-white transition-all hover:brightness-110"
-                        >
-                            Renew
-                        </button>
+                        canRenew ? (
+                            <button
+                                type="button"
+                                onClick={() => onRenew?.(plan.id)}
+                                className="bg-fsc-green w-full rounded-xl py-2.5 text-sm font-medium text-white transition-all hover:brightness-110"
+                            >
+                                Renew
+                            </button>
+                        ) : (
+                            <div className="text-fsc-stone rounded-full bg-black/[0.04] py-2 text-center text-xs font-medium">Renewal pending</div>
+                        )
                     ) : standing === "current" ? (
                         <div className="bg-fsc-navy/8 text-fsc-navy rounded-full py-2 text-center text-xs font-medium">✓ Your current plan</div>
                     ) : standing === "upgrade" ? (
-                        <div className="bg-fsc-green/10 text-fsc-green rounded-full py-2 text-center text-xs font-medium">Upgrade available ↑</div>
+                        canUpgrade ? (
+                            <button
+                                type="button"
+                                onClick={() => onUpgrade?.(plan.id)}
+                                className="bg-fsc-green w-full rounded-xl py-2.5 text-sm font-medium text-white transition-all hover:brightness-110"
+                            >
+                                Upgrade →
+                            </button>
+                        ) : (
+                            <div className="text-fsc-stone rounded-full bg-black/[0.04] py-2 text-center text-xs font-medium">Upgrade pending</div>
+                        )
                     ) : (
                         <div className="text-fsc-stone rounded-full bg-black/[0.04] py-2 text-center text-xs font-medium">Lower tier</div>
                     )}
@@ -165,7 +188,7 @@ function PlanCard({
 }
 
 // ── Main component — read-only comparison grid ────────────────────────────────
-export default function PackageComparison({ currentPackage, phase, inUpgradeGrace, onRenew }: Props) {
+export default function PackageComparison({ currentPackage, phase, inUpgradeGrace, canUpgrade = true, canRenew = true, onUpgrade, onRenew }: Props) {
     const cur = (currentPackage ?? "").toLowerCase();
     const currentIndex = PLANS.findIndex((p) => p.id === cur);
 
@@ -180,6 +203,9 @@ export default function PackageComparison({ currentPackage, phase, inUpgradeGrac
                         phase={phase}
                         inUpgradeGrace={inUpgradeGrace}
                         currentPackage={cur}
+                        canUpgrade={canUpgrade}
+                        canRenew={canRenew}
+                        onUpgrade={onUpgrade}
                         onRenew={onRenew}
                     />
                 ))}

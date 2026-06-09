@@ -23,6 +23,7 @@ import { computeRankFromTree, rankName } from "../../utils/rank";
 import { buildReferralTree } from "../../firebase/referral";
 import AddMemberModal from "../../components/AddMemberModal";
 import PendingUpgradesPanel from "../../components/PendingUpgradesPanel";
+import PendingRenewalsPanel from "../../components/PendingRenewalsPanel";
 import ConfirmDialog from "../../components/ConfirmDialog";
 import { sendMemberPasswordReset, archiveMember, restoreMember, hardDeleteMember, forceDeleteMember, getMemberDependencies } from "../../firebase/admin";
 
@@ -481,6 +482,7 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
     return (
         <div className="space-y-6">
             <PendingUpgradesPanel onChange={refetch} />
+            <PendingRenewalsPanel onChange={refetch} />
             <div className="flex flex-wrap items-end justify-between gap-4">
                 <div>
                     <h1 className="font-display text-fsc-navy text-3xl">Members</h1>

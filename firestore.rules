@@ -98,5 +98,17 @@ service cloud.firestore {
       allow update: if isAdmin();
       allow delete: if false;
     }
+
+    match /renewalRequests/{requestId} {
+      allow get:    if request.auth != null && (isAdmin() || resource.data.memberId == request.auth.uid);
+      allow list:   if request.auth != null; // members query their own; admins list all
+      // Members may request ONLY their own renewal, and only as "pending".
+      allow create: if request.auth != null
+        && request.resource.data.memberId == request.auth.uid
+        && request.resource.data.status == "pending";
+      // Only admins approve / reject (which re-activates the member).
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
   }
 }

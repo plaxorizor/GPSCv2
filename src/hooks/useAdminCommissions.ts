@@ -62,7 +62,7 @@ const useAdminCommissions = () => {
                         level: data.level as number,
                         amount: data.amount as number,
                         date: data.dateCreated?.toDate?.()?.toISOString?.() ?? "",
-                        reason: data.reason === "upgrade" ? "upgrade" : "signup",
+                        reason: data.reason === "upgrade" || data.reason === "renewal" ? data.reason : "signup",
                     };
                 });
             pending.sort((a, b) => (b.date > a.date ? 1 : -1));
@@ -86,7 +86,7 @@ const useAdminCommissions = () => {
                         status: "paid" as const,
                         date: data.dateCreated?.toDate?.()?.toISOString?.() ?? "",
                         reference: (data.reference as string | undefined) ?? null,
-                        reason: data.reason === "upgrade" ? "upgrade" : "signup",
+                        reason: data.reason === "upgrade" || data.reason === "renewal" ? data.reason : "signup",
                     };
                 });
             history.sort((a, b) => (b.date > a.date ? 1 : -1));

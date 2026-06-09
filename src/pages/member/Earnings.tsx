@@ -123,6 +123,11 @@ export const MemberEarnings: React.FC<Props> = ({
                                                 Upgrade
                                             </span>
                                         )}
+                                        {c.reason === "renewal" && (
+                                            <span className="bg-fsc-green/12 text-fsc-green inline-block rounded-full px-2 py-0.5 text-[10px] font-medium">
+                                                Renewal
+                                            </span>
+                                        )}
                                     </div>
                                     <div className="text-fsc-stone text-xs">{c.fromMemberCity}</div>
                                 </td>

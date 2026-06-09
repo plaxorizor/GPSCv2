@@ -200,6 +200,11 @@ export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHis
                                                     Upgrade
                                                 </span>
                                             )}
+                                            {comm.reason === "renewal" && (
+                                                <span className="bg-fsc-green/12 text-fsc-green inline-block rounded-full px-2 py-0.5 text-[10px] font-medium">
+                                                    Renewal
+                                                </span>
+                                            )}
                                         </div>
                                     </td>
                                     <td className="text-fsc-stone p-4">Level {comm.level}</td>
@@ -322,6 +327,11 @@ export const Commissions: React.FC<Props> = ({ pendingCommissions, commissionHis
                                             {comm.reason === "upgrade" && (
                                                 <span className="bg-fsc-navy/10 text-fsc-navy inline-block rounded-full px-2 py-0.5 text-[10px] font-medium">
                                                     Upgrade
+                                                </span>
+                                            )}
+                                            {comm.reason === "renewal" && (
+                                                <span className="bg-fsc-green/12 text-fsc-green inline-block rounded-full px-2 py-0.5 text-[10px] font-medium">
+                                                    Renewal
                                                 </span>
                                             )}
                                         </div>

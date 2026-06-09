@@ -29,7 +29,7 @@ const PACKAGE_MAX_LEVELS: Record<Package, number> = {
 // commission for each upline, sized as `basisAmount × rate[level]`, capped by
 // the upline's own package depth (basic 1 / family 3 / premium 6). `reason`
 // distinguishes signup vs upgrade commissions on the docs.
-const distributeCommissions = async (fromMemberId: string, basisAmount: number, reason: "signup" | "upgrade") => {
+const distributeCommissions = async (fromMemberId: string, basisAmount: number, reason: "signup" | "upgrade" | "renewal") => {
     if (!basisAmount || basisAmount <= 0) return;
 
     // Fetch the source member's profile once so we can denormalise name/city
@@ -86,6 +86,13 @@ export const triggerCommissions = async (newMemberId: string, pkg: Package) => {
 // already paid commission at signup — avoids double-paying the base amount).
 export const triggerUpgradeCommissions = async (memberId: string, differenceAmount: number) => {
     await distributeCommissions(memberId, differenceAmount, "upgrade");
+};
+
+// Renewal: a re-subscription at full price — commission on the full package price.
+export const triggerRenewalCommissions = async (memberId: string, pkg: Package) => {
+    const packagePrice = PACKAGE_AMOUNTS[pkg.toLowerCase() as Package];
+    if (!packagePrice) return;
+    await distributeCommissions(memberId, packagePrice, "renewal");
 };
 
 export const createTransaction = async (memberId: string, pkg: Package) => {
