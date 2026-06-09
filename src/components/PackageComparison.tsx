@@ -160,6 +160,7 @@ export default function PackageComparison({ currentPackage, initialTarget = null
     const validInitial = initialTarget && PLANS.findIndex((p) => p.id === initialTarget) > currentIndex ? initialTarget : null;
     const [target, setTarget] = useState<string | null>(validInitial);
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(PAYMENT_INFO.accounts[0].label);
+    const [referenceNumber, setReferenceNumber] = useState("");
 
     const targetPlan = PLANS.find((p) => p.id === target) ?? null;
     const priceDiff = targetPlan && currentPlan ? Math.max(targetPlan.price - currentPlan.price, 0) : 0;
@@ -264,6 +265,26 @@ export default function PackageComparison({ currentPackage, initialTarget = null
                 </ul>
                 <p className="mt-3 text-xs" style={{ color: "#6B6862" }}>
                     Your plan stays on <span className="font-medium">{currentPlan?.name ?? "your current tier"}</span> until our team confirms your payment, usually within {PAYMENT_INFO.verificationDays}.
+                </p>
+            </div>
+
+            {/* Reference number — TODO(backend): persist on the upgrade request for admin verification */}
+            <div className="rounded-2xl p-5" style={{ backgroundColor: "#fff", border: "1px solid #D0D2D8" }}>
+                <label htmlFor="upgrade-reference" className="text-sm font-semibold" style={{ color: "#1B2D6B" }}>
+                    Reference number <span style={{ color: "#C41E1E" }}>*</span>
+                </label>
+                <input
+                    id="upgrade-reference"
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="e.g. 1234 5678 9012"
+                    value={referenceNumber}
+                    onChange={(e) => setReferenceNumber(e.target.value)}
+                    className="mt-2 w-full rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#C9922A] transition"
+                    style={{ border: "1px solid #D0D2D8", color: "#1B2D6B" }}
+                />
+                <p className="mt-2 text-xs" style={{ color: "#6B6862" }}>
+                    Enter the reference number shown on your transaction receipt so we can match your payment.
                 </p>
             </div>
 
