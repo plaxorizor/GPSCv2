@@ -8,7 +8,7 @@ export const CTABanner: React.FC = () => {
     const { ref, inView } = useScrollReveal();
 
     return (
-        <section className="bg-fsc-navy">
+        <section data-theme="dark" className="bg-fsc-navy">
             <div
                 ref={ref}
                 className={`mx-auto max-w-4xl px-6 py-24 text-center lg:px-8 scroll-reveal ${inView ? "in-view" : ""}`}

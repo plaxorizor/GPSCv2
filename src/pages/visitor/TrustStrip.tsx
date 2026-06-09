@@ -4,7 +4,7 @@ import { useScrollReveal } from "../../hooks/useScrollReveal";
 export const TrustStrip: React.FC = () => {
     const { ref, inView } = useScrollReveal();
     return (
-        <section className="bg-fsc-navy text-white">
+        <section data-theme="dark" className="bg-fsc-navy text-white">
             <div ref={ref} className={`mx-auto max-w-6xl px-6 py-16 lg:px-8 scroll-reveal ${inView ? "in-view" : ""}`}>
                 <div className="grid items-center gap-12 md:grid-cols-2">
                     <div>

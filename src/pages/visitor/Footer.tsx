@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import logo from "../../components/ui/Logo.png";
 
 export const Footer: React.FC = () => (
-    <footer className="bg-fsc-navy text-white">
+    <footer data-theme="dark" className="bg-fsc-navy text-white">
         <div className="mx-auto max-w-6xl px-6 py-16 lg:px-8">
             <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
                 <div>
