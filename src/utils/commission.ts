@@ -15,7 +15,7 @@ export const PAYOUT_FEE_RATE = 0.05; // 5% transaction fee
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 // Firestore Timestamp | Date | millis → Date (best effort).
-type DateLike = Date | number | string | { toDate?: () => Date } | null | undefined;
+export type DateLike = Date | number | string | { toDate?: () => Date } | null | undefined;
 export const toDate = (v: DateLike): Date | null => {
     if (!v) return null;
     if (v instanceof Date) return v;

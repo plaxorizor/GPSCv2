@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import {
     Wallet, TrendingUp, Users, User, CheckCircle, Check, Heart, Rocket, Crown,
-    ShieldCheck, Stethoscope, Award, Cake, Baby, CloudRainWind, Sparkles, type LucideIcon,
+    ShieldCheck, Stethoscope, Award, Cake, Baby, CloudRainWind, Sparkles, CalendarClock, type LucideIcon,
 } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { StatCard } from "./StatCard";
@@ -9,6 +9,7 @@ import { type Member, type EarningsTrendPoint } from "../../utils/types";
 import { formatCurrency, formatDate } from "../../utils/formatter";
 import ReferralCard from "./ReferralCard";
 import FileClaimModal from "../../components/FileClaimModal";
+import { membershipPhase, graceDaysRemaining, daysUntilExpiry } from "../../utils/membership";
 import type { ClaimBenefit } from "../../utils/eligibility";
 
 // Benefit → icon + brand colour, matched by keyword in the benefit label.
@@ -191,6 +192,11 @@ export const MemberOverview: React.FC<Props> = ({
     // Benefit a member is filing a claim for (opens FileClaimModal pre-selected).
     const [claimBenefit, setClaimBenefit] = useState<ClaimBenefit | null>(null);
 
+    // Membership lifecycle (derived from dates): active → grace (30d) → expired.
+    const phase = membershipPhase(member);
+    const graceLeft = graceDaysRemaining(member);
+    const expiresIn = daysUntilExpiry(member);
+
     const yAxisTickFormatter = (value: number) => `₱${value}`;
 
     const tooltipFormatter = (value: unknown): React.ReactNode => {
@@ -201,11 +207,30 @@ export const MemberOverview: React.FC<Props> = ({
 
     return (
         <div className="space-y-6">
+            {/* Renewal grace banner — shown after the 365-day term, during the 30-day grace */}
+            {phase === "grace" && (
+                <div className="flex items-start gap-3 rounded-2xl border border-[#C9922A]/30 bg-[#C9922A]/10 p-4">
+                    <CalendarClock className="mt-0.5 shrink-0 text-[#A87820]" size={20} />
+                    <div className="text-sm">
+                        <p className="font-medium text-[#A87820]">Your membership has expired — you're in the renewal grace period.</p>
+                        <p className="text-fsc-stone mt-0.5 text-xs">
+                            Renew within <strong>{graceLeft} day{graceLeft === 1 ? "" : "s"}</strong> to keep your benefits and earnings.
+                            Contact an administrator to confirm your renewal payment.
+                        </p>
+                    </div>
+                </div>
+            )}
+
             {/* Member header */}
             <div>
                 <h1 className="font-display text-fsc-navy text-3xl">
-                    {member.firstName} {member.lastName} <span className="text-fsc-stone text-sm">({member.status})</span>
+                    {member.firstName} {member.lastName} <span className="text-fsc-stone text-sm">({phase})</span>
                 </h1>
+                {phase === "active" && expiresIn != null && expiresIn <= 60 && (
+                    <p className="text-fsc-stone mt-0.5 text-xs">
+                        Membership expires in {expiresIn} day{expiresIn === 1 ? "" : "s"}.
+                    </p>
+                )}
                 <div className="mt-2 flex items-center gap-2 text-sm">
                     <span className="text-fsc-stone">{rankName} ·</span>
                     <span className="bg-fsc-navy inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium text-white">
