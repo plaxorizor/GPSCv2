@@ -183,7 +183,7 @@ const Membership: React.FC = () => {
                     <div className="text-xs tracking-[0.2em] uppercase text-fsc-green mb-4">Who this is for</div>
                     <h2 className="font-display text-3xl text-fsc-navy mb-10">Built for every Filipino family</h2>
                     <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
-                        {["Low income households", "Informal workers", "Small business owners", "Senior citizens", "Church communities", "Community associations", "Cooperatives and local groups"].map((m, i) => (
+                        {["Low income households", "Informal workers", "Small business owners", "Senior citizens", "Church communities", "Community associations", "Cooperatives and local groups", "Persons with disabilities (PWD)", "Single parents"].map((m, i) => (
                             <div key={i} className="border border-fsc-cream-dark rounded-2xl px-5 py-4">
                                 <div className="font-display text-xs text-fsc-stone mb-1">0{i + 1}</div>
                                 <div className="font-display text-lg text-fsc-navy">{m}</div>

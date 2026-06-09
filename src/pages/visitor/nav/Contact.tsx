@@ -78,8 +78,8 @@ const Contact: React.FC = () => {
                                 }}
                                 className="space-y-4"
                             >
-                                <input type="text" placeholder="Full name" className="border-fsc-cream-dark w-full rounded-xl border px-4 py-3" />
-                                <input type="email" placeholder="Email" className="border-fsc-cream-dark w-full rounded-xl border px-4 py-3" />
+                                <input required type="text" placeholder="Full name" className="border-fsc-cream-dark w-full rounded-xl border px-4 py-3" />
+                                <input required type="email" placeholder="Email" className="border-fsc-cream-dark w-full rounded-xl border px-4 py-3" />
                                 <select className="border-fsc-cream-dark w-full rounded-xl border px-4 py-3">
                                     <option>Membership inquiry</option>
                                     <option>Claims question</option>
@@ -88,6 +88,7 @@ const Contact: React.FC = () => {
                                     <option>Other</option>
                                 </select>
                                 <textarea
+                                    required
                                     rows={4}
                                     placeholder="Your message"
                                     className="border-fsc-cream-dark w-full rounded-xl border px-4 py-3"
