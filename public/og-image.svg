@@ -14,5 +14,5 @@
     <rect x="0" y="624" width="1200" height="6" fill="#1B2D6B"/>
 
     <!-- Logo only, centered (full lockup: emblem + wordmark + tagline) -->
-    <image href="og-logo.png" x="340" y="55" width="520" height="520" preserveAspectRatio="xMidYMid meet"/>
+    <image href="og-logo.png" x="290" y="15" width="620" height="620" preserveAspectRatio="xMidYMid meet"/>
 </svg>
