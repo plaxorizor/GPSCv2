@@ -23,11 +23,6 @@ const FAQ: React.FC = () => {
             q: "What happens if my sponsor leaves?",
             a: "Your membership and benefits are unaffected. Your position in the referral tree remains the same.",
         },
-        { q: "Can I cancel my membership?", a: "Yes. Unused contributions are subject to our refund policy based on tenure and claims history." },
-        {
-            q: "Is the program Christian-only?",
-            a: "No. While FaithShield Care is rooted in Christian values, membership is open to people of all faiths.",
-        },
     ];
 
     return (
