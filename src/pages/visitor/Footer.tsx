@@ -11,7 +11,7 @@ export const Footer: React.FC = () => (
                         <img src={logo} alt="FaithShield Care Logo" className="h-12 w-12 rounded-full object-contain mix-blend-lighten" />
                         <div className="leading-tight">
                             <div className="font-display text-base font-bold">
-                                <span className="text-white">Faith Shield </span>
+                                <span className="text-white">FaithShield </span>
                                 <span style={{ color: "#C41E1E" }}>Care</span>
                             </div>
                             <div className="font-body text-[10px] text-white/50 italic">Guided by Faith, Driven by Care</div>

@@ -113,7 +113,7 @@ const About: React.FC = () => {
                 <section className="border-fsc-cream-dark border-t bg-white">
                     <div className="mx-auto max-w-4xl px-6 py-20 lg:px-8">
                         <div className="text-fsc-green mb-4 text-xs tracking-[0.2em] uppercase">Leadership</div>
-                        <h2 className="font-display text-fsc-navy mb-10 text-3xl">Officers and board</h2>
+                        <h2 className="font-display text-fsc-navy mb-10 text-3xl">Officers & Board</h2>
                         <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
                             {[
                                 { role: "CEO / President", name: "Benjie Bangoy" },

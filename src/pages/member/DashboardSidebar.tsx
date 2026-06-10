@@ -109,7 +109,7 @@ export const DashboardSidebar: React.FC<Props> = ({ member, rankName, currentSec
                     className="leading-tight whitespace-nowrap"
                 >
                     <div className="font-display text-base font-semibold tracking-tight">
-                        <span className="text-fsc-navy">Faith Shield </span>
+                        <span className="text-fsc-navy">FaithShield </span>
                         <span style={{ color: "#C41E1E" }}>Care</span>
                     </div>
                     <div className="font-body text-fsc-stone text-[10px] italic">Member Portal</div>

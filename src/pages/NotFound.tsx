@@ -12,7 +12,7 @@ export default function NotFound(): React.ReactElement {
                 <img src={logo} alt="FaithShield Care" className="h-10 w-10 rounded-full object-contain" />
                 <div className="text-left leading-tight">
                     <div className="font-display text-base font-bold tracking-tight">
-                        <span className="text-fsc-navy">Faith Shield </span>
+                        <span className="text-fsc-navy">FaithShield </span>
                         <span style={{ color: "#C41E1E" }}>Care</span>
                     </div>
                     <div className="font-body text-fsc-stone text-[10px] tracking-wide italic">Guided by Faith, Driven by Care</div>
