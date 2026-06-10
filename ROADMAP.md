@@ -1,7 +1,9 @@
 # FaithShield Care — Project Roadmap
 
 > **Stack:** React 19 + TypeScript + Vite 8 · Tailwind v4 · Firebase (Auth, Firestore, Storage) · Bun
-> **Last updated:** 2026-06-08
+> **Last updated:** 2026-06-11
+> **Live:** https://faithshieldcare.com (apex serves; `www` 301→apex; SSL on both) · Firebase project `faithshieldcare` (Blaze)
+> **Architecture:** fully client-side — admin actions run in the admin's browser, enforced by Firestore rules. **No Cloud Functions** (see Out of scope).
 
 ---
 
@@ -98,7 +100,34 @@
 - [x] PackageComparison.tsx — already identical, no change needed
 - [x] TypeScript build passes (`bunx tsc -b` clean)
 
----
+### Production & infrastructure
+
+- [x] Firebase project migrated `gpsc-firebase` → **`faithshieldcare`** (new project; .env + .firebaserc updated)
+- [x] **Blaze plan** enabled (Cloud Storage for uploads)
+- [x] Custom domain **`faithshieldcare.com`** live — apex serves, `www` 301→apex, auto SSL on both
+- [x] Social link previews — Open Graph / Twitter Card / JSON-LD meta tags (preview **image** still pending from Keith)
+
+### Approvals & payments (manual-confirm model)
+
+- [x] Unified **Approvals** hub — pending signups + upgrades + renewals in one tab; real-time (onSnapshot), searchable, click-through detail modal
+- [x] **Receipt upload** (payment proof) on signup / upgrade / renewal → Storage; admin views it in the Approvals modal and in member detail; latest proof mirrored onto the member on approval
+- [x] **Admin view of claim attachments** (images + PDF fallback)
+- [x] Real payment **QR codes** (GCash / Maya / GoTyme) from one source of truth (`src/data/paymentAccounts.ts`); GCash + Maya numbers live (**GoTyme number pending from client**)
+- [x] **No deactivate / archive** (client rule: inactive = past 365 days only); reject = hard-delete of a never-activated pending signup; super-admin permanent delete retained
+
+### Member dashboard
+
+- [x] **Eligibility Timeline on the Claims tab** (shared component, also on Overview); removed the redundant second "File a claim" button
+- [x] **Renewal flow** — member-facing "pay to renew" modal + admin approve (re-activates, resets eligibility/expiry, pays upline on full price)
+
+### Admin dashboard
+
+- [x] **Top Members** leaderboard — time-period filter (this month / last 2–3 months / this year / all-time), top 10, clickable row → opens member profile; "Unknown" sponsor bug fixed
+
+### Security & privacy
+
+- [x] Firestore rules **hardened** — members may only self-edit `mustChangePassword`; `isAdmin`/`isSuperAdmin` escalation blocked on create + update; `commissions`/`transactions` writes are admin-only
+- [x] **PII split** — `publicProfiles` collection mirrors only non-sensitive fields (name/city/package/status/referral links); `members` reads locked to **owner + admin** so members can't read others' PII or receipts; cross-member reads (referral tree, downline counts, commission names) redirected to the mirror; admin **"Sync public profiles"** backfill in Settings
 
 ---
 
@@ -108,36 +137,51 @@
 
 - [x] **Pending gate** — pending accounts can't reach the dashboard; see a "pending activation" holding screen until an admin activates them
 - [x] **Membership lifecycle** — active 365 days → 30-day inactive renewal grace → expired. Phases **derived from dates** (`utils/membership.ts`); expired members are blocked with a renewal gate; grace members keep access + see a renewal banner
-- [ ] Email-exists check on sign-up (re-add when project is on **Firebase Blaze plan**)
-- [ ] **(Blaze)** Nightly scheduled function to persist derived status + send expiry/grace reminder emails (until then, phase is computed on read)
-- [ ] Renewal payment flow (admin re-activates via `activateMember`, which already resets dates — but no member-facing "pay to renew" UI yet)
+- [x] Renewal payment flow — member-facing "pay to renew" modal + admin approve (see Member dashboard)
+- [ ] **Request to edit beneficiaries** — beneficiaries are signup-only; client wants members to *request* a change that an admin applies (not built yet; beneficiaries are already admin-write-only in the rules)
 
-### Payments — provider undecided ⚠️
+### Payments — manual-confirm model (decided) ✅
 
-- [ ] **Decide inbound payment provider** (client deciding):
-    - PayMongo — already coded (`functions/index.ts`, `firebase/payments.ts`); **client may drop it**
-    - GoTyme — under consideration. Likely manual QR Ph / bank transfer + admin confirmation (no hosted checkout API like PayMongo). Would reuse the manual-confirm pattern from the payout flow.
-    - If PayMongo is dropped: remove/disable `createPaymentLink`, `paymongoWebhook`, `getTransactionStatus` and the `PAYMONGO_SECRET_KEY` secret.
-- [ ] Replace placeholder GoTyme account numbers and QR images with real ones
-- [ ] Confirm live domain (`faithshield.care` tentative)
+- [x] **Provider decided** — manual QR Ph / bank transfer (GCash / Maya / GoTyme) + admin confirmation. PayMongo **dropped**; its code (`functions/`, `firebase/payments.ts`) is stale/unused.
+- [x] Real QR images + account names wired (`src/data/paymentAccounts.ts`)
+- [x] Live domain confirmed → **`faithshieldcare.com`**
+- [ ] **GoTyme full number** — still masked (`•••• 1213`); swap in when the client provides it (one-line edit)
+- [ ] _(cleanup, optional)_ Remove the dead PayMongo code/secret if we're sure it's never coming back
 
 ### Firestore
 
-- [ ] **Publish updated `firestore.rules`** — `upgradeRequests` collection block must be deployed or upgrade requests will fail
-- [ ] **Publish Storage rules** — claim file uploads write to `claims/{memberId}/…`; members must be allowed to upload there or claim submission fails
+- [x] **`firestore.rules` deployed** — `upgradeRequests` / `renewalRequests` / hardened security / `publicProfiles` all live
+- [x] **Storage rules deployed** — `receipts/{uid}/…` (payment proof) + `claims/{uid}/…` (attachments), owner+admin access
 - [ ] Index any new collection queries as usage grows
 
 ### Features (not yet scoped)
 
 - [x] Claims filing flow — per-benefit claim modal (auto/variable amount, required + optional docs, file upload to Storage)
-- [ ] Admin view of claim attachments (`uploads` stored on the claim doc; admin Claims UI doesn't render them yet)
-- [ ] Push / in-app notifications / Toast Notification(new commission, payout status, upgrade approved)
+- [x] Admin view of claim attachments (rendered in the admin Claims detail modal)
+- [x] Account expiry renewal (re-subscribe after `dateExpiry` via the renewal flow)
+- [x] Inactive member re-activation (admin approves a renewal → re-activates)
+- [ ] Push / in-app notifications / toast (new commission, payout status, upgrade approved)
 - [ ] Admin reports / export (CSV or PDF summary)
-- [ ] Member profile edit page
-- [ ] Password reset flow
-- [ ] Account expiry renewal (re-subscribe after `dateExpiry`)
-- [ ] Inactive member re-activation flow
-- [ ] Inbox Or Messaging Feature
+- [ ] Member profile edit page (contact info only — beneficiaries stay admin-controlled)
+- [ ] Inbox / messaging feature
+
+---
+
+## ⏳ Waiting on others (not code)
+
+- [ ] **GoTyme full number** — from client
+- [ ] **OG preview image** (`public/og-image.png`) — Keith
+- [ ] **Facebook link re-scrape** (FB Sharing Debugger) — Keith
+
+---
+
+## 🚫 Out of scope (decided — do not re-add without the client asking)
+
+- **No Cloud Functions.** App is fully client-side; rules enforce security. A stale, unwired Functions backend exists in `functions/src/index.ts` — do not wire it up.
+- **Auto-delete stale pending signups** — dev idea, not a client requirement.
+- **Nightly scheduled status/expiry job** — needs functions; dropped.
+- **Email-exists check on signup** — dropped (Firebase Auth already rejects duplicate emails at registration).
+- **PayMongo / hosted checkout** — dropped in favor of manual QR + admin confirm.
 
 ---
 
@@ -155,3 +199,6 @@
 - Keith occasionally pushes overwriting changes. Always check git diff before merging.
 - `react-phone-input-2` is **incompatible with React 19** — do not reinstall. Use the custom +63 prefix input pattern.
 - Clearing `node_modules/.vite` and restarting dev server is needed after adding new deps mid-session.
+- **Deploy:** `bunx firebase-tools deploy --only firestore:rules,storage,hosting --project faithshieldcare`. CLI active project was once stuck on the old `gpsc-firebase` — `firebase use faithshieldcare` fixed it; keep `--project` explicit as a safety net.
+- **publicProfiles** is the only collection members may read about *other* members. After importing members or if a downline looks stale, run admin → Settings → **Sync public profiles**.
+- A **301 redirect is cached "permanently"** by browsers — if a domain/redirect change doesn't show, test in incognito / a fresh browser profile.
