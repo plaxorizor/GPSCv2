@@ -1,4 +1,4 @@
-import { X, Receipt, Check, Image as ImageIcon } from "lucide-react";
+import { X, Receipt, Check, Image as ImageIcon, AlertTriangle } from "lucide-react";
 
 export interface ApprovalDetail {
     kindLabel: string; // "New signup" | "Upgrade request" | "Renewal request"
@@ -11,6 +11,7 @@ export interface ApprovalDetail {
     date?: string | null; // ISO of when requested/created
     rows: { label: string; value: string }[]; // contact / extra info
     confirmLabel: string; // e.g. "Confirm & activate"
+    warning?: string | null; // e.g. possible-duplicate notice
 }
 
 interface Props {
@@ -50,6 +51,12 @@ export default function ApprovalDetailModal({ detail, busy, onConfirm, onReject,
                 </div>
 
                 <div className="space-y-4 p-5">
+                    {detail.warning && (
+                        <div className="flex items-start gap-2 rounded-xl border border-[#C9922A]/40 bg-[#C9922A]/10 p-3 text-xs text-[#A87820]">
+                            <AlertTriangle size={15} className="mt-0.5 shrink-0" />
+                            <span>{detail.warning}</span>
+                        </div>
+                    )}
                     {detail.amount && (
                         <div className="bg-fsc-cream/50 flex items-center justify-between rounded-xl px-4 py-3">
                             <span className="text-fsc-stone text-xs tracking-wider uppercase">Amount</span>

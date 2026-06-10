@@ -13,6 +13,7 @@
 
 import { collection, deleteDoc, doc, getDocs, setDoc } from "firebase/firestore";
 import { db } from "./config";
+import { claimMobile } from "./phoneRegistry";
 
 export interface PublicProfileFields {
     firstName?: string;
@@ -41,14 +42,15 @@ export async function deletePublicProfile(uid: string): Promise<void> {
     await deleteDoc(doc(db, "publicProfiles", uid));
 }
 
-// Admin-only: (re)build every public profile from the members collection. Safe to
-// run repeatedly — use it to seed existing members or to repair any drift.
+// Admin-only: (re)build every public profile AND seed the phone registry from the
+// members collection. Safe to run repeatedly — use it to seed existing members or
+// to repair any drift.
 export async function backfillPublicProfiles(): Promise<number> {
     const snap = await getDocs(collection(db, "members"));
     await Promise.all(
-        snap.docs.map((d) => {
+        snap.docs.map(async (d) => {
             const m = d.data();
-            return writePublicProfile(d.id, {
+            await writePublicProfile(d.id, {
                 firstName: (m.firstName as string) ?? "",
                 lastName: (m.lastName as string) ?? "",
                 city: (m.city as string | null) ?? null,
@@ -57,6 +59,9 @@ export async function backfillPublicProfiles(): Promise<number> {
                 referredBy: (m.referredBy as string | null) ?? null,
                 referralCode: (m.referralCode as string | null) ?? null,
             });
+            // Register the member's mobile so the one-account policy covers them.
+            const mobile = m.mobile as string | undefined;
+            if (mobile) await claimMobile(mobile, d.id);
         }),
     );
     return snap.size;

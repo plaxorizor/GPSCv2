@@ -165,6 +165,8 @@ export default function AddMemberModal({ onClose, onSuccess }: Props) {
                 setError("A referral code is required (or tick 'Founder / root member').");
             } else if (msg === "INVALID_REFERRAL") {
                 setError("That referral code doesn't exist. Check it and try again.");
+            } else if (msg === "MOBILE_TAKEN") {
+                setError("This mobile number is already registered. Each person may only have one account.");
             } else if (msg.includes("email-already-in-use")) {
                 setError("An account with this email / mobile already exists.");
             } else if (msg.includes("invalid-email")) {

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { UserPlus, Check, X, Receipt } from "lucide-react";
-import { collection, onSnapshot, query, where } from "firebase/firestore";
+import { collection, getDocs, onSnapshot, query, where } from "firebase/firestore";
 import { db } from "../firebase/config";
 import { activateMember, hardDeleteMember } from "../firebase/admin";
 import { PACKAGE_INFO, peso } from "../utils/types";
@@ -18,6 +18,7 @@ interface PendingSignup {
     paymentReference?: string;
     paymentMethod?: string;
     paymentReceiptUrl?: string;
+    birthDate?: string;
     dateCreated?: { toDate?: () => Date };
     archived?: boolean;
     isAdmin?: boolean;
@@ -33,6 +34,35 @@ export default function PendingSignupsPanel({ search = "" }: { search?: string }
     const [loading, setLoading] = useState(true);
     const [busyId, setBusyId] = useState<string | null>(null);
     const [selected, setSelected] = useState<PendingSignup | null>(null);
+    // One-account policy (soft): warn if the opened signup matches an existing
+    // member's name + birth date. Names repeat, so this informs rather than blocks.
+    const [dupWarning, setDupWarning] = useState<string | null>(null);
+
+    useEffect(() => {
+        let cancelled = false;
+        queueMicrotask(async () => {
+            if (!selected?.birthDate) {
+                if (!cancelled) setDupWarning(null);
+                return;
+            }
+            const fullName = `${selected.firstName} ${selected.lastName}`.trim().toLowerCase();
+            const snap = await getDocs(query(collection(db, "members"), where("birthDate", "==", selected.birthDate)));
+            const matches = snap.docs.filter((d) => {
+                const m = d.data() as PendingSignup;
+                return d.id !== selected.uid && `${m.firstName} ${m.lastName}`.trim().toLowerCase() === fullName;
+            });
+            if (!cancelled) {
+                setDupWarning(
+                    matches.length > 0
+                        ? `Possible duplicate — ${matches.length} existing member${matches.length > 1 ? "s" : ""} share this name and birth date. Verify before activating.`
+                        : null,
+                );
+            }
+        });
+        return () => {
+            cancelled = true;
+        };
+    }, [selected]);
 
     // Live subscription so brand-new signups appear without a manual refresh.
     useEffect(() => {
@@ -159,7 +189,7 @@ export default function PendingSignupsPanel({ search = "" }: { search?: string }
 
             {selected && (
                 <ApprovalDetailModal
-                    detail={detailFor(selected)}
+                    detail={{ ...detailFor(selected), warning: dupWarning }}
                     busy={busyId === selected.uid}
                     onConfirm={() => act(selected.uid, "approve")}
                     onReject={() => act(selected.uid, "reject")}

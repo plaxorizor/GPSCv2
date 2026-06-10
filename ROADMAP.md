@@ -128,6 +128,7 @@
 
 - [x] Firestore rules **hardened** — members may only self-edit `mustChangePassword`; `isAdmin`/`isSuperAdmin` escalation blocked on create + update; `commissions`/`transactions` writes are admin-only
 - [x] **PII split** — `publicProfiles` collection mirrors only non-sensitive fields (name/city/package/status/referral links); `members` reads locked to **owner + admin** so members can't read others' PII or receipts; cross-member reads (referral tree, downline counts, commission names) redirected to the mirror; admin **"Sync public profiles"** backfill in Settings
+- [x] **One-account policy** — one mobile number = one account (hard block at signup + admin-encode via a public `phoneNumbers` index; number freed on delete); admin gets a **soft ⚠️ warning** when a new signup matches an existing member's name + birth date
 
 ---
 

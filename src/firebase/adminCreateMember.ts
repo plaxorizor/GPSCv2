@@ -13,6 +13,7 @@ import { getAuth, createUserWithEmailAndPassword, signOut } from "firebase/auth"
 import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { firebaseConfig } from "./config";
 import { activateMember } from "./admin";
+import { isMobileTaken, normalizeMobilePH } from "./phoneRegistry";
 
 export interface EncodeMemberInput {
     package: string; // "basic" | "family" | "premium"
@@ -77,6 +78,9 @@ export async function adminCreateMember(input: EncodeMemberInput): Promise<Encod
         const code = input.referralCode?.trim();
         if (!input.isRoot && !code) throw new Error("REFERRAL_REQUIRED");
 
+        // One-account policy: block a mobile number that's already registered.
+        if (await isMobileTaken(input.mobile)) throw new Error("MOBILE_TAKEN");
+
         // Resolve the referrer — referralCodes is publicly readable.
         let referredBy: string | null = null;
         if (code) {
@@ -134,6 +138,9 @@ export async function adminCreateMember(input: EncodeMemberInput): Promise<Encod
             referredBy,
             referralCode: null,
         });
+
+        // Reserve the mobile number (written as the new member, satisfies the rule).
+        await setDoc(doc(secondaryDb, "phoneNumbers", normalizeMobilePH(input.mobile)), { uid });
 
         await signOut(secondaryAuth);
 

@@ -20,6 +20,7 @@ import {
 import { db } from "./config";
 import { triggerCommissions, type Package } from "./transactions";
 import { writePublicProfile, deletePublicProfile } from "./publicProfiles";
+import { releaseMobile } from "./phoneRegistry";
 
 // --- MEMBERS ---
 export const getAllMembers = async () => {
@@ -118,11 +119,14 @@ export const getMemberDependencies = async (uid: string) => {
 export const hardDeleteMember = async (uid: string) => {
     const snap = await getDoc(doc(db, "members", uid));
     const code = snap.exists() ? (snap.data().referralCode as string | undefined) : undefined;
+    const mobile = snap.exists() ? (snap.data().mobile as string | undefined) : undefined;
     if (code) {
         await deleteDoc(doc(db, "referralCodes", code)).catch(() => {});
     }
     await deleteDoc(doc(db, "members", uid));
     await deletePublicProfile(uid).catch(() => {});
+    // Free the mobile so the person can register again (one-account policy).
+    if (mobile) await releaseMobile(mobile);
 };
 
 // Force delete: cascade-removes the member, their referral-code mapping, AND every

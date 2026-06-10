@@ -3,6 +3,7 @@ import { useState, useEffect, useMemo } from "react";
 import { registerUser } from "../../firebase/auth";
 import { uploadReceipt } from "../../firebase/receipts";
 import { writePublicProfile } from "../../firebase/publicProfiles";
+import { isMobileTaken, claimMobile } from "../../firebase/phoneRegistry";
 import { db } from "../../firebase/config";
 import ReceiptUploadField from "../../components/ReceiptUploadField";
 import { PAYMENT_ACCOUNTS } from "../../data/paymentAccounts";
@@ -269,6 +270,12 @@ export default function SignUpLayout() {
                 setError("Enter a valid PH mobile number (09XX XXX XXXX or +63 9XX XXX XXXX).");
                 return false;
             }
+            // One-account policy: a mobile number may belong to only one member.
+            if (await isMobileTaken(form.mobile)) {
+                setInvalidFields(new Set(["mobile"]));
+                setError("This mobile number is already registered. Each person may only have one account.");
+                return false;
+            }
             // Check age (must be 18+)
             const birthDateObj = new Date(birthDate);
             const today = new Date();
@@ -355,6 +362,14 @@ export default function SignUpLayout() {
             }
             const referredBy = snap.data().uid;
 
+            // One-account policy: re-check at submit time (guards against a number
+            // claimed between step 2 and final submit).
+            if (await isMobileTaken(form.mobile)) {
+                setError("This mobile number is already registered. Each person may only have one account.");
+                setLoading(false);
+                return;
+            }
+
             const { user } = await registerUser(form.email, form.password);
 
             // Upload the optional receipt now that the user is authenticated (the
@@ -404,6 +419,9 @@ export default function SignUpLayout() {
                 referredBy,
                 referralCode: null,
             });
+
+            // Reserve the mobile number so no one else can register it.
+            await claimMobile(form.mobile, user.uid);
 
             navigate("/");
         } catch (err) {
