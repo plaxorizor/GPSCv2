@@ -176,7 +176,7 @@ export default function RequestPayoutModal({ claimableCommissions, memberName, o
                                     </div>
                                 </div>
                                 {!meetsMin && gross > 0 && (
-                                    <p className="text-xs text-[#C41E1E]">Minimum payout is {formatCurrency(MIN_PAYOUT)} (gross).</p>
+                                    <p className="text-xs text-[#C41E1E]">Minimum payout is {formatCurrency(MIN_PAYOUT)}.</p>
                                 )}
 
                                 {/* Payment method */}
