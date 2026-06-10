@@ -245,6 +245,10 @@ export const MemberReferrals: React.FC<Props> = ({ user, referralTree }) => {
         if (referralTree.length === 0) return;
         recenter();
         remount();
+        // Intentional: this is a measure-then-paint layout effect that must set state
+        // synchronously (before paint) to position the tree without an off-center
+        // flash. The rule's cascading-render concern doesn't apply to a one-time gate.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setReady(true);
     }, [referralTree.length, orientation, recenter, remount]);
 
@@ -374,8 +378,13 @@ export const MemberReferrals: React.FC<Props> = ({ user, referralTree }) => {
           }
         : memberNode;
 
-    // Always fully expanded (collapsing disabled). The QR root opens the share modal.
-    const renderNode = makeRenderNode(() => cardRef.current?.open());
+    // Always fully expanded (collapsing disabled). The QR root opens the share modal
+    // via ReferralCard's imperative handle (forwardRef + useImperativeHandle). The
+    // ref is only read inside the click handler, never during render, so this is the
+    // intended pattern — the rule can't see through the deferred call.
+    const openShareCard = useCallback(() => cardRef.current?.open(), []);
+    // eslint-disable-next-line react-hooks/refs
+    const renderNode = makeRenderNode(openShareCard);
 
     // Behavior props that need a Tree remount to take effect (react-d3-tree reads
     // them when building its internal state). Layout sliders update live; zoom is

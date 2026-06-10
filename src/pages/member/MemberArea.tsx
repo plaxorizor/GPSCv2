@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "../../firebase/config";
@@ -57,18 +57,19 @@ export default function MemberArea() {
     const { payouts, refetch: refetchPayouts } = usePayouts(currentSection === "earnings");
     const { claims, refetch: refetchClaims } = useMemberClaims(currentSection === "claims");
 
-    const [showWelcome, setShowWelcome] = useState(false);
+    const [welcomeDismissed, setWelcomeDismissed] = useState(false);
 
     // One-time welcome once a member is active (i.e. an admin has activated them).
-    // Keyed in localStorage by uid so it only appears the first time.
-    useEffect(() => {
-        if (member?.status !== "active") return;
-        if (!localStorage.getItem(`fsc-welcome-${member.uid}`)) setShowWelcome(true);
-    }, [member]);
+    // Derived during render (no effect) and keyed in localStorage by uid so it only
+    // appears the first time.
+    const showWelcome =
+        member?.status === "active" &&
+        !welcomeDismissed &&
+        !localStorage.getItem(`fsc-welcome-${member.uid}`);
 
     const dismissWelcome = () => {
         if (member) localStorage.setItem(`fsc-welcome-${member.uid}`, "1");
-        setShowWelcome(false);
+        setWelcomeDismissed(true);
     };
 
     const isLoading = memberLoading || statsLoading;

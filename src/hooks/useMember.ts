@@ -15,31 +15,38 @@ const useMember = () => {
     const { currentUser } = useAuth();
     const [member, setMember] = useState<MemberWithUid | null>(null);
     const [loading, setLoading] = useState(true);
+    const [reloadKey, setReloadKey] = useState(0);
 
-    // Re-reads the member doc. Exposed as `refetch` so gates (pending / expired)
-    // can re-check status in place instead of forcing a full window reload.
-    const fetchMember = useCallback(async () => {
-        if (!currentUser) {
-            setMember(null);
-            setLoading(false);
-            return;
-        }
-        try {
-            const snap = await getDoc(doc(db, "members", currentUser.uid));
-            setMember(snap.exists() ? ({ uid: snap.id, ...snap.data() } as MemberWithUid) : null);
-        } catch (error) {
-            console.error("Error fetching member:", error);
-            setMember(null);
-        } finally {
-            setLoading(false);
-        }
-    }, [currentUser]);
+    // Bumping reloadKey re-runs the fetch effect. Exposed as `refetch` so gates
+    // (pending / expired) can re-check status in place instead of a full reload.
+    const refetch = useCallback(() => setReloadKey((k) => k + 1), []);
 
     useEffect(() => {
-        fetchMember();
-    }, [fetchMember]);
+        let active = true;
+        // All state updates run inside the async callback (never synchronously in
+        // the effect body) to avoid cascading renders.
+        const load: Promise<MemberWithUid | null> = currentUser
+            ? getDoc(doc(db, "members", currentUser.uid)).then((snap) =>
+                  snap.exists() ? ({ uid: snap.id, ...snap.data() } as MemberWithUid) : null,
+              )
+            : Promise.resolve(null);
+        load
+            .catch((error) => {
+                console.error("Error fetching member:", error);
+                return null;
+            })
+            .then((m) => {
+                if (active) {
+                    setMember(m);
+                    setLoading(false);
+                }
+            });
+        return () => {
+            active = false;
+        };
+    }, [currentUser, reloadKey]);
 
-    return { member, loading, refetch: fetchMember };
+    return { member, loading, refetch };
 };
 
 export default useMember;

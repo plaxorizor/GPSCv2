@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { collection, query, where, getDocs, getDoc, doc } from "firebase/firestore";
+import { collection, query, where, getDocs, getDoc, doc, type Timestamp } from "firebase/firestore";
 import { db } from "../firebase/config";
 import useAuth from "../context/useAuth";
 
@@ -13,8 +13,11 @@ export interface Commission {
     amount: number;
     status: "pending" | "requested" | "paid";
     reason?: "signup" | "upgrade" | "renewal"; // how the commission was generated
-    dateCreated: any; // Firestore Timestamp
+    dateCreated: Timestamp; // Firestore Timestamp
 }
+
+// Shape of a raw commission doc, before we enrich it with the member's name/city.
+type CommissionDoc = Omit<Commission, "fromMemberName" | "fromMemberInitials" | "fromMemberCity">;
 
 export const useCommissions = (enabled = false) => {
     const { currentUser } = useAuth();
@@ -34,8 +37,8 @@ export const useCommissions = (enabled = false) => {
                 const snap = await getDocs(q);
                 // Sort client-side — avoids needing a composite Firestore index
                 const raw = snap.docs
-                    .map((d) => ({ id: d.id, ...d.data() }))
-                    .sort((a: any, b: any) => (b.dateCreated?.toMillis?.() ?? 0) - (a.dateCreated?.toMillis?.() ?? 0)) as any[];
+                    .map((d) => ({ id: d.id, ...(d.data() as Omit<CommissionDoc, "id">) }))
+                    .sort((a, b) => (b.dateCreated?.toMillis?.() ?? 0) - (a.dateCreated?.toMillis?.() ?? 0));
 
                 // Fetch unique member names for fromMember UIDs
                 const uniqueUids = [...new Set(raw.map((c) => c.fromMember).filter(Boolean))];

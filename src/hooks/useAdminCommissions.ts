@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { collection, query, where, getDocs, doc, getDoc, onSnapshot } from "firebase/firestore";
 import { db } from "../firebase/config";
 import type { PendingCommission, CommissionRecord } from "../utils/types";
@@ -9,11 +9,10 @@ const useAdminCommissions = () => {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
 
-    // `isInitial` shows the full-page skeleton (first mount only). A manual
-    // refresh updates the data quietly without blanking the whole component.
-    const fetchCommissions = useCallback(async (isInitial = false) => {
-        if (isInitial) setLoading(true);
-        else setRefreshing(true);
+    // First statement is the network await, so no state is set synchronously when
+    // this runs from the mount effect (avoids cascading renders). `loading` starts
+    // true for the initial skeleton; the manual `refetch` flips `refreshing`.
+    const fetchCommissions = useCallback(async () => {
         try {
             const [pendingSnap, paidSnap] = await Promise.all([
                 getDocs(query(collection(db, "commissions"), where("status", "==", "pending"))),
@@ -101,28 +100,29 @@ const useAdminCommissions = () => {
         }
     }, []);
 
-    useEffect(() => {
-        fetchCommissions(true);
-    }, [fetchCommissions]);
-
-    // Live-watch only the "pending" commissions subset. When a new commission is
-    // generated (e.g. a downline signs up), quietly re-pull so it appears without a
-    // manual refresh. Skip the first emission (fires on subscribe) to avoid a
-    // double-fetch on mount; history still updates via actions / the button.
-    const firstPendingSnap = useRef(true);
+    // Live-watch only the "pending" commissions subset. onSnapshot fires immediately
+    // on subscribe (the initial load) and again whenever a commission is generated or
+    // changes status — each emission re-pulls. One subscription covers both first
+    // load and live updates, keeping every setState inside a callback (never the
+    // synchronous effect body).
     useEffect(() => {
         const q = query(collection(db, "commissions"), where("status", "==", "pending"));
         const unsub = onSnapshot(q, () => {
-            if (firstPendingSnap.current) {
-                firstPendingSnap.current = false;
-                return;
-            }
-            fetchCommissions(false);
+            fetchCommissions();
         });
         return () => unsub();
     }, [fetchCommissions]);
 
-    return { pendingCommissions, commissionHistory, loading, refreshing, refetch: () => fetchCommissions(false) };
+    return {
+        pendingCommissions,
+        commissionHistory,
+        loading,
+        refreshing,
+        refetch: async () => {
+            setRefreshing(true);
+            await fetchCommissions();
+        },
+    };
 };
 
 export default useAdminCommissions;

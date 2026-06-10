@@ -9,11 +9,22 @@ export const useReferralTree = (enabled = false) => {
 
     useEffect(() => {
         if (!currentUser || !enabled) return;
-        setLoading(true);
-        buildReferralTree(currentUser.uid).then((data) => {
-            setTree(data);
-            setLoading(false);
-        });
+        let active = true;
+        // All state updates happen in the async callback (not synchronously in the
+        // effect body) to avoid cascading renders.
+        buildReferralTree(currentUser.uid)
+            .then((data) => {
+                if (active) {
+                    setTree(data);
+                    setLoading(false);
+                }
+            })
+            .catch(() => {
+                if (active) setLoading(false);
+            });
+        return () => {
+            active = false;
+        };
     }, [currentUser, enabled]);
 
     return { tree, loading };

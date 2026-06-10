@@ -9,7 +9,7 @@ export const createPaymentLink = async (pkg: "basic" | "family" | "premium") => 
 };
 
 export const getTransactionStatus = async (transactionId: string) => {
-    const fn = httpsCallable<{ transactionId: string }, any>(functions, "getTransactionStatus");
+    const fn = httpsCallable<{ transactionId: string }, Record<string, unknown>>(functions, "getTransactionStatus");
     const result = await fn({ transactionId });
     return result.data;
 };

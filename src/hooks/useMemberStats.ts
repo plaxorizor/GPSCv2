@@ -1,9 +1,26 @@
 import { useEffect, useState } from "react";
-import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
+import { collection, query, where, getDocs, doc, getDoc, type Timestamp } from "firebase/firestore";
 import { db } from "../firebase/config";
 import useAuth from "../context/useAuth";
 import type { MemberStats, EarningsTrendPoint } from "../utils/types";
 import { isEligible } from "../utils/commission";
+
+// Minimal shapes for the Firestore docs this hook reads.
+interface CommissionRow {
+    id: string;
+    fromMember?: string;
+    fromMemberName?: string;
+    status?: string;
+    amount?: number;
+    level?: number;
+    dateCreated?: Timestamp;
+}
+interface ReferralRow {
+    status?: string;
+}
+interface ClaimRow {
+    amount?: number;
+}
 
 const useMemberStats = () => {
     const { currentUser } = useAuth();
@@ -19,15 +36,15 @@ const useMemberStats = () => {
                 getDocs(query(collection(db, "claims"), where("memberId", "==", currentUser.uid), where("status", "==", "approved"))),
             ]);
 
-            const commissions = commissionsSnap.docs.map((d) => ({ id: d.id, ...d.data() }) as any);
-            const referrals = referralsSnap.docs.map((d) => d.data() as any);
+            const commissions = commissionsSnap.docs.map((d) => ({ id: d.id, ...d.data() }) as CommissionRow);
+            const referrals = referralsSnap.docs.map((d) => d.data() as ReferralRow);
 
             // Enrich legacy docs missing fromMemberName — look up by fromMember UID
             const missingUids = [
                 ...new Set(
                     commissions
-                        .filter((c: any) => !c.fromMemberName && typeof c.fromMember === "string" && c.fromMember.length > 0)
-                        .map((c: any) => c.fromMember as string),
+                        .filter((c) => !c.fromMemberName && typeof c.fromMember === "string" && c.fromMember.length > 0)
+                        .map((c) => c.fromMember as string),
                 ),
             ];
             if (missingUids.length > 0) {
@@ -39,7 +56,7 @@ const useMemberStats = () => {
                         nameMap.set(snap.id, `${d.firstName ?? ""} ${d.lastName ?? ""}`.trim());
                     }
                 });
-                commissions.forEach((c: any) => {
+                commissions.forEach((c) => {
                     if (!c.fromMemberName && c.fromMember && nameMap.has(c.fromMember)) {
                         c.fromMemberName = nameMap.get(c.fromMember);
                     }
@@ -48,21 +65,23 @@ const useMemberStats = () => {
 
             // "Earned" = commissions already PAID out (money received).
             const totalEarned = commissions
-                .filter((c: any) => c.status === "paid")
-                .reduce((sum: number, c: any) => sum + c.amount, 0);
+                .filter((c) => c.status === "paid")
+                .reduce((sum, c) => sum + (c.amount ?? 0), 0);
 
             // Claimable now = commissions not yet requested/paid AND eligible by
             // time/level (L1 immediately, L2–6 after 7 days). Legacy "released"
             // docs still count as claimable.
-            const claimable = (c: any) => c.status !== "requested" && c.status !== "paid";
+            const claimable = (c: CommissionRow) => c.status !== "requested" && c.status !== "paid";
             const availableToWithdraw = commissions
-                .filter((c: any) => claimable(c) && isEligible(c.level, c.dateCreated))
-                .reduce((sum: number, c: any) => sum + c.amount, 0);
+                .filter((c) => claimable(c) && isEligible(c.level ?? 0, c.dateCreated))
+                .reduce((sum, c) => sum + (c.amount ?? 0), 0);
 
-            const approvedClaims = claimsSnap.docs.map((d) => d.data() as any);
+            const approvedClaims = claimsSnap.docs.map((d) => d.data() as ClaimRow);
 
             // Recent 5 commissions sorted by date
-            const recentCommissions = [...commissions].sort((a, b) => b.dateCreated?.toMillis?.() - a.dateCreated?.toMillis?.()).slice(0, 5);
+            const recentCommissions = [...commissions]
+                .sort((a, b) => (b.dateCreated?.toMillis?.() ?? 0) - (a.dateCreated?.toMillis?.() ?? 0))
+                .slice(0, 5);
 
             // Earnings trend — total commissions earned per month, last 6 months
             const now = new Date();
@@ -89,7 +108,8 @@ const useMemberStats = () => {
                 activeReferrals: referrals.filter((r) => r.status === "active").length,
                 approvedClaimsCount: approvedClaims.length,
                 approvedClaimsTotal: approvedClaims.reduce((sum, c) => sum + (c.amount ?? 0), 0),
-                recentCommissions,
+                // Runtime docs are the raw Firestore shape; the dashboard reads them loosely.
+                recentCommissions: recentCommissions as unknown as MemberStats["recentCommissions"],
                 earningsTrend,
             });
             setLoading(false);

@@ -83,7 +83,7 @@ export default function MemberDashboard({
             fromMemberName: name,
             fromMemberInitials: `${parts[0]?.[0] ?? ""}${parts[1]?.[0] ?? ""}`.toUpperCase() || "?",
             // Convert Firestore Timestamp → ISO string so Overview can call formatDate()
-            date: (c as any).dateCreated?.toDate?.()?.toISOString?.() ?? "",
+            date: (c as { dateCreated?: { toDate?: () => Date } }).dateCreated?.toDate?.()?.toISOString?.() ?? "",
         };
     });
 

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { collection, getDocs, onSnapshot, query, where } from "firebase/firestore";
 import { db } from "../firebase/config";
 import type { AdminPayout } from "../utils/types";
@@ -8,11 +8,10 @@ const useAdminPayouts = () => {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
 
-    // `isInitial` shows the full-page skeleton (first mount only); a manual
-    // refresh updates the data quietly while flagging `refreshing` for the spinner.
-    const fetchPayouts = useCallback(async (isInitial = false) => {
-        if (isInitial) setLoading(true);
-        else setRefreshing(true);
+    // First statement is the network await, so no state is set synchronously when
+    // this runs from the mount effect (avoids cascading renders). `loading` starts
+    // true for the initial skeleton; the manual `refetch` flips `refreshing`.
+    const fetchPayouts = useCallback(async () => {
         try {
             const snap = await getDocs(collection(db, "payouts"));
             const docs: AdminPayout[] = snap.docs
@@ -54,27 +53,20 @@ const useAdminPayouts = () => {
         }
     }, []);
 
-    useEffect(() => {
-        fetchPayouts(true);
-    }, [fetchPayouts]);
-
-    // Live-watch only the small "requested" (pending) subset. When a new payout
-    // request lands, quietly re-pull the full list so it appears without a manual
-    // refresh. Skip the first emission (fires on subscribe) to avoid a double-fetch.
-    const firstPendingSnap = useRef(true);
+    // Live-watch only the small "requested" (pending) subset. onSnapshot fires
+    // immediately on subscribe (the initial load) and again whenever a payout
+    // request lands or changes status — each emission re-pulls the full list. One
+    // subscription covers both first load and live updates, keeping every setState
+    // inside a callback (never the synchronous effect body).
     useEffect(() => {
         const q = query(collection(db, "payouts"), where("status", "==", "requested"));
         const unsub = onSnapshot(q, () => {
-            if (firstPendingSnap.current) {
-                firstPendingSnap.current = false;
-                return;
-            }
-            fetchPayouts(false);
+            fetchPayouts();
         });
         return () => unsub();
     }, [fetchPayouts]);
 
-    return { payouts, loading, refreshing, refetch: () => fetchPayouts(false) };
+    return { payouts, loading, refreshing, refetch: async () => { setRefreshing(true); await fetchPayouts(); } };
 };
 
 export default useAdminPayouts;

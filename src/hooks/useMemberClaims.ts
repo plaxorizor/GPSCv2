@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../firebase/config";
 import useAuth from "../context/useAuth";
@@ -11,9 +11,10 @@ export const useMemberClaims = (enabled = false) => {
     const [claims, setClaims] = useState<Claim[]>([]);
     const [loading, setLoading] = useState(false);
 
-    const fetchClaims = async () => {
+    // First statement is the network await, so no state is set synchronously when
+    // this is called from the effect (avoids cascading renders).
+    const fetchClaims = useCallback(async () => {
         if (!currentUser) return;
-        setLoading(true);
         try {
             const snap = await getDocs(
                 query(collection(db, "claims"), where("memberId", "==", currentUser.uid)),
@@ -41,13 +42,14 @@ export const useMemberClaims = (enabled = false) => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [currentUser]);
 
     useEffect(() => {
-        if (!currentUser || !enabled) return;
-        fetchClaims();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [currentUser, enabled]);
+        if (!enabled) return;
+        // Defer into a microtask so the fetch's state updates don't run synchronously
+        // in the effect body (avoids cascading renders).
+        queueMicrotask(() => fetchClaims());
+    }, [enabled, fetchClaims]);
 
     return { claims, loading, refetch: fetchClaims };
 };

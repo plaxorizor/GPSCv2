@@ -82,19 +82,17 @@ export const Members: React.FC<Props> = ({ onExport }) => {
     // Compute the selected member's recognition rank from their downline.
     // (Rank is derived, never stored — see utils/rank.ts.)
     useEffect(() => {
-        if (!selectedMember) {
-            setSelectedRank("—");
-            return;
-        }
         let cancelled = false;
-        setSelectedRank("…");
-        buildReferralTree(selectedMember.uid)
-            .then((tree) => {
-                if (!cancelled) setSelectedRank(rankName(computeRankFromTree(tree)));
-            })
-            .catch(() => {
-                if (!cancelled) setSelectedRank("—");
-            });
+        // Resolve the rank asynchronously and set state only in the callback (never
+        // synchronously in the effect body) to avoid cascading renders.
+        const pending: Promise<string> = selectedMember
+            ? buildReferralTree(selectedMember.uid)
+                  .then((tree) => rankName(computeRankFromTree(tree)))
+                  .catch(() => "—")
+            : Promise.resolve("—");
+        pending.then((rank) => {
+            if (!cancelled) setSelectedRank(rank);
+        });
         return () => {
             cancelled = true;
         };
@@ -620,9 +618,12 @@ export const Members: React.FC<Props> = ({ onExport }) => {
             {/* ── Member Detail Modal ── */}
             {selectedMember &&
                 (() => {
-                    const sm = selectedMember as any;
+                    const sm = selectedMember as MemberRow & {
+                        dateEligibility?: { toDate: () => Date };
+                        dateActivated?: { toDate: () => Date };
+                    };
                     const timeline = getEligibilityTimeline(
-                        (sm.dateEligibility ?? sm.dateActivated ?? sm.dateCreated) as any,
+                        sm.dateEligibility ?? sm.dateActivated ?? (sm.dateCreated as { toDate: () => Date } | undefined),
                         selectedMember.package,
                     );
                     const unlockedCount = timeline.filter((m) => m.unlocked).length;

@@ -21,12 +21,13 @@ export const useAllMembers = () => {
 
             // Sponsors are already in `raw` (we fetched every member) — build the
             // name map in memory instead of firing one getDoc per sponsor (N+1).
+            const all = raw as Array<Member & { uid: string }>;
             const sponsorMap: Record<string, string> = {};
-            for (const m of raw as any[]) {
+            for (const m of all) {
                 sponsorMap[m.uid] = `${m.firstName} ${m.lastName}`;
             }
 
-            const withSponsors: MemberWithSponsor[] = raw.map((m: any) => ({
+            const withSponsors: MemberWithSponsor[] = all.map((m) => ({
                 ...m,
                 sponsorName: m.referredBy ? (sponsorMap[m.referredBy] ?? "—") : "—",
             }));

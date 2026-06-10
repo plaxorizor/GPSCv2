@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { collection, getDocs, onSnapshot, query, where } from "firebase/firestore";
 import { db } from "../firebase/config";
 import type { Claim } from "../utils/types";
@@ -9,11 +9,10 @@ export default function useAdminClaims() {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
 
-    // `isInitial` shows the full-page skeleton (first mount only); a manual
-    // refresh updates the data quietly while flagging `refreshing` for the spinner.
-    const fetchClaims = useCallback(async (isInitial = false) => {
-        if (isInitial) setLoading(true);
-        else setRefreshing(true);
+    // First statement is the network await, so no state is set synchronously when
+    // this runs from the mount effect (avoids cascading renders). `loading` starts
+    // true for the initial skeleton; the manual `refetch` flips `refreshing`.
+    const fetchClaims = useCallback(async () => {
         try {
             const snap = await getDocs(collection(db, "claims"));
             const docs = snap.docs
@@ -44,26 +43,18 @@ export default function useAdminClaims() {
         }
     }, []);
 
-    useEffect(() => {
-        fetchClaims(true);
-    }, [fetchClaims]);
-
-    // Live-watch only the small "pending" subset (submitted / under_review). When a
-    // NEW claim lands, quietly re-pull the full list so it appears without a manual
-    // refresh. We skip the first emission (it fires on subscribe) to avoid a
-    // double-fetch on mount. History changes still update via actions / the button.
-    const firstPendingSnap = useRef(true);
+    // Live-watch only the small "pending" subset (submitted / under_review).
+    // onSnapshot fires immediately on subscribe (the initial load) and again
+    // whenever a claim lands or changes status — each emission re-pulls the full
+    // list. This single subscription covers both the first load and live updates,
+    // and keeps every setState inside a callback (never the synchronous effect body).
     useEffect(() => {
         const q = query(collection(db, "claims"), where("status", "in", ["submitted", "under_review"]));
         const unsub = onSnapshot(q, () => {
-            if (firstPendingSnap.current) {
-                firstPendingSnap.current = false;
-                return;
-            }
-            fetchClaims(false);
+            fetchClaims();
         });
         return () => unsub();
     }, [fetchClaims]);
 
-    return { claims, loading, refreshing, refetch: () => fetchClaims(false) };
+    return { claims, loading, refreshing, refetch: async () => { setRefreshing(true); await fetchClaims(); } };
 }
