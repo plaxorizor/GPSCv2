@@ -71,6 +71,7 @@ export default function PendingUpgradesPanel({ search = "" }: { search?: string 
         amount: `${formatCurrency(req.amountDue)} (${req.basis === "full" ? "full" : "difference"})`,
         reference: req.paymentReference ?? null,
         method: req.paymentMethod ?? null,
+        receiptUrl: req.paymentReceiptUrl ?? null,
         date: req.dateRequested || null,
         rows,
         confirmLabel: "Confirm & upgrade",

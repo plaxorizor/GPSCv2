@@ -85,6 +85,7 @@ export interface Claim {
     submitted: string; // ISO date
     decided: string | null; // ISO date
     documents: string[];
+    uploads?: { name: string; url: string }[]; // attached files in Storage
 }
 
 export interface Payout {

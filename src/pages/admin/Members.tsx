@@ -43,6 +43,7 @@ export interface MemberRow {
     beneficiaries?: { name: string; relationship: string }[];
     paymentReference?: string;
     paymentMethod?: string;
+    paymentReceiptUrl?: string;
 }
 
 interface Props {
@@ -714,6 +715,26 @@ export const Members: React.FC<Props> = ({ onExport }) => {
                                             </div>
                                         ))}
                                     </div>
+
+                                    {/* Payment proof — the latest verified receipt (replaced on
+                                        renewal / upgrade). Older proofs live on their request docs. */}
+                                    {selectedMember.paymentReceiptUrl && (
+                                        <div className="mt-5">
+                                            <div className="text-fsc-stone mb-2 text-xs tracking-wider uppercase">Payment proof</div>
+                                            <a
+                                                href={selectedMember.paymentReceiptUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="border-fsc-cream-dark hover:border-fsc-green block overflow-hidden rounded-lg border transition-colors"
+                                            >
+                                                <img
+                                                    src={selectedMember.paymentReceiptUrl}
+                                                    alt="Payment receipt"
+                                                    className="max-h-72 w-full bg-white object-contain"
+                                                />
+                                            </a>
+                                        </div>
+                                    )}
 
                                     {/* Beneficiaries */}
                                     {(selectedMember.beneficiaries?.length ?? 0) > 0 && (

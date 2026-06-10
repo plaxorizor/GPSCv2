@@ -260,6 +260,7 @@ export default function MemberArea() {
                 onChangePassword={() => setShowChangePassword(true)}
                 onRefreshCommissions={refetchCommissions}
                 onRefreshPayouts={refetchPayouts}
+                onRefreshClaims={refetchClaims}
             />
         </>
     );

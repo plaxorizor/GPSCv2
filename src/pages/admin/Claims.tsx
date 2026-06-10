@@ -300,6 +300,39 @@ export const Claims: React.FC<Props> = ({ claims, loading, onUpdateStatus, onRev
                                     ))}
                                 </div>
                             </div>
+                            {selectedClaim.uploads && selectedClaim.uploads.length > 0 && (
+                                <div>
+                                    <div className="text-fsc-stone mb-2 text-xs">Attachments</div>
+                                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                                        {selectedClaim.uploads.map((u, i) => {
+                                            const isImage = /\.(png|jpe?g|webp|gif|bmp)$/i.test(u.name);
+                                            return (
+                                                <a
+                                                    key={i}
+                                                    href={u.url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    title={u.name}
+                                                    className="border-fsc-cream-dark hover:border-fsc-green block overflow-hidden rounded-lg border transition-colors"
+                                                >
+                                                    {isImage ? (
+                                                        <img
+                                                            src={u.url}
+                                                            alt={u.name}
+                                                            className="aspect-square w-full bg-white object-cover"
+                                                        />
+                                                    ) : (
+                                                        <div className="bg-fsc-cream/40 text-fsc-stone flex aspect-square w-full flex-col items-center justify-center gap-1 p-2 text-center">
+                                                            <FileText size={20} />
+                                                            <span className="line-clamp-2 text-[10px] break-all">{u.name}</span>
+                                                        </div>
+                                                    )}
+                                                </a>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                         <div className="mt-6 flex gap-3">
                             <button

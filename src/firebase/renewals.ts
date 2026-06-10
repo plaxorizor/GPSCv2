@@ -7,6 +7,7 @@
 
 import { collection, doc, addDoc, getDoc, getDocs, updateDoc, query, where, onSnapshot, serverTimestamp, type DocumentData } from "firebase/firestore";
 import { db } from "./config";
+import { uploadReceipt } from "./receipts";
 import { packagePrice, type PackageKey } from "../utils/upgrade";
 import { triggerRenewalCommissions } from "./transactions";
 
@@ -23,6 +24,7 @@ export interface RenewalRequest {
     reason?: string | null;
     paymentReference?: string | null;
     paymentMethod?: string | null;
+    paymentReceiptUrl?: string | null;
 }
 
 // Member submits a renewal request (offline payment + proof handled separately).
@@ -32,6 +34,7 @@ export async function requestRenewal(input: {
     toPackage: PackageKey;
     reference?: string;
     method?: string;
+    receiptFile?: File | null;
 }): Promise<void> {
     const snap = await getDoc(doc(db, "members", input.memberId));
     if (!snap.exists()) throw new Error("MEMBER_NOT_FOUND");
@@ -42,6 +45,11 @@ export async function requestRenewal(input: {
         query(collection(db, "renewalRequests"), where("memberId", "==", input.memberId), where("status", "==", "pending")),
     );
     if (!existing.empty) throw new Error("ALREADY_PENDING");
+
+    // Upload the optional payment-proof screenshot first (member is authenticated).
+    const paymentReceiptUrl = input.receiptFile
+        ? await uploadReceipt(input.memberId, "renewal", input.receiptFile)
+        : null;
 
     await addDoc(collection(db, "renewalRequests"), {
         memberId: input.memberId,
@@ -55,6 +63,7 @@ export async function requestRenewal(input: {
         reason: null,
         paymentReference: input.reference?.trim() || null,
         paymentMethod: input.method ?? null,
+        paymentReceiptUrl,
     });
 }
 
@@ -70,6 +79,7 @@ const mapRequest = (id: string, data: DocumentData): RenewalRequest => ({
     dateDecided: data.dateDecided?.toDate?.()?.toISOString?.() ?? null,
     paymentReference: data.paymentReference ?? null,
     paymentMethod: data.paymentMethod ?? null,
+    paymentReceiptUrl: data.paymentReceiptUrl ?? null,
 });
 
 // A member's current pending renewal (if any).
@@ -117,6 +127,11 @@ export async function approveRenewal(requestId: string): Promise<void> {
         dateExpiry,
         dateContestabilityEnd,
         packageLocked: false,
+        // Surface the latest verified payment on the member record. The previous
+        // proof is retained on its own request doc for the audit trail.
+        ...(req.paymentReceiptUrl ? { paymentReceiptUrl: req.paymentReceiptUrl } : {}),
+        ...(req.paymentReference ? { paymentReference: req.paymentReference } : {}),
+        ...(req.paymentMethod ? { paymentMethod: req.paymentMethod } : {}),
     });
 
     await updateDoc(doc(db, "renewalRequests", requestId), {

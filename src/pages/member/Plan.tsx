@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { X, CalendarClock, RefreshCw, Clock, Sparkles, CheckCircle } from "lucide-react";
 import PackageComparison from "../../components/PackageComparison";
 import UpgradeModal from "../../components/UpgradeModal";
+import ReceiptUploadField from "../../components/ReceiptUploadField";
+import { PAYMENT_ACCOUNTS } from "../../data/paymentAccounts";
 import { membershipPhase } from "../../utils/membership";
 import { isWithinGrace, graceDaysLeft, upgradeTargets, packagePrice, packageLabel, GRACE_DAYS, type PackageKey } from "../../utils/upgrade";
 import { getPendingUpgradeForMember, type UpgradeRequest } from "../../firebase/upgrades";
@@ -15,13 +17,6 @@ interface Props {
     member: Member;
 }
 
-// Offline payment destinations (same accounts used for membership / upgrades).
-// `qr` is an optional image path; leave empty to show the "QR placeholder" box.
-const PAYMENT_ACCOUNTS = [
-    { label: "GCash", accountName: "FaithShield Care Official", number: "09XX-XXX-XXXX", qr: "" },
-    { label: "Maya", accountName: "FaithShield Care Official", number: "09XX-XXX-XXXX", qr: "" },
-    { label: "GoTyme", accountName: "FaithShield Care Official", number: "09XX-XXX-XXXX", qr: "" },
-];
 
 export const MemberPlan: React.FC<Props> = ({ packageName, member }) => {
     const memberName = `${member.firstName} ${member.lastName}`.trim();
@@ -158,6 +153,7 @@ function RenewModal({
 }) {
     const fee = packagePrice(toPackage);
     const [referenceNumber, setReferenceNumber] = useState("");
+    const [receiptFile, setReceiptFile] = useState<File | null>(null);
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(PAYMENT_ACCOUNTS[0].label);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState("");
@@ -171,7 +167,7 @@ function RenewModal({
         setSubmitting(true);
         setError("");
         try {
-            await requestRenewal({ memberId, memberName, toPackage, reference: referenceNumber.trim(), method: selectedPaymentMethod });
+            await requestRenewal({ memberId, memberName, toPackage, reference: referenceNumber.trim(), method: selectedPaymentMethod, receiptFile });
             setDone(true);
         } catch (e) {
             const msg = e instanceof Error ? e.message : "";
@@ -288,6 +284,16 @@ function RenewModal({
                         onChange={(e) => setReferenceNumber(e.target.value)}
                         className="border-fsc-cream-dark focus:border-fsc-green mt-1 w-full rounded-xl border bg-white px-3 py-2.5 text-sm outline-none"
                     />
+                </div>
+
+                {/* Receipt screenshot (optional) */}
+                <div className="mt-4">
+                    <label className="text-fsc-navy text-sm font-medium">
+                        Receipt screenshot <span className="text-fsc-stone font-normal">(optional)</span>
+                    </label>
+                    <div className="mt-1">
+                        <ReceiptUploadField file={receiptFile} onChange={setReceiptFile} />
+                    </div>
                 </div>
 
                 {error && <p className="mt-3 text-sm text-[#C41E1E]">{error}</p>}

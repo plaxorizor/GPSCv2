@@ -27,7 +27,7 @@ const PLANS = [
         price: 1698,
         popular: true,
         benefits: [
-            "Principal & spouse full coverage, 2 beneficiaries at 50%",
+            "Principal & Spouse full coverage, 2 beneficiaries at 50%",
             "Accidental Death — ₱10,000 cash (1 month)",
             "Natural Death — ₱20,000 + ₱5,000 groceries (5 months)",
             "Natural/Accidental Death — ₱40,000 + ₱10,000 groceries + tribute, tarpaulin & wake flower (10 months)",
@@ -46,7 +46,7 @@ const PLANS = [
         name: "Premium Care",
         price: 4998,
         benefits: [
-            "Principal & spouse full coverage, 3 beneficiaries at 50%",
+            "Principal & Spouse full coverage, 3 beneficiaries at 50%",
             "Accidental Death — ₱20,000 (1 month)",
             "Natural Death — ₱40,000 + ₱10,000 groceries (5 months)",
             "Natural/Accidental Death — ₱80,000 + ₱20,000 groceries + tribute, tarpaulin & wake flower (10 months)",
@@ -124,7 +124,6 @@ function PlanCard({
                     {showUpgradePrice ? (
                         <>
                             <span className="font-display text-fsc-navy text-5xl">{peso(upgradeAmount)}</span>
-                            <span className="text-fsc-stone ml-2 text-sm">to upgrade</span>
                             {inUpgradeGrace && (
                                 <p className="text-fsc-stone mt-1 text-xs">
                                     Full price {peso(plan.price)} · you only pay the difference
@@ -134,12 +133,9 @@ function PlanCard({
                     ) : (
                         <>
                             <span className="font-display text-fsc-navy text-5xl">{peso(plan.price)}</span>
-                            <span className="text-fsc-stone ml-2 text-sm">one-time</span>
                         </>
                     )}
                 </div>
-
-                <div className="bg-fsc-cream-dark mb-5 h-px" />
 
                 <ul className="mb-5 flex-1 space-y-2.5">
                     {plan.benefits.map((b, bi) => (

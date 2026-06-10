@@ -74,6 +74,7 @@ export default function PendingRenewalsPanel({ search = "" }: { search?: string 
             amount: `${formatCurrency(req.amountDue)} · 365 days`,
             reference: req.paymentReference ?? null,
             method: req.paymentMethod ?? null,
+            receiptUrl: req.paymentReceiptUrl ?? null,
             date: req.dateRequested || null,
             rows,
             confirmLabel: "Confirm & renew",

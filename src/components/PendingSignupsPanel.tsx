@@ -17,6 +17,7 @@ interface PendingSignup {
     province?: string;
     paymentReference?: string;
     paymentMethod?: string;
+    paymentReceiptUrl?: string;
     dateCreated?: { toDate?: () => Date };
     archived?: boolean;
     isAdmin?: boolean;
@@ -80,6 +81,7 @@ export default function PendingSignupsPanel({ search = "" }: { search?: string }
             amount: PACKAGE_INFO[pkg] ? peso(PACKAGE_INFO[pkg].price) : undefined,
             reference: m.paymentReference ?? null,
             method: m.paymentMethod ?? null,
+            receiptUrl: m.paymentReceiptUrl ?? null,
             date: m.dateCreated?.toDate?.()?.toISOString?.() ?? null,
             rows: [
                 { label: "Email", value: m.email || "—" },

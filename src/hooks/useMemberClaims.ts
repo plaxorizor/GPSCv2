@@ -32,6 +32,7 @@ export const useMemberClaims = (enabled = false) => {
                     submitted: data.dateSubmitted?.toDate?.()?.toISOString?.() ?? "",
                     decided: data.dateDecided?.toDate?.()?.toISOString?.() ?? null,
                     documents: (data.documents as string[]) ?? [],
+                    uploads: (data.uploads as { name: string; url: string }[]) ?? [],
                 } satisfies Claim;
             });
             // Newest first

@@ -31,6 +31,7 @@ export default function useAdminClaims() {
                         submitted: data.dateSubmitted?.toDate?.()?.toISOString?.() ?? "",
                         decided: data.dateDecided?.toDate?.()?.toISOString?.() ?? null,
                         documents: (data.documents as string[]) ?? [],
+                        uploads: (data.uploads as { name: string; url: string }[]) ?? [],
                     } satisfies Claim;
                 });
             docs.sort((a, b) => (b.submitted > a.submitted ? 1 : -1));

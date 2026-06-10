@@ -3,14 +3,9 @@ import { X, ArrowRight, CheckCircle } from "lucide-react";
 import { formatCurrency } from "../utils/formatter";
 import { upgradeCharge, isWithinGrace, packageLabel, type PackageKey } from "../utils/upgrade";
 import { requestUpgrade } from "../firebase/upgrades";
+import ReceiptUploadField from "./ReceiptUploadField";
+import { PAYMENT_ACCOUNTS } from "../data/paymentAccounts";
 import type { Member } from "../utils/types";
-
-// Offline payment destinations (same accounts used for membership / renewals).
-const PAYMENT_ACCOUNTS = [
-    { label: "GCash", value: "09XX-XXX-XXXX" },
-    { label: "Maya", value: "09XX-XXX-XXXX" },
-    { label: "GoTyme", value: "09XX-XXX-XXXX" },
-];
 
 interface Props {
     member: Member;
@@ -25,6 +20,8 @@ export default function UpgradeModal({ member, toPackage, onClose, onSuccess }: 
     const amount = upgradeCharge(member.package ?? "", toPackage, inGrace);
 
     const [referenceNumber, setReferenceNumber] = useState("");
+    const [receiptFile, setReceiptFile] = useState<File | null>(null);
+    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(PAYMENT_ACCOUNTS[0].label);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState("");
     const [done, setDone] = useState(false);
@@ -37,7 +34,14 @@ export default function UpgradeModal({ member, toPackage, onClose, onSuccess }: 
         setSubmitting(true);
         setError("");
         try {
-            await requestUpgrade({ memberId: member.uid, memberName, toPackage, reference: referenceNumber.trim() });
+            await requestUpgrade({
+                memberId: member.uid,
+                memberName,
+                toPackage,
+                reference: referenceNumber.trim(),
+                method: selectedPaymentMethod,
+                receiptFile,
+            });
             setDone(true);
         } catch (e) {
             const msg = e instanceof Error ? e.message : "";
@@ -105,18 +109,55 @@ export default function UpgradeModal({ member, toPackage, onClose, onSuccess }: 
                 {/* Instructions */}
                 <ol className="text-fsc-stone mt-4 list-decimal space-y-2 pl-4 text-sm">
                     <li>
-                        Send <strong>{formatCurrency(amount)}</strong> to one of:
-                        <ul className="mt-1 list-disc pl-4 text-xs">
-                            {PAYMENT_ACCOUNTS.map((a) => (
-                                <li key={a.label}>
-                                    {a.label}: <span className="font-medium">{a.value}</span>
-                                </li>
-                            ))}
-                        </ul>
+                        Send <strong>{formatCurrency(amount)}</strong> using one of the payment methods below.
                     </li>
-                    <li>Send your proof of payment to the admin (Messenger / email), including your full name.</li>
+                    <li>Send your proof of payment to the admin (Facebook), including your full name.</li>
                     <li>Submit the request below — an admin confirms and your upgrade applies immediately.</li>
                 </ol>
+
+                {/* Payment method selector */}
+                <div className="mt-4 flex gap-2">
+                    {PAYMENT_ACCOUNTS.map((acct) => {
+                        const active = selectedPaymentMethod === acct.label;
+                        return (
+                            <button
+                                key={acct.label}
+                                type="button"
+                                onClick={() => setSelectedPaymentMethod(acct.label)}
+                                className={`flex-1 rounded-xl border py-2.5 text-sm font-medium transition-colors ${
+                                    active
+                                        ? "border-fsc-navy bg-fsc-navy text-white"
+                                        : "border-fsc-cream-dark bg-fsc-cream/40 text-fsc-stone hover:bg-fsc-cream"
+                                }`}
+                            >
+                                {acct.label}
+                            </button>
+                        );
+                    })}
+                </div>
+
+                {/* QR holder for the selected method */}
+                {PAYMENT_ACCOUNTS.filter((a) => a.label === selectedPaymentMethod).map((acct) => (
+                    <div key={acct.label} className="border-fsc-cream-dark mt-3 flex flex-col items-center rounded-2xl border bg-white p-5">
+                        {acct.qr ? (
+                            <img
+                                src={acct.qr}
+                                alt={`${acct.label} QR code`}
+                                className="aspect-square w-full max-w-[14rem] rounded-xl object-contain"
+                            />
+                        ) : (
+                            <div className="border-fsc-cream-dark bg-fsc-cream/40 text-fsc-stone flex aspect-square w-full max-w-[14rem] items-center justify-center rounded-xl border-2 border-dashed text-xs">
+                                QR placeholder
+                            </div>
+                        )}
+                        <p className="text-fsc-stone mt-3 text-xs">
+                            Account name: <span className="text-fsc-navy font-medium">{acct.accountName}</span>
+                        </p>
+                        <p className="text-fsc-stone text-xs">
+                            Number: <span className="text-fsc-navy font-medium">{acct.number}</span>
+                        </p>
+                    </div>
+                ))}
 
                 <div className="bg-fsc-green/10 mt-3 flex items-start gap-2 rounded-lg p-2 text-xs text-[#15803D]">
                     <CheckCircle size={14} className="mt-0.5 shrink-0" />
@@ -136,6 +177,16 @@ export default function UpgradeModal({ member, toPackage, onClose, onSuccess }: 
                         onChange={(e) => setReferenceNumber(e.target.value)}
                         className="border-fsc-cream-dark focus:border-fsc-green mt-1 w-full rounded-xl border bg-white px-3 py-2.5 text-sm outline-none"
                     />
+                </div>
+
+                {/* Receipt screenshot (optional) */}
+                <div className="mt-4">
+                    <label className="text-fsc-navy text-sm font-medium">
+                        Receipt screenshot <span className="text-fsc-stone font-normal">(optional)</span>
+                    </label>
+                    <div className="mt-1">
+                        <ReceiptUploadField file={receiptFile} onChange={setReceiptFile} />
+                    </div>
                 </div>
 
                 {error && <p className="mt-3 text-sm text-[#C41E1E]">{error}</p>}

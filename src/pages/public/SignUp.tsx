@@ -1,7 +1,10 @@
 import { getDoc, setDoc, doc, serverTimestamp } from "firebase/firestore";
 import { useState, useEffect, useMemo } from "react";
 import { registerUser } from "../../firebase/auth";
+import { uploadReceipt } from "../../firebase/receipts";
 import { db } from "../../firebase/config";
+import ReceiptUploadField from "../../components/ReceiptUploadField";
+import { PAYMENT_ACCOUNTS } from "../../data/paymentAccounts";
 
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import logo from "../../components/ui/Logo.png";
@@ -52,17 +55,13 @@ const STEPS = ["Package", "Your Info", "Sponsor & Beneficiaries", "Payment", "Re
 // ── Payment details shown on the signup Payment step ──────────────
 // Single source of truth — update account numbers and receipt contacts here.
 const PAYMENT_INFO = {
-    // `qr` is an optional image path (e.g. "/qr/gcash.png" in /public, or an
-    // imported asset URL). Leave empty to show the "QR placeholder" box.
-    accounts: [
-        { label: "GCash", accountName: "FaithShield Care Official", number: "09XX-XXX-XXXX", qr: "" },
-        { label: "Maya", accountName: "FaithShield Care Official", number: "09XX-XXX-XXXX", qr: "" },
-        { label: "GoTyme", accountName: "FaithShield Care Official", number: "09XX-XXX-XXXX", qr: "" },
-    ],
+    // Accounts + QR codes come from the shared single source of truth.
+    accounts: PAYMENT_ACCOUNTS,
     // Where members send their proof of payment for manual verification.
+    // `href` makes the value a clickable link. (Email hidden for now — pending
+    // confirmation from the client.)
     receiptContacts: [
-        { label: "Messenger", value: "FaithShield Care" },
-        { label: "Email", value: "payments@faithshieldcare.com" },
+        { label: "Facebook", value: "fb.me/FaithShieldCare", href: "https://fb.me/FaithShieldCare" },
     ],
     verificationDays: "1–2 business days",
 };
@@ -91,6 +90,8 @@ export default function SignUpLayout() {
 
     const [selectedPlan, setSelectedPlan] = useState(plans[0]);
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(PAYMENT_INFO.accounts[0].label);
+    // Optional payment-proof screenshot, uploaded to Storage on submit.
+    const [receiptFile, setReceiptFile] = useState<File | null>(null);
     const [form, setForm] = useState({
         package: "",
         firstName: "",
@@ -355,6 +356,13 @@ export default function SignUpLayout() {
 
             const { user } = await registerUser(form.email, form.password);
 
+            // Upload the optional receipt now that the user is authenticated (the
+            // Storage rule requires request.auth.uid == the receipts/{uid} folder).
+            let paymentReceiptUrl: string | null = null;
+            if (receiptFile) {
+                paymentReceiptUrl = await uploadReceipt(user.uid, "signup", receiptFile);
+            }
+
             await setDoc(doc(db, "members", user.uid), {
                 referralCode: null,
                 referredBy: referredBy,
@@ -378,6 +386,7 @@ export default function SignUpLayout() {
                 // an admin can match it against the receipt before activating.
                 paymentReference: form.referenceNumber.trim(),
                 paymentMethod: selectedPaymentMethod,
+                paymentReceiptUrl,
                 status: "pending",
                 isAdmin: false,
                 dateCreated: serverTimestamp(),
@@ -1273,7 +1282,20 @@ export default function SignUpLayout() {
                                                 <ul className="mt-3 space-y-1 text-sm" style={{ color: "#1B2D6B" }}>
                                                     {PAYMENT_INFO.receiptContacts.map((c) => (
                                                         <li key={c.label}>
-                                                            {c.label}: <span className="font-medium">{c.value}</span>
+                                                            {c.label}:{" "}
+                                                            {c.href ? (
+                                                                <a
+                                                                    href={c.href}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="font-medium underline"
+                                                                    style={{ color: "#C9922A" }}
+                                                                >
+                                                                    {c.value}
+                                                                </a>
+                                                            ) : (
+                                                                <span className="font-medium">{c.value}</span>
+                                                            )}
                                                         </li>
                                                     ))}
                                                 </ul>
@@ -1294,6 +1316,18 @@ export default function SignUpLayout() {
                                                     <p className="mt-1 text-xs" style={{ color: "#6B6862" }}>
                                                         Enter the reference number shown on your transaction receipt.
                                                     </p>
+                                                </div>
+
+                                                <div className="mt-4">
+                                                    <label className={labelCls}>
+                                                        Receipt screenshot{" "}
+                                                        <span className="normal-case" style={{ color: "#6B6862" }}>
+                                                            (optional, speeds up verification)
+                                                        </span>
+                                                    </label>
+                                                    <div className="mt-1">
+                                                        <ReceiptUploadField file={receiptFile} onChange={setReceiptFile} />
+                                                    </div>
                                                 </div>
 
                                                 <p className="mt-3 text-xs" style={{ color: "#6B6862" }}>

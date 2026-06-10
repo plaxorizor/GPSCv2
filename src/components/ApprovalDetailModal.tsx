@@ -7,6 +7,7 @@ export interface ApprovalDetail {
     amount?: string; // formatted, e.g. "₱3,000 (difference)"
     reference?: string | null;
     method?: string | null;
+    receiptUrl?: string | null; // uploaded payment-proof image, if any
     date?: string | null; // ISO of when requested/created
     rows: { label: string; value: string }[]; // contact / extra info
     confirmLabel: string; // e.g. "Confirm & activate"
@@ -70,17 +71,37 @@ export default function ApprovalDetailModal({ detail, busy, onConfirm, onReject,
                             <div className="text-fsc-stone text-sm italic">No reference provided</div>
                         )}
 
-                        {/* Receipt screenshot placeholder — wired once file uploads are
-                            available on the Blaze plan (members will attach proof at
-                            signup / upgrade / renewal, and it renders here). */}
-                        <div className="border-fsc-cream-dark bg-fsc-cream/30 mt-3 flex aspect-video w-full flex-col items-center justify-center gap-1 rounded-lg border border-dashed">
-                            <ImageIcon size={20} className="text-fsc-stone/50" />
-                            <span className="text-fsc-stone/70 text-xs">Receipt upload coming soon</span>
-                        </div>
-
-                        <p className="text-fsc-stone mt-2 text-xs">
-                            For now, match the reference against the receipt the member sent (Messenger / email).
-                        </p>
+                        {/* Receipt screenshot the member uploaded — click to open full size.
+                            Falls back to a hint when no image was attached. */}
+                        {detail.receiptUrl ? (
+                            <>
+                                <a
+                                    href={detail.receiptUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="border-fsc-cream-dark mt-3 block overflow-hidden rounded-lg border"
+                                >
+                                    <img
+                                        src={detail.receiptUrl}
+                                        alt="Payment receipt"
+                                        className="max-h-72 w-full bg-white object-contain"
+                                    />
+                                </a>
+                                <p className="text-fsc-stone mt-2 text-xs">
+                                    Tap the image to open it full size. Match the amount and reference before confirming.
+                                </p>
+                            </>
+                        ) : (
+                            <>
+                                <div className="border-fsc-cream-dark bg-fsc-cream/30 mt-3 flex aspect-video w-full flex-col items-center justify-center gap-1 rounded-lg border border-dashed">
+                                    <ImageIcon size={20} className="text-fsc-stone/50" />
+                                    <span className="text-fsc-stone/70 text-xs">No receipt uploaded</span>
+                                </div>
+                                <p className="text-fsc-stone mt-2 text-xs">
+                                    Match the reference against the receipt the member sent (Messenger / email).
+                                </p>
+                            </>
+                        )}
                     </div>
 
                     {/* Info rows */}

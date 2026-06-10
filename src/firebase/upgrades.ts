@@ -18,6 +18,7 @@ import {
     serverTimestamp,
 } from "firebase/firestore";
 import { db } from "./config";
+import { uploadReceipt } from "./receipts";
 import { upgradeCharge, upgradeTargets, isWithinGrace, type PackageKey } from "../utils/upgrade";
 import { triggerUpgradeCommissions } from "./transactions";
 
@@ -35,6 +36,7 @@ export interface UpgradeRequest {
     reason?: string | null;
     paymentReference?: string | null;
     paymentMethod?: string | null;
+    paymentReceiptUrl?: string | null;
 }
 
 // Member creates an upgrade request (offline payment + proof handled separately).
@@ -44,6 +46,7 @@ export async function requestUpgrade(input: {
     toPackage: PackageKey;
     reference?: string;
     method?: string;
+    receiptFile?: File | null;
 }): Promise<void> {
     const snap = await getDoc(doc(db, "members", input.memberId));
     if (!snap.exists()) throw new Error("MEMBER_NOT_FOUND");
@@ -66,6 +69,11 @@ export async function requestUpgrade(input: {
     const inGrace = isWithinGrace(m.dateActivated ?? m.dateCreated);
     const basis: "difference" | "full" = inGrace ? "difference" : "full";
 
+    // Upload the optional payment-proof screenshot first (member is authenticated).
+    const paymentReceiptUrl = input.receiptFile
+        ? await uploadReceipt(input.memberId, "upgrade", input.receiptFile)
+        : null;
+
     await addDoc(collection(db, "upgradeRequests"), {
         memberId: input.memberId,
         memberName: input.memberName,
@@ -79,6 +87,7 @@ export async function requestUpgrade(input: {
         reason: null,
         paymentReference: input.reference?.trim() || null,
         paymentMethod: input.method ?? null,
+        paymentReceiptUrl,
     });
 }
 
@@ -120,6 +129,7 @@ function mapPendingUpgrade(id: string, data: Record<string, unknown>): UpgradeRe
         dateDecided: null,
         paymentReference: (d.paymentReference as string | null) ?? null,
         paymentMethod: (d.paymentMethod as string | null) ?? null,
+        paymentReceiptUrl: (d.paymentReceiptUrl as string | null) ?? null,
     };
 }
 
@@ -160,6 +170,11 @@ export async function approveUpgrade(requestId: string): Promise<void> {
         dateExpiry,
         dateContestabilityEnd,
         packageLocked: false,
+        // Surface the latest verified payment on the member record. The previous
+        // proof is retained on its own request doc for the audit trail.
+        ...(req.paymentReceiptUrl ? { paymentReceiptUrl: req.paymentReceiptUrl } : {}),
+        ...(req.paymentReference ? { paymentReference: req.paymentReference } : {}),
+        ...(req.paymentMethod ? { paymentMethod: req.paymentMethod } : {}),
     });
 
     await updateDoc(doc(db, "upgradeRequests", requestId), {
