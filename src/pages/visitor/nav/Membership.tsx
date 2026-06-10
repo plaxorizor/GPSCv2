@@ -68,19 +68,13 @@ const MemberCard: React.FC<{ plan: (typeof PLANS)[0] }> = ({ plan }) => {
     const { tier, tag, name, price, benefits, featured } = plan;
     const isFeatured = !!featured;
 
-    const transform = isFeatured
-        ? hovered ? "scale(1.05) translateY(-6px)" : "scale(1.03)"
-        : hovered ? "translateY(-6px)" : "translateY(0)";
-    const boxShadow = hovered
-        ? "0 20px 48px rgba(0,0,0,0.12)"
-        : isFeatured
-            ? "0 8px 32px rgba(0,0,0,0.10)"
-            : "0 2px 12px rgba(0,0,0,0.06)";
+    const transform = isFeatured ? (hovered ? "scale(1.05) translateY(-6px)" : "scale(1.03)") : hovered ? "translateY(-6px)" : "translateY(0)";
+    const boxShadow = hovered ? "0 20px 48px rgba(0,0,0,0.12)" : isFeatured ? "0 8px 32px rgba(0,0,0,0.10)" : "0 2px 12px rgba(0,0,0,0.06)";
 
     return (
         <div className="relative">
             <div
-                className={`tier-${tier} relative rounded-2xl p-8 flex flex-col`}
+                className={`tier-${tier} relative flex flex-col rounded-2xl p-8`}
                 style={{ transform, boxShadow, transition: "transform 0.25s ease, box-shadow 0.25s ease" }}
                 onMouseEnter={() => setHovered(true)}
                 onMouseLeave={() => setHovered(false)}
@@ -118,82 +112,122 @@ const MemberCard: React.FC<{ plan: (typeof PLANS)[0] }> = ({ plan }) => {
 };
 
 const Membership: React.FC = () => {
-
     return (
-        <div className="min-h-screen font-body text-fsc-ink antialiased flex flex-col">
+        <div className="font-body text-fsc-ink flex min-h-screen flex-col antialiased">
             <PublicNav />
             <div className="anim-fade-up flex-1">
-            {/* Hero */}
-            <section className="fsc-cream">
-                <div className="mx-auto max-w-4xl px-6 py-20 lg:px-8">
-                    <div className="text-xs tracking-[0.2em] uppercase text-fsc-green mb-4">Membership Packages</div>
-                    <h1 className="font-display text-5xl lg:text-6xl text-fsc-navy leading-tight mb-6">
-                        Choose the plan that fits your family.
-                    </h1>
-                    <p className="text-fsc-stone text-lg leading-relaxed max-w-2xl">
-                        Every Faith Shield Care membership gives your family access to financial assistance, emergency support, and community care services — guided by faith and driven by compassion.
-                    </p>
-                </div>
-            </section>
-
-            {/* Package Cards */}
-            <section className="bg-white border-y border-fsc-cream-dark">
-                <div className="max-w-5xl mx-auto px-6 lg:px-8 py-20">
-                    <div className="text-xs tracking-[0.2em] uppercase text-fsc-green mb-4">Packages</div>
-                    <h2 className="font-display text-3xl text-fsc-navy mb-10">Three tiers, one community</h2>
-                    <div className="grid md:grid-cols-3 gap-6 items-center">
-                        {PLANS.map((plan) => (
-                            <MemberCard key={plan.name} plan={plan} />
-                        ))}
+                {/* Hero */}
+                <section className="fsc-cream">
+                    <div className="mx-auto max-w-4xl px-6 py-20 lg:px-8">
+                        <div className="text-fsc-green mb-4 text-xs tracking-[0.2em] uppercase">Membership Packages</div>
+                        <h1 className="font-display text-fsc-navy mb-6 text-5xl leading-tight lg:text-6xl">Choose the plan that fits your family.</h1>
+                        <p className="text-fsc-stone max-w-2xl text-lg leading-relaxed">
+                            Every FaithShield Care membership gives your family access to financial assistance, emergency support, and community care
+                            services — guided by faith and driven by compassion.
+                        </p>
                     </div>
-                    <p className="mt-10 border-t border-fsc-cream-dark pt-6 text-xs leading-relaxed text-fsc-stone">
-                        <span className="font-medium text-fsc-navy">Disclaimer:</span> The benefits presented, including coverage for natural calamity, accidental incidents, natural death, maternity-related assistance, and hospitalization, are governed by official policy contracts, benefit limitations, and company guidelines. Availability of benefits and claims approval are subject to plan provisions and evaluation.
-                    </p>
-                </div>
-            </section>
+                </section>
 
-            {/* Services Overview */}
-            <section className="fsc-cream">
-                <div className="mx-auto max-w-4xl px-6 py-20 lg:px-8">
-                    <div className="text-xs tracking-[0.2em] uppercase text-fsc-green mb-4">All services</div>
-                    <h2 className="font-display text-3xl text-fsc-navy mb-10">What the program covers</h2>
-                    <div className="grid sm:grid-cols-2 gap-4">
-                        {[
-                            { title: "Financial Assistance", items: ["Emergency cash assistance", "Hospital support", "Burial assistance", "Birthday care gift", "Senior citizen recognition gift", "Maternity assistance", "Calamity assistance"] },
-                            { title: "Community Care Services", items: ["Counseling and family support", "Prayer and spiritual care", "Community feeding programs", "Medical missions"] },
-                            { title: "Livelihood Programs", items: ["Skills training", "Small business support", "Livelihood starter kits", "Financial literacy seminars"] },
-                            { title: "Member Rewards & Leadership", items: ["Referral incentives", "Leadership development", "Community service recognition", "Team-building opportunities"] },
-                        ].map((section, i) => (
-                            <div key={i} className="border border-fsc-cream-dark rounded-2xl p-6 bg-white">
-                                <div className="font-display text-base text-fsc-navy mb-3">{section.title}</div>
-                                {section.items.map((item, j) => (
-                                    <div key={j} className="flex gap-2 text-sm text-fsc-stone py-1 border-b border-fsc-cream-dark last:border-0">
-                                        <span className="text-fsc-green shrink-0">•</span>
-                                        <span>{item}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        ))}
+                {/* Package Cards */}
+                <section className="border-fsc-cream-dark border-y bg-white">
+                    <div className="mx-auto max-w-5xl px-6 py-20 lg:px-8">
+                        <div className="text-fsc-green mb-4 text-xs tracking-[0.2em] uppercase">Packages</div>
+                        <h2 className="font-display text-fsc-navy mb-10 text-3xl">Three tiers, one community</h2>
+                        <div className="grid items-center gap-6 md:grid-cols-3">
+                            {PLANS.map((plan) => (
+                                <MemberCard key={plan.name} plan={plan} />
+                            ))}
+                        </div>
+                        <p className="border-fsc-cream-dark text-fsc-stone mt-10 border-t pt-6 text-xs leading-relaxed">
+                            <span className="text-fsc-navy font-medium">Disclaimer:</span> The benefits presented, including coverage for natural
+                            calamity, accidental incidents, natural death, maternity-related assistance, and hospitalization, are governed by official
+                            policy contracts, benefit limitations, and company guidelines. Availability of benefits and claims approval are subject to
+                            plan provisions and evaluation.
+                        </p>
                     </div>
-                </div>
-            </section>
+                </section>
 
-            {/* Target Market */}
-            <section className="bg-white border-t border-fsc-cream-dark">
-                <div className="max-w-4xl mx-auto px-6 lg:px-8 py-20">
-                    <div className="text-xs tracking-[0.2em] uppercase text-fsc-green mb-4">Who this is for</div>
-                    <h2 className="font-display text-3xl text-fsc-navy mb-10">Built for every Filipino family</h2>
-                    <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
-                        {["Low income households", "Informal workers", "Small business owners", "Senior citizens", "Church communities", "Community associations", "Cooperatives and local groups", "Persons with disabilities (PWD)", "Single parents"].map((m, i) => (
-                            <div key={i} className="border border-fsc-cream-dark rounded-2xl px-5 py-4">
-                                <div className="font-display text-xs text-fsc-stone mb-1">0{i + 1}</div>
-                                <div className="font-display text-lg text-fsc-navy">{m}</div>
-                            </div>
-                        ))}
+                {/* Services Overview */}
+                <section className="fsc-cream">
+                    <div className="mx-auto max-w-4xl px-6 py-20 lg:px-8">
+                        <div className="text-fsc-green mb-4 text-xs tracking-[0.2em] uppercase">All services</div>
+                        <h2 className="font-display text-fsc-navy mb-10 text-3xl">What the program covers</h2>
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            {[
+                                {
+                                    title: "Financial Assistance",
+                                    items: [
+                                        "Emergency cash assistance",
+                                        "Hospital support",
+                                        "Burial assistance",
+                                        "Birthday care gift",
+                                        "Senior citizen recognition gift",
+                                        "Maternity assistance",
+                                        "Calamity assistance",
+                                    ],
+                                },
+                                {
+                                    title: "Community Care Services",
+                                    items: [
+                                        "Counseling and family support",
+                                        "Prayer and spiritual care",
+                                        "Community feeding programs",
+                                        "Medical missions",
+                                    ],
+                                },
+                                {
+                                    title: "Livelihood Programs",
+                                    items: ["Skills training", "Small business support", "Livelihood starter kits", "Financial literacy seminars"],
+                                },
+                                {
+                                    title: "Member Rewards & Leadership",
+                                    items: [
+                                        "Referral incentives",
+                                        "Leadership development",
+                                        "Community service recognition",
+                                        "Team-building opportunities",
+                                    ],
+                                },
+                            ].map((section, i) => (
+                                <div key={i} className="border-fsc-cream-dark rounded-2xl border bg-white p-6">
+                                    <div className="font-display text-fsc-navy mb-3 text-base">{section.title}</div>
+                                    {section.items.map((item, j) => (
+                                        <div key={j} className="text-fsc-stone border-fsc-cream-dark flex gap-2 border-b py-1 text-sm last:border-0">
+                                            <span className="text-fsc-green shrink-0">•</span>
+                                            <span>{item}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            ))}
+                        </div>
                     </div>
-                </div>
-            </section>
+                </section>
 
+                {/* Target Market */}
+                <section className="border-fsc-cream-dark border-t bg-white">
+                    <div className="mx-auto max-w-4xl px-6 py-20 lg:px-8">
+                        <div className="text-fsc-green mb-4 text-xs tracking-[0.2em] uppercase">Who this is for</div>
+                        <h2 className="font-display text-fsc-navy mb-10 text-3xl">Built for every Filipino family</h2>
+                        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+                            {[
+                                "Low income households",
+                                "Informal workers",
+                                "Small business owners",
+                                "Senior citizens",
+                                "Church communities",
+                                "Community associations",
+                                "Cooperatives and local groups",
+                                "Persons with disabilities (PWD)",
+                                "Single parents",
+                            ].map((m, i) => (
+                                <div key={i} className="border-fsc-cream-dark rounded-2xl border px-5 py-4">
+                                    <div className="font-display text-fsc-stone mb-1 text-xs">0{i + 1}</div>
+                                    <div className="font-display text-fsc-navy text-lg">{m}</div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
             </div>
             <Footer />
         </div>

@@ -11,9 +11,9 @@ export interface ReferralCardHandle {
 const ReferralCard = forwardRef<ReferralCardHandle, { member: Member; showTrigger?: boolean }>(({ member, showTrigger = true }, ref) => {
     const referralLink = `${window.location.origin}/signup?ref=${member.referralCode}`;
 
-    const [linkCopied, setLinkCopied]           = useState(false);
-    const [modalCodeCopied, setModalCodeCopied]  = useState(false);
-    const [modalOpen, setModalOpen]              = useState(false);
+    const [linkCopied, setLinkCopied] = useState(false);
+    const [modalCodeCopied, setModalCodeCopied] = useState(false);
+    const [modalOpen, setModalOpen] = useState(false);
 
     const copyText = (text: string, setter: (v: boolean) => void) => {
         navigator.clipboard.writeText(text).then(() => {
@@ -26,8 +26,8 @@ const ReferralCard = forwardRef<ReferralCardHandle, { member: Member; showTrigge
         if (navigator.share) {
             try {
                 await navigator.share({
-                    title: "Join Faith Shield Care",
-                    text: `Join Faith Shield Care using my referral code: ${member.referralCode}`,
+                    title: "Join FaithShield Care",
+                    text: `Join FaithShield Care using my referral code: ${member.referralCode}`,
                     url: referralLink,
                 });
             } catch {
@@ -64,7 +64,7 @@ const ReferralCard = forwardRef<ReferralCardHandle, { member: Member; showTrigge
                 <div className="border-fsc-cream-dark flex items-center justify-center overflow-hidden rounded-2xl border">
                     <button
                         onClick={() => setModalOpen(true)}
-                        className="group relative flex w-full flex-col items-center gap-3 rounded-2xl bg-white px-8 pt-8 pb-8 transition-colors hover:bg-fsc-cream"
+                        className="group hover:bg-fsc-cream relative flex w-full flex-col items-center gap-3 rounded-2xl bg-white px-8 pt-8 pb-8 transition-colors"
                     >
                         <QRCode
                             value={referralLink}
@@ -97,7 +97,9 @@ const ReferralCard = forwardRef<ReferralCardHandle, { member: Member; showTrigge
             {modalOpen && (
                 <div
                     className="fixed inset-0 z-50 flex items-center justify-center p-4"
-                    onClick={(e) => { if (e.target === e.currentTarget) setModalOpen(false); }}
+                    onClick={(e) => {
+                        if (e.target === e.currentTarget) setModalOpen(false);
+                    }}
                 >
                     <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setModalOpen(false)} />
                     <div className="relative z-10 flex w-full max-w-sm flex-col items-center gap-6 rounded-3xl bg-white p-8 shadow-2xl">
@@ -113,13 +115,12 @@ const ReferralCard = forwardRef<ReferralCardHandle, { member: Member; showTrigge
                         <div className="text-center">
                             <h2 className="font-display text-fsc-navy text-xl">Your Referral QR</h2>
                             <p className="text-fsc-stone mt-1 text-sm">
-                                Share to invite members ·{" "}
-                                <span className="text-fsc-navy font-mono font-bold">{member.referralCode}</span>
+                                Share to invite members · <span className="text-fsc-navy font-mono font-bold">{member.referralCode}</span>
                             </p>
                         </div>
 
                         {/* QR with logo — canvas scales down on narrow screens */}
-                        <div className="bg-fsc-navy/5 flex w-full justify-center rounded-2xl p-4 [&>canvas]:h-auto [&>canvas]:max-w-full sm:p-5">
+                        <div className="bg-fsc-navy/5 flex w-full justify-center rounded-2xl p-4 sm:p-5 [&>canvas]:h-auto [&>canvas]:max-w-full">
                             <QRCode
                                 id="qr-modal-canvas"
                                 value={referralLink}
@@ -147,9 +148,17 @@ const ReferralCard = forwardRef<ReferralCardHandle, { member: Member; showTrigge
                                 onClick={() => copyText(referralLink, setLinkCopied)}
                                 className="bg-fsc-navy hover:bg-fsc-navy/80 flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-2 text-xs text-white transition-colors"
                             >
-                                {linkCopied
-                                    ? <><Check size={12} /><span>Copied!</span></>
-                                    : <><Copy size={12} /><span>Copy</span></>}
+                                {linkCopied ? (
+                                    <>
+                                        <Check size={12} />
+                                        <span>Copied!</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Copy size={12} />
+                                        <span>Copy</span>
+                                    </>
+                                )}
                             </button>
                         </div>
 
@@ -163,9 +172,17 @@ const ReferralCard = forwardRef<ReferralCardHandle, { member: Member; showTrigge
                                 onClick={() => copyText(member.referralCode, setModalCodeCopied)}
                                 className="bg-fsc-navy hover:bg-fsc-navy/80 flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-2 text-xs text-white transition-colors"
                             >
-                                {modalCodeCopied
-                                    ? <><Check size={12} /><span>Copied!</span></>
-                                    : <><Copy size={12} /><span>Copy</span></>}
+                                {modalCodeCopied ? (
+                                    <>
+                                        <Check size={12} />
+                                        <span>Copied!</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Copy size={12} />
+                                        <span>Copy</span>
+                                    </>
+                                )}
                             </button>
                         </div>
 

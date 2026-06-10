@@ -1,6 +1,6 @@
 // utils/commission.ts
 //
-// Commission claiming rules (Faith Shield Care):
+// Commission claiming rules (FaithShield Care):
 //   • Level 1 (direct) commissions are claimable immediately ("daily").
 //   • Levels 2–6 are held for 7 days from the downline's activation
 //     (= the commission's dateCreated).

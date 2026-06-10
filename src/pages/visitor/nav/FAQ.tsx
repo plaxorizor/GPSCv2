@@ -8,8 +8,8 @@ const FAQ: React.FC = () => {
 
     const faqs = [
         {
-            q: "Is Faith Shield Care an insurance company?",
-            a: "No. Faith Shield Care is a community-based membership program. We are not regulated by the Insurance Commission.",
+            q: "Is FaithShield Care an insurance company?",
+            a: "No. FaithShield Care is a community-based membership program. We are not regulated by the Insurance Commission.",
         },
         {
             q: "When can I claim benefits after joining?",
@@ -24,13 +24,16 @@ const FAQ: React.FC = () => {
             a: "Your membership and benefits are unaffected. Your position in the referral tree remains the same.",
         },
         { q: "Can I cancel my membership?", a: "Yes. Unused contributions are subject to our refund policy based on tenure and claims history." },
-        { q: "Is the program Christian-only?", a: "No. While Faith Shield Care is rooted in Christian values, membership is open to people of all faiths." },
+        {
+            q: "Is the program Christian-only?",
+            a: "No. While FaithShield Care is rooted in Christian values, membership is open to people of all faiths.",
+        },
     ];
 
     return (
-        <div className="font-body text-fsc-ink min-h-screen antialiased flex flex-col">
+        <div className="font-body text-fsc-ink flex min-h-screen flex-col antialiased">
             <PublicNav />
-            <main className="mx-auto max-w-3xl w-full px-6 py-20 anim-fade-up flex-1">
+            <main className="anim-fade-up mx-auto w-full max-w-3xl flex-1 px-6 py-20">
                 <h1 className="font-display text-fsc-navy mb-8 text-4xl">Frequently Asked Questions</h1>
                 <div className="space-y-3">
                     {faqs.map((faq, i) => {
@@ -49,7 +52,7 @@ const FAQ: React.FC = () => {
                                     </span>
                                     <ChevronRight
                                         size={20}
-                                        className="text-fsc-stone shrink-0 ml-4"
+                                        className="text-fsc-stone ml-4 shrink-0"
                                         style={{
                                             transform: isOpen ? "rotate(90deg)" : "rotate(0deg)",
                                             transition: "transform 300ms ease",
@@ -67,9 +70,7 @@ const FAQ: React.FC = () => {
                                     }}
                                 >
                                     <div className="overflow-hidden">
-                                        <div className="text-fsc-stone border-fsc-cream-dark border-t px-5 pt-4 pb-5 leading-relaxed">
-                                            {faq.a}
-                                        </div>
+                                        <div className="text-fsc-stone border-fsc-cream-dark border-t px-5 pt-4 pb-5 leading-relaxed">{faq.a}</div>
                                     </div>
                                 </div>
                             </div>

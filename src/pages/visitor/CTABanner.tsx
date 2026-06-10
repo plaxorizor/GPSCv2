@@ -9,14 +9,9 @@ export const CTABanner: React.FC = () => {
 
     return (
         <section data-theme="dark" className="bg-fsc-navy">
-            <div
-                ref={ref}
-                className={`mx-auto max-w-4xl px-6 py-24 text-center lg:px-8 scroll-reveal ${inView ? "in-view" : ""}`}
-            >
-                <div className="text-fsc-green mb-4 text-xs tracking-[0.2em] uppercase">Join Faith Shield Care</div>
-                <h2 className="font-display mb-6 text-4xl leading-tight text-white lg:text-5xl">
-                    Ready to protect your family?
-                </h2>
+            <div ref={ref} className={`scroll-reveal mx-auto max-w-4xl px-6 py-24 text-center lg:px-8 ${inView ? "in-view" : ""}`}>
+                <div className="text-fsc-green mb-4 text-xs tracking-[0.2em] uppercase">Join FaithShield Care</div>
+                <h2 className="font-display mb-6 text-4xl leading-tight text-white lg:text-5xl">Ready to protect your family?</h2>
                 <p className="mx-auto mb-10 max-w-xl text-lg leading-relaxed text-white/70">
                     One-time membership. Lifetime peace of mind. Join thousands of Filipino families already covered.
                 </p>

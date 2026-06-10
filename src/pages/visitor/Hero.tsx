@@ -8,9 +8,9 @@ export const Hero: React.FC = () => {
     const navigate = useNavigate();
     const [consultHovered, setConsultHovered] = useState(false);
 
-    const members   = useCountUp(2400, 1800, 400);
-    const benefits  = useCountUp(1.2,  1800, 550);
-    const provinces = useCountUp(14,   1400, 700);
+    const members = useCountUp(2400, 1800, 400);
+    const benefits = useCountUp(1.2, 1800, 550);
+    const provinces = useCountUp(14, 1400, 700);
 
     return (
         <section className="grain-overlay relative overflow-hidden">
@@ -27,7 +27,7 @@ export const Hero: React.FC = () => {
                             <em className="text-fsc-green font-medium not-italic">rooted</em> in faith.
                         </h1>
                         <p className="text-fsc-stone mt-8 max-w-xl text-lg leading-relaxed">
-                            Faith Shield Care is a community-based membership organization designed to provide affordable financial assistance,
+                            FaithShield Care is a community-based membership organization designed to provide affordable financial assistance,
                             emergency support, livelihood opportunities, and community care services for low-income and middle-income families.
                         </p>
                         <div className="mt-10 flex flex-wrap items-center gap-4">
@@ -53,23 +53,17 @@ export const Hero: React.FC = () => {
                         </div>
                         <div className="mt-12 flex flex-wrap items-center gap-8 text-sm">
                             <div>
-                                <div className="font-display text-fsc-navy text-3xl">
-                                    {Math.floor(members).toLocaleString()}+
-                                </div>
+                                <div className="font-display text-fsc-navy text-3xl">{Math.floor(members).toLocaleString()}+</div>
                                 <div className="text-fsc-stone text-xs tracking-wider uppercase">Active members</div>
                             </div>
                             <div className="bg-fsc-cream-dark h-10 w-px"></div>
                             <div>
-                                <div className="font-display text-fsc-navy text-3xl">
-                                    ₱{benefits.toFixed(1)}M
-                                </div>
+                                <div className="font-display text-fsc-navy text-3xl">₱{benefits.toFixed(1)}M</div>
                                 <div className="text-fsc-stone text-xs tracking-wider uppercase">Paid in benefits</div>
                             </div>
                             <div className="bg-fsc-cream-dark h-10 w-px"></div>
                             <div>
-                                <div className="font-display text-fsc-navy text-3xl">
-                                    {Math.floor(provinces)}
-                                </div>
+                                <div className="font-display text-fsc-navy text-3xl">{Math.floor(provinces)}</div>
                                 <div className="text-fsc-stone text-xs tracking-wider uppercase">Provinces served</div>
                             </div>
                         </div>
@@ -79,7 +73,7 @@ export const Hero: React.FC = () => {
                             <div className="border-fsc-navy/20 absolute inset-0 rounded-full border"></div>
                             <div className="border-fsc-green/20 absolute inset-8 rounded-full border"></div>
                             <div className="from-fsc-cream-dark absolute inset-16 flex items-center justify-center rounded-full bg-gradient-to-br to-transparent">
-                                <img src={logo} alt="Faith Shield Care Logo" className="h-44 w-44 rounded-full object-contain mix-blend-multiply" />
+                                <img src={logo} alt="FaithShield Care Logo" className="h-44 w-44 rounded-full object-contain mix-blend-multiply" />
                             </div>
                             <div
                                 className="border-fsc-cream-dark absolute top-12 -left-4 max-w-[200px] rounded-2xl border bg-white p-4 shadow-lg"

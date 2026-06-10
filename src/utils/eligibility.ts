@@ -2,7 +2,7 @@
 //
 // Benefit-claim eligibility (a.k.a. the "Eligibility Timeline"). Each membership
 // package unlocks a DIFFERENT set of benefits after a different membership /
-// contestability period, per the Faith Shield Care business proposal.
+// contestability period, per the FaithShield Care business proposal.
 //
 // All waiting periods below are client-confirmed. `amount` is the headline
 // payout for the benefit and `documents` lists the supporting documents a claim
@@ -60,10 +60,7 @@ export const ELIGIBILITY_BY_PACKAGE: Record<PackageKey, EligibilityMilestone[]> 
 // Back-compat export (Basic timeline) — prefer ELIGIBILITY_BY_PACKAGE.
 export const ELIGIBILITY_MILESTONES = ELIGIBILITY_BY_PACKAGE.basic;
 
-export const getEligibilityTimeline = (
-    dateCreated: Date | { toDate: () => Date } | null | undefined,
-    pkg: string = "basic",
-) => {
+export const getEligibilityTimeline = (dateCreated: Date | { toDate: () => Date } | null | undefined, pkg: string = "basic") => {
     const key = (pkg ?? "basic").toLowerCase() as PackageKey;
     const milestones = ELIGIBILITY_BY_PACKAGE[key] ?? ELIGIBILITY_BY_PACKAGE.basic;
 
@@ -89,10 +86,7 @@ export interface ClaimBenefit {
 }
 
 // The member's currently-claimable benefits (unlocked only), for the claim form.
-export const getClaimableBenefits = (
-    dateCreated: Date | { toDate: () => Date } | null | undefined,
-    pkg: string = "basic",
-): ClaimBenefit[] =>
+export const getClaimableBenefits = (dateCreated: Date | { toDate: () => Date } | null | undefined, pkg: string = "basic"): ClaimBenefit[] =>
     getEligibilityTimeline(dateCreated, pkg)
         .filter((m) => m.unlocked)
         .map(({ label, amount, documents, variableAmount }) => ({ label, amount, documents, variableAmount }));

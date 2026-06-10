@@ -1,6 +1,6 @@
 // utils/rank.ts
 //
-// Faith Shield Care rank system (recognition only — does NOT affect commissions).
+// FaithShield Care rank system (recognition only — does NOT affect commissions).
 //
 // A member's rank is derived from their DIRECT referrals, and only ACTIVE
 // directs count. It is computed bottom-up: each member's rank depends on how
