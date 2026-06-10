@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { MapPin, Phone, Mail, MessageCircle, CheckCircle } from "lucide-react";
+import { MapPin, Phone, MessageCircle, CheckCircle } from "lucide-react";
 import PublicNav from "../PublicNav";
 import { Footer } from "../Footer";
 
@@ -28,9 +28,10 @@ const Contact: React.FC = () => {
                             </div>
                             <div>
                                 <div className="font-display text-fsc-navy text-base">Phone</div>
-                                <div className="text-fsc-stone text-sm">+63 (82) 000 0000 · +63 917 000 0000</div>
+                                <div className="text-fsc-stone text-sm">+63 976 166 5381</div>
                             </div>
                         </div>
+                        {/* Email hidden for now — re-enable when official email is ready.
                         <div className="flex gap-4">
                             <div className="bg-fsc-navy flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white">
                                 <Mail size={18} />
@@ -40,6 +41,7 @@ const Contact: React.FC = () => {
                                 <div className="text-fsc-stone text-sm">hello@faithshieldcare.ph · claims@faithshieldcare.ph</div>
                             </div>
                         </div>
+                        */}
                         <div className="flex gap-4">
                             <div className="bg-fsc-navy flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white">
                                 <MessageCircle size={18} />
