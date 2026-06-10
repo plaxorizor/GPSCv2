@@ -8,9 +8,9 @@ export default function NotFound(): React.ReactElement {
 
     return (
         <div className="font-body text-fsc-ink flex min-h-screen flex-col items-center justify-center bg-[#F2F3F5] px-6 text-center">
-            <button onClick={() => navigate("/")} className="mb-10 flex items-center gap-3 cursor-pointer">
-                <img src={logo} alt="Faith Shield Care" className="h-10 w-10 rounded-full object-contain" />
-                <div className="leading-tight text-left">
+            <button onClick={() => navigate("/")} className="mb-10 flex cursor-pointer items-center gap-3">
+                <img src={logo} alt="FaithShield Care" className="h-10 w-10 rounded-full object-contain" />
+                <div className="text-left leading-tight">
                     <div className="font-display text-base font-bold tracking-tight">
                         <span className="text-fsc-navy">Faith Shield </span>
                         <span style={{ color: "#C41E1E" }}>Care</span>
@@ -19,9 +19,7 @@ export default function NotFound(): React.ReactElement {
                 </div>
             </button>
 
-            <div className="font-display text-fsc-navy/10 text-[9rem] leading-none select-none lg:text-[12rem]">
-                404
-            </div>
+            <div className="font-display text-fsc-navy/10 text-[9rem] leading-none select-none lg:text-[12rem]">404</div>
 
             <h1 className="font-display text-fsc-navy mt-2 text-3xl lg:text-4xl">Page not found</h1>
             <p className="text-fsc-stone mt-4 max-w-sm text-base leading-relaxed">

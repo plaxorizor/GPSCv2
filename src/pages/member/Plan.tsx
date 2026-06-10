@@ -18,9 +18,9 @@ interface Props {
 // Offline payment destinations (same accounts used for membership / upgrades).
 // `qr` is an optional image path; leave empty to show the "QR placeholder" box.
 const PAYMENT_ACCOUNTS = [
-    { label: "GCash", accountName: "Faith Shield Care Official", number: "09XX-XXX-XXXX", qr: "" },
-    { label: "Maya", accountName: "Faith Shield Care Official", number: "09XX-XXX-XXXX", qr: "" },
-    { label: "GoTyme", accountName: "Faith Shield Care Official", number: "09XX-XXX-XXXX", qr: "" },
+    { label: "GCash", accountName: "FaithShield Care Official", number: "09XX-XXX-XXXX", qr: "" },
+    { label: "Maya", accountName: "FaithShield Care Official", number: "09XX-XXX-XXXX", qr: "" },
+    { label: "GoTyme", accountName: "FaithShield Care Official", number: "09XX-XXX-XXXX", qr: "" },
 ];
 
 export const MemberPlan: React.FC<Props> = ({ packageName, member }) => {
@@ -36,8 +36,12 @@ export const MemberPlan: React.FC<Props> = ({ packageName, member }) => {
     const [pendingRenewal, setPendingRenewal] = useState<RenewalRequest | null>(null);
 
     const loadPending = () => {
-        getPendingUpgradeForMember(member.uid).then(setPendingUpgrade).catch(() => {});
-        getPendingRenewalForMember(member.uid).then(setPendingRenewal).catch(() => {});
+        getPendingUpgradeForMember(member.uid)
+            .then(setPendingUpgrade)
+            .catch(() => {});
+        getPendingRenewalForMember(member.uid)
+            .then(setPendingRenewal)
+            .catch(() => {});
     };
     useEffect(loadPending, [member.uid]);
 
@@ -78,8 +82,10 @@ export const MemberPlan: React.FC<Props> = ({ packageName, member }) => {
                             <div className="text-sm">
                                 <p className="text-fsc-green font-medium">Discounted upgrade window — pay only the difference</p>
                                 <p className="text-fsc-stone mt-0.5 text-xs">
-                                    <strong>{upgradeDaysLeft} day{upgradeDaysLeft === 1 ? "" : "s"} left</strong> of your {GRACE_DAYS}-day window.
-                                    After it ends, upgrades cost the full package price.
+                                    <strong>
+                                        {upgradeDaysLeft} day{upgradeDaysLeft === 1 ? "" : "s"} left
+                                    </strong>{" "}
+                                    of your {GRACE_DAYS}-day window. After it ends, upgrades cost the full package price.
                                 </p>
                             </div>
                         </div>
@@ -219,7 +225,9 @@ function RenewModal({
                 </div>
 
                 <ol className="text-fsc-stone mt-4 list-decimal space-y-2 pl-4 text-sm">
-                    <li>Send <strong>{peso(fee)}</strong> using one of the payment methods below.</li>
+                    <li>
+                        Send <strong>{peso(fee)}</strong> using one of the payment methods below.
+                    </li>
                     <li>Send your proof of payment to the admin (Messenger / email), including your full name.</li>
                     <li>Submit the request below — an admin confirms and re-activates your account for 365 days.</li>
                 </ol>
@@ -249,7 +257,11 @@ function RenewModal({
                 {PAYMENT_ACCOUNTS.filter((a) => a.label === selectedPaymentMethod).map((acct) => (
                     <div key={acct.label} className="border-fsc-cream-dark mt-3 flex flex-col items-center rounded-2xl border bg-white p-5">
                         {acct.qr ? (
-                            <img src={acct.qr} alt={`${acct.label} QR code`} className="aspect-square w-full max-w-[14rem] rounded-xl object-contain" />
+                            <img
+                                src={acct.qr}
+                                alt={`${acct.label} QR code`}
+                                className="aspect-square w-full max-w-[14rem] rounded-xl object-contain"
+                            />
                         ) : (
                             <div className="border-fsc-cream-dark bg-fsc-cream/40 text-fsc-stone flex aspect-square w-full max-w-[14rem] items-center justify-center rounded-xl border-2 border-dashed text-xs">
                                 QR placeholder

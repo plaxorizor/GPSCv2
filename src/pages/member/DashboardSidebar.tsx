@@ -96,7 +96,7 @@ export const DashboardSidebar: React.FC<Props> = ({ member, rankName, currentSec
         >
             {/* Logo */}
             <div className="flex items-center gap-3 overflow-hidden px-3 py-3">
-                <img src={logo} alt="Faith Shield Care Logo" className="h-10 w-10 shrink-0 rounded-full object-contain" />
+                <img src={logo} alt="FaithShield Care Logo" className="h-10 w-10 shrink-0 rounded-full object-contain" />
                 <div
                     style={{
                         opacity: expanded ? 1 : 0,

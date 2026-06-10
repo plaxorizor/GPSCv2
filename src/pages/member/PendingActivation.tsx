@@ -34,16 +34,16 @@ export default function PendingActivation({ member, onRecheck }: { member: Membe
     return (
         <div className="fsc-cream flex min-h-screen items-center justify-center p-4">
             <div className="border-fsc-cream-dark w-full max-w-md rounded-3xl border bg-white p-8 text-center shadow-sm">
-                <img src={logo} alt="Faith Shield Care" className="mx-auto mb-6 h-14 w-14 rounded-full object-contain" />
+                <img src={logo} alt="FaithShield Care" className="mx-auto mb-6 h-14 w-14 rounded-full object-contain" />
 
-                <div className="bg-[#C9922A]/10 mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full">
+                <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-[#C9922A]/10">
                     <Hourglass className="text-[#C9922A]" size={28} />
                 </div>
 
                 <h1 className="font-display text-fsc-navy text-2xl">Account pending activation</h1>
                 <p className="text-fsc-stone mt-3 text-sm leading-relaxed">
-                    Hi <span className="text-fsc-navy font-medium">{member.firstName}</span>, your account has been created and is
-                    now waiting for an administrator to activate it. You'll get full access to your dashboard once it's approved.
+                    Hi <span className="text-fsc-navy font-medium">{member.firstName}</span>, your account has been created and is now waiting for an
+                    administrator to activate it. You'll get full access to your dashboard once it's approved.
                 </p>
 
                 <div className="bg-fsc-cream/60 mt-5 rounded-2xl px-4 py-3 text-left text-xs">

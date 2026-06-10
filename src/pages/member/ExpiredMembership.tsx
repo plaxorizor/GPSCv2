@@ -37,7 +37,7 @@ export default function ExpiredMembership({ member, onRecheck }: { member: Membe
     return (
         <div className="fsc-cream flex min-h-screen items-center justify-center p-4">
             <div className="border-fsc-cream-dark w-full max-w-md rounded-3xl border bg-white p-8 text-center shadow-sm">
-                <img src={logo} alt="Faith Shield Care" className="mx-auto mb-6 h-14 w-14 rounded-full object-contain" />
+                <img src={logo} alt="FaithShield Care" className="mx-auto mb-6 h-14 w-14 rounded-full object-contain" />
 
                 <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-[#C41E1E]/10">
                     <CalendarX className="text-[#C41E1E]" size={28} />
@@ -45,8 +45,8 @@ export default function ExpiredMembership({ member, onRecheck }: { member: Membe
 
                 <h1 className="font-display text-fsc-navy text-2xl">Membership expired</h1>
                 <p className="text-fsc-stone mt-3 text-sm leading-relaxed">
-                    Hi <span className="text-fsc-navy font-medium">{member.firstName}</span>, your membership term and its 30-day
-                    renewal grace period have ended. Renew to restore your dashboard, benefits, and referral earnings.
+                    Hi <span className="text-fsc-navy font-medium">{member.firstName}</span>, your membership term and its 30-day renewal grace period
+                    have ended. Renew to restore your dashboard, benefits, and referral earnings.
                 </p>
 
                 <div className="bg-fsc-cream/60 mt-5 rounded-2xl px-4 py-3 text-left text-xs">

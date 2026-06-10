@@ -10,10 +10,10 @@ const About: React.FC = () => {
                 {/* Hero */}
                 <section className="fsc-cream">
                     <div className="mx-auto max-w-4xl px-6 py-20 lg:px-8">
-                        <div className="text-fsc-green mb-4 text-xs tracking-[0.2em] uppercase">About Faith Shield Care</div>
+                        <div className="text-fsc-green mb-4 text-xs tracking-[0.2em] uppercase">About FaithShield Care</div>
                         <h1 className="font-display text-fsc-navy mb-6 text-5xl leading-tight lg:text-6xl">Guided by Faith, Driven by Care.</h1>
                         <p className="text-fsc-stone max-w-2xl text-lg leading-relaxed">
-                            Faith Shield Care is a community-based membership organization designed to provide affordable financial assistance,
+                            FaithShield Care is a community-based membership organization designed to provide affordable financial assistance,
                             emergency support, livelihood opportunities, and community care services for low-income and middle-income families.
                         </p>
                     </div>
