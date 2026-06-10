@@ -46,7 +46,8 @@ export const useCommissions = (enabled = false) => {
 
                 await Promise.all(
                     uniqueUids.map(async (uid: string) => {
-                        const memberSnap = await getDoc(doc(db, "members", uid));
+                        // Public mirror — members read is owner-only.
+                        const memberSnap = await getDoc(doc(db, "publicProfiles", uid));
                         if (memberSnap.exists()) {
                             const d = memberSnap.data();
                             const firstName = d.firstName || "";

@@ -19,6 +19,7 @@ import {
 } from "firebase/firestore";
 import { db } from "./config";
 import { uploadReceipt } from "./receipts";
+import { writePublicProfile } from "./publicProfiles";
 import { upgradeCharge, upgradeTargets, isWithinGrace, type PackageKey } from "../utils/upgrade";
 import { triggerUpgradeCommissions } from "./transactions";
 
@@ -181,6 +182,9 @@ export async function approveUpgrade(requestId: string): Promise<void> {
         status: "approved",
         dateDecided: serverTimestamp(),
     });
+
+    // Mirror the new package to the public profile.
+    await writePublicProfile(req.memberId, { package: req.toPackage });
 
     // Pay the upline on what the member paid. Re-derive authoritatively from the
     // package pair + the basis recorded at request time (difference vs full),

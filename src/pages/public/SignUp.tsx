@@ -2,6 +2,7 @@ import { getDoc, setDoc, doc, serverTimestamp } from "firebase/firestore";
 import { useState, useEffect, useMemo } from "react";
 import { registerUser } from "../../firebase/auth";
 import { uploadReceipt } from "../../firebase/receipts";
+import { writePublicProfile } from "../../firebase/publicProfiles";
 import { db } from "../../firebase/config";
 import ReceiptUploadField from "../../components/ReceiptUploadField";
 import { PAYMENT_ACCOUNTS } from "../../data/paymentAccounts";
@@ -390,6 +391,18 @@ export default function SignUpLayout() {
                 status: "pending",
                 isAdmin: false,
                 dateCreated: serverTimestamp(),
+            });
+
+            // Mirror the non-sensitive fields so this member shows up in their
+            // sponsor's downline. Self-create is allowed only as "pending".
+            await writePublicProfile(user.uid, {
+                firstName: form.firstName,
+                lastName: form.lastName,
+                city: form.city,
+                package: selectedPlan.name.toLowerCase(),
+                status: "pending",
+                referredBy,
+                referralCode: null,
             });
 
             navigate("/");

@@ -4,12 +4,28 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "../../firebase/config";
 import useAuth from "../../context/useAuth";
 import ChangePasswordModal from "../../components/ChangePasswordModal";
-import { Shield, KeyRound, Mail, Calendar, Hash } from "lucide-react";
+import { backfillPublicProfiles } from "../../firebase/publicProfiles";
+import { Shield, KeyRound, Mail, Calendar, Hash, RefreshCw } from "lucide-react";
 
 export function Settings() {
     const { currentUser } = useAuth();
     const [showChangePassword, setShowChangePassword] = useState(false);
     const [profile, setProfile] = useState<{ firstName?: string; lastName?: string } | null>(null);
+    const [syncing, setSyncing] = useState(false);
+    const [syncMsg, setSyncMsg] = useState("");
+
+    const runBackfill = async () => {
+        setSyncing(true);
+        setSyncMsg("");
+        try {
+            const n = await backfillPublicProfiles();
+            setSyncMsg(`Synced ${n} member${n === 1 ? "" : "s"} to public profiles.`);
+        } catch {
+            setSyncMsg("Sync failed — check your connection and try again.");
+        } finally {
+            setSyncing(false);
+        }
+    };
 
     useEffect(() => {
         let cancelled = false;
@@ -97,6 +113,34 @@ export function Settings() {
                         className="bg-fsc-green rounded-xl px-5 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
                     >
                         Change Password
+                    </button>
+                </div>
+            </div>
+
+            {/* Maintenance card */}
+            <div className="border-fsc-cream-dark mt-6 rounded-2xl border bg-white p-6">
+                <h2 className="font-display text-fsc-navy text-lg">Maintenance</h2>
+                <p className="text-fsc-stone mt-1 text-sm">
+                    Rebuild the public member directory that powers referral trees and downline views. Safe to run
+                    anytime — use it after importing members or if a downline looks out of date.
+                </p>
+
+                <div className="border-fsc-cream-dark mt-5 flex flex-col gap-3 rounded-xl border p-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="bg-fsc-cream text-fsc-navy flex h-10 w-10 items-center justify-center rounded-lg">
+                            <RefreshCw size={18} />
+                        </div>
+                        <div>
+                            <p className="text-fsc-navy text-sm font-medium">Sync public profiles</p>
+                            <p className="text-fsc-stone text-xs">{syncMsg || "Mirrors non-sensitive fields from members."}</p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={runBackfill}
+                        disabled={syncing}
+                        className="bg-fsc-navy rounded-xl px-5 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                    >
+                        {syncing ? "Syncing…" : "Run sync"}
                     </button>
                 </div>
             </div>

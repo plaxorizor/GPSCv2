@@ -1,5 +1,5 @@
 // admin/Members.tsx
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import {
     Plus,
     Search,
@@ -48,9 +48,13 @@ export interface MemberRow {
 
 interface Props {
     onExport: () => void;
+    /** When set (e.g. clicked from the Overview leaderboard), opens that member's
+        profile on load. `onFocusHandled` clears it after it's been consumed. */
+    focusMemberId?: string | null;
+    onFocusHandled?: () => void;
 }
 
-export const Members: React.FC<Props> = ({ onExport }) => {
+export const Members: React.FC<Props> = ({ onExport, focusMemberId, onFocusHandled }) => {
     const { members, loading, refetch } = useAllMembers();
     const { isSuperAdmin } = useAdmin();
     const [showAddMember, setShowAddMember] = useState(false);
@@ -110,17 +114,31 @@ export const Members: React.FC<Props> = ({ onExport }) => {
         }
     };
 
-    const openMember = (m: MemberRow | null) => {
-        setResetMsg("");
-        setDeps(null);
-        setSelectedMember(m);
-        // For super admins, check whether this member is safe to hard-delete.
-        if (m && isSuperAdmin) {
-            getMemberDependencies(m.uid)
-                .then(setDeps)
-                .catch(() => setDeps(null));
-        }
-    };
+    const openMember = useCallback(
+        (m: MemberRow | null) => {
+            setResetMsg("");
+            setDeps(null);
+            setSelectedMember(m);
+            // For super admins, check whether this member is safe to hard-delete.
+            if (m && isSuperAdmin) {
+                getMemberDependencies(m.uid)
+                    .then(setDeps)
+                    .catch(() => setDeps(null));
+            }
+        },
+        [isSuperAdmin],
+    );
+
+    // Deep-link from the Overview leaderboard: open the focused member, then clear.
+    useEffect(() => {
+        if (!focusMemberId || loading) return;
+        const found = members.find((m) => m.uid === focusMemberId) as MemberRow | undefined;
+        // Defer state updates out of the synchronous effect body (avoids cascading renders).
+        queueMicrotask(() => {
+            if (found) openMember(found);
+            onFocusHandled?.();
+        });
+    }, [focusMemberId, loading, members, openMember, onFocusHandled]);
 
     const toggleSelect = (uid: string) =>
         setSelectedIds((prev) => {

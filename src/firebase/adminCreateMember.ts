@@ -122,6 +122,19 @@ export async function adminCreateMember(input: EncodeMemberInput): Promise<Encod
             dateCreated: serverTimestamp(),
         });
 
+        // Mirror the non-sensitive fields (written AS the new member, so the
+        // publicProfiles self-create rule — "pending", no referral code — passes).
+        // activateMember() below flips it to active and adds the referral code.
+        await setDoc(doc(secondaryDb, "publicProfiles", uid), {
+            firstName: input.firstName.trim(),
+            lastName: input.lastName.trim(),
+            city: input.city?.trim() || null,
+            package: input.package.toLowerCase(),
+            status: "pending",
+            referredBy,
+            referralCode: null,
+        });
+
         await signOut(secondaryAuth);
 
         // Admin-encoded members are assumed paid → activate immediately.

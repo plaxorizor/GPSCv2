@@ -62,6 +62,9 @@ export default function AdminDashboard({
     onLogout,
 }: AdminDashboardProps) {
     const [currentSection, setCurrentSection] = useState("overview");
+    // When the admin clicks a member from the Overview leaderboard, jump to the
+    // Members tab and open that member's profile.
+    const [focusMemberId, setFocusMemberId] = useState<string | null>(null);
 
     const { counts: approvalsCounts, loading: approvalsLoading } = usePendingApprovalsCount();
 
@@ -102,11 +105,25 @@ export default function AdminDashboard({
                 hover, so we only reserve the collapsed width. No max-width: fill the
                 screen instead of leaving a big empty gap on wide monitors. */}
             <main className="flex-1 p-6 pb-24 lg:p-10 lg:pb-10 lg:pl-24">
-                {currentSection === "overview" && <Overview loading={loading.stats || false} />}
+                {currentSection === "overview" && (
+                    <Overview
+                        loading={loading.stats || false}
+                        onViewMember={(uid) => {
+                            setFocusMemberId(uid);
+                            setCurrentSection("members");
+                        }}
+                    />
+                )}
                 {currentSection === "approvals" && (
                     <Approvals counts={approvalsCounts} loading={approvalsLoading} />
                 )}
-                {currentSection === "members" && <Members onExport={onExportMembers} />}
+                {currentSection === "members" && (
+                    <Members
+                        onExport={onExportMembers}
+                        focusMemberId={focusMemberId}
+                        onFocusHandled={() => setFocusMemberId(null)}
+                    />
+                )}
                 {currentSection === "claims" && (
                     <Claims
                         claims={claims}

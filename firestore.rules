@@ -16,22 +16,29 @@ service cloud.firestore {
     }
 
     match /members/{uid} {
-      allow read: if request.auth != null;
+      // PII + payment data live here, so reads are restricted to the owner and
+      // admins. Cross-member views (referral tree, downline counts, commission
+      // names) read the non-sensitive mirror in /publicProfiles instead.
+      allow read: if request.auth != null && (request.auth.uid == uid || isAdmin());
 
       // You may create ONLY your own record, and ONLY as a normal member.
-      // (Blocks self-registering as an admin. The seed script + signup both
-      //  set isAdmin: false, so they still work.)
+      // (Blocks self-registering as an admin OR super-admin. Signup sets both
+      //  flags false / absent, so it still works.)
       allow create: if request.auth != null
         && request.auth.uid == uid
-        && request.resource.data.get('isAdmin', false) == false;
+        && request.resource.data.get('isAdmin', false) == false
+        && request.resource.data.get('isSuperAdmin', false) == false;
 
-      // Self-edit: only your own record, and you CANNOT change isAdmin.
-      // Admins: full access (and may change isAdmin).
+      // Admins: full access. A member editing their OWN record may only touch the
+      // forced-password flag — they may NOT self-activate, change package/dates,
+      // grant themselves a referral code, edit beneficiaries (signup-only; later
+      // changes go through an admin request), or escalate to admin/super-admin.
+      // Anything beyond that allow-list is rejected.
       allow update: if request.auth != null && (
         isAdmin()
         || (
           request.auth.uid == uid
-          && request.resource.data.get('isAdmin', false) == resource.data.get('isAdmin', false)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['mustChangePassword'])
         )
       );
 
@@ -44,23 +51,41 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // NOTE: write is open to any signed-in user because triggerCommissions runs
-    // client-side during signup (writes commissions for uplines). Lock this to
-    // `if isAdmin()` once that logic moves into a Cloud Function.
+    // Non-sensitive mirror of members (name, city, package, status, referral
+    // links) — readable by any signed-in user so the referral tree / downline /
+    // commission-name lookups work without exposing PII. A member may only
+    // self-create their own (forced to "pending", no referral code); admins make
+    // every later change (activate / upgrade / renewal).
+    match /publicProfiles/{uid} {
+      allow read: if request.auth != null;
+      allow create: if isAdmin() || (
+        request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.get('status', '') == 'pending'
+        && request.resource.data.get('referralCode', null) == null
+      );
+      allow update: if isAdmin();
+      allow delete: if isSuperAdmin();
+    }
+
+    // Commissions are written only when an ADMIN activates a member or approves an
+    // upgrade/renewal (triggerCommissions runs in admin context), so writes are
+    // admin-only. Members may still read their own. This blocks a member from
+    // forging commission docs that credit themselves.
     match /commissions/{commissionId} {
       allow get: if request.auth != null
         && (resource.data.earnedBy == request.auth.uid || isAdmin());
       allow list: if request.auth != null;
-      allow write: if request.auth != null;
+      allow write: if isAdmin();
     }
 
-    // NOTE: same as commissions — open write is load-bearing for client-side
-    // signup. Tighten to `if isAdmin()` after moving to Cloud Functions.
+    // Transactions are admin-written only (the member-facing PayMongo flow was
+    // removed). Members may read their own.
     match /transactions/{transactionId} {
       allow get: if request.auth != null
         && (resource.data.memberId == request.auth.uid || isAdmin());
       allow list: if request.auth != null;
-      allow write: if request.auth != null;
+      allow write: if isAdmin();
     }
 
     match /claims/{claimId} {

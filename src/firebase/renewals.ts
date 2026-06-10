@@ -8,6 +8,7 @@
 import { collection, doc, addDoc, getDoc, getDocs, updateDoc, query, where, onSnapshot, serverTimestamp, type DocumentData } from "firebase/firestore";
 import { db } from "./config";
 import { uploadReceipt } from "./receipts";
+import { writePublicProfile } from "./publicProfiles";
 import { packagePrice, type PackageKey } from "../utils/upgrade";
 import { triggerRenewalCommissions } from "./transactions";
 
@@ -138,6 +139,9 @@ export async function approveRenewal(requestId: string): Promise<void> {
         status: "approved",
         dateDecided: serverTimestamp(),
     });
+
+    // Mirror re-activation + (possibly changed) package to the public profile.
+    await writePublicProfile(req.memberId, { status: "active", package: req.toPackage });
 
     // Pay the upline on the full renewal price.
     await triggerRenewalCommissions(req.memberId, req.toPackage as PackageKey);

@@ -34,9 +34,12 @@ export const buildReferralTree = async (
 
     for (let level = 1; level <= maxLevel && frontier.length > 0; level++) {
         // Fire all chunk queries for this level in parallel
+        // Reads the non-sensitive publicProfiles mirror (not members) so a member
+        // can see their downline without PII access. Carries the same fields the
+        // tree needs: name, city, package, status, referredBy.
         const snaps = await Promise.all(
             chunk(frontier, IN_LIMIT).map((ids) =>
-                getDocs(query(collection(db, "members"), where("referredBy", "in", ids))),
+                getDocs(query(collection(db, "publicProfiles"), where("referredBy", "in", ids))),
             ),
         );
 

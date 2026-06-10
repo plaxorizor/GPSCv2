@@ -32,7 +32,8 @@ const useMemberStats = () => {
         const fetch = async () => {
             const [commissionsSnap, referralsSnap, claimsSnap] = await Promise.all([
                 getDocs(query(collection(db, "commissions"), where("earnedBy", "==", currentUser.uid))),
-                getDocs(query(collection(db, "members"), where("referredBy", "==", currentUser.uid))),
+                // Direct referrals via the public mirror (members read is owner-only).
+                getDocs(query(collection(db, "publicProfiles"), where("referredBy", "==", currentUser.uid))),
                 getDocs(query(collection(db, "claims"), where("memberId", "==", currentUser.uid), where("status", "==", "approved"))),
             ]);
 
@@ -48,7 +49,8 @@ const useMemberStats = () => {
                 ),
             ];
             if (missingUids.length > 0) {
-                const snaps = await Promise.all(missingUids.map((uid) => getDoc(doc(db, "members", uid))));
+                // Names come from the public mirror (members read is owner-only).
+                const snaps = await Promise.all(missingUids.map((uid) => getDoc(doc(db, "publicProfiles", uid))));
                 const nameMap = new Map<string, string>();
                 snaps.forEach((snap) => {
                     if (snap.exists()) {

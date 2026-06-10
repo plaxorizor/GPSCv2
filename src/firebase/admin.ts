@@ -19,6 +19,7 @@ import {
 } from "firebase/firestore";
 import { db } from "./config";
 import { triggerCommissions, type Package } from "./transactions";
+import { writePublicProfile, deletePublicProfile } from "./publicProfiles";
 
 // --- MEMBERS ---
 export const getAllMembers = async () => {
@@ -62,6 +63,9 @@ export const activateMember = async (uid: string) => {
         });
         await setDoc(doc(db, "referralCodes", referralCode), { uid });
 
+        // Mirror activation + the freshly-issued referral code to the public profile.
+        await writePublicProfile(uid, { status: "active", referralCode });
+
         const pkg = memberData.package as Package | null;
         if (pkg) await triggerCommissions(uid, pkg);
     } else {
@@ -73,6 +77,8 @@ export const activateMember = async (uid: string) => {
             dateContestabilityEnd,
             packageLocked: false,
         });
+
+        await writePublicProfile(uid, { status: "active" });
     }
 };
 
@@ -116,6 +122,7 @@ export const hardDeleteMember = async (uid: string) => {
         await deleteDoc(doc(db, "referralCodes", code)).catch(() => {});
     }
     await deleteDoc(doc(db, "members", uid));
+    await deletePublicProfile(uid).catch(() => {});
 };
 
 // Force delete: cascade-removes the member, their referral-code mapping, AND every

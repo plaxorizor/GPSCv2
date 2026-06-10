@@ -1,19 +1,69 @@
 // admin/Overview.tsx
-import React from "react";
+import React, { useState } from "react";
 import { Users, TrendingUp, FileText, Wallet, UserCheck, RefreshCw } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { StatCard } from "./StatCard";
 import type { PackageMixItem } from "../../utils/types";
 import { formatCurrency, formatDate } from "./utils";
 
-import useAdminStats from "../../hooks/useAdminStats";
+import useAdminStats, { type ReferralEvent } from "../../hooks/useAdminStats";
 
 interface Props {
     loading: boolean;
+    onViewMember?: (uid: string) => void;
 }
 
-export const Overview: React.FC<Props> = ({ loading }) => {
+// Time windows for the Top Members leaderboard.
+type RankPeriod = "month" | "2months" | "3months" | "year" | "all";
+const PERIODS: { key: RankPeriod; label: string }[] = [
+    { key: "month", label: "This month" },
+    { key: "2months", label: "Last 2 months" },
+    { key: "3months", label: "Last 3 months" },
+    { key: "year", label: "This year" },
+    { key: "all", label: "All time" },
+];
+
+// Start of the window (inclusive). null = no lower bound (all time).
+const periodStart = (p: RankPeriod): Date | null => {
+    const now = new Date();
+    switch (p) {
+        case "month": return new Date(now.getFullYear(), now.getMonth(), 1);
+        case "2months": return new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        case "3months": return new Date(now.getFullYear(), now.getMonth() - 2, 1);
+        case "year": return new Date(now.getFullYear(), 0, 1);
+        case "all": return null;
+    }
+};
+
+interface RankedMember {
+    uid: string;
+    name: string;
+    count: number;
+}
+
+// Tally recruits per sponsor within the window, ranked, top 10.
+const rankTopMembers = (events: ReferralEvent[], p: RankPeriod): RankedMember[] => {
+    const start = periodStart(p);
+    const tally: Record<string, { name: string; count: number }> = {};
+    for (const e of events) {
+        if (start) {
+            const d = new Date(e.date);
+            if (isNaN(d.getTime()) || d < start) continue;
+        }
+        const cur = tally[e.sponsorUid] ?? { name: e.sponsorName, count: 0 };
+        cur.count += 1;
+        cur.name = e.sponsorName;
+        tally[e.sponsorUid] = cur;
+    }
+    return Object.entries(tally)
+        .map(([uid, v]) => ({ uid, name: v.name, count: v.count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10);
+};
+
+export const Overview: React.FC<Props> = ({ loading, onViewMember }) => {
     const { stats: adminStats, loading: adminStatsLoading, refetch } = useAdminStats();
+    const [topPeriod, setTopPeriod] = useState<RankPeriod>("month");
 
     if (loading || adminStatsLoading || !adminStats) {
         return (
@@ -31,6 +81,9 @@ export const Overview: React.FC<Props> = ({ loading }) => {
     }
 
     //const pendingClaims = recentClaims.filter((c) => c.status === "submitted" || c.status === "under_review");
+
+    // Top Members leaderboard for the selected window (recomputed client-side).
+    const topMembers = rankTopMembers(adminStats.referralEvents, topPeriod);
 
     // Package mix derived from adminStats — pie + legend always in sync
     const syncedPackageMix: PackageMixItem[] = [
@@ -136,34 +189,51 @@ export const Overview: React.FC<Props> = ({ loading }) => {
             </div>
 
             <div className="grid gap-6 lg:grid-cols-2">
-                {/* ── Top Recruiters — from adminStats.topRecruiters ── */}
+                {/* ── Top Members — recruits per sponsor over the chosen window ── */}
                 <div className="border-fsc-cream-dark rounded-2xl border bg-white p-6">
-                    <h2 className="font-display text-fsc-navy mb-4 text-lg">Top Recruiters</h2>
-                    <div className="space-y-3">
-                        {adminStats.topRecruiters.length > 0 ? (
-                            adminStats.topRecruiters.map((r, i) => (
-                                <div key={r.uid} className="flex items-center gap-3">
+                    <div className="mb-4 flex items-center justify-between gap-3">
+                        <h2 className="font-display text-fsc-navy text-lg">Top Members</h2>
+                        <select
+                            value={topPeriod}
+                            onChange={(e) => setTopPeriod(e.target.value as RankPeriod)}
+                            className="border-fsc-cream-dark text-fsc-stone focus:border-fsc-navy rounded-lg border bg-white px-2.5 py-1.5 text-xs outline-none"
+                        >
+                            {PERIODS.map((p) => (
+                                <option key={p.key} value={p.key}>
+                                    {p.label}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="space-y-1">
+                        {topMembers.length > 0 ? (
+                            topMembers.map((r, i) => (
+                                <button
+                                    key={r.uid}
+                                    onClick={() => onViewMember?.(r.uid)}
+                                    className="hover:bg-fsc-cream/40 flex w-full items-center gap-3 rounded-lg p-1.5 text-left transition-colors"
+                                    title="View member profile"
+                                >
                                     <div className="font-display text-fsc-stone w-6 text-xs">#{i + 1}</div>
-                                    <div className="bg-fsc-navy font-display flex h-10 w-10 items-center justify-center rounded-full text-xs text-white">
-                                        
+                                    <div className="bg-fsc-navy font-display flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xs text-white">
                                         {r.name
                                             .split(" ")
-                                            .map((n: string) => n[0])
+                                            .map((n) => n[0] ?? "")
                                             .join("")
                                             .slice(0, 2)
                                             .toUpperCase()}
                                     </div>
-                                    <div className="flex-1">
-                                        <div className="text-fsc-navy text-sm">{r.name}</div>
+                                    <div className="min-w-0 flex-1">
+                                        <div className="text-fsc-navy truncate text-sm">{r.name}</div>
                                     </div>
                                     <div className="text-right">
-                                        <div className="font-display text-fsc-navy text-lg">{r.referralCount}</div>
-                                        <div className="text-fsc-stone text-xs">referral{r.referralCount !== 1 ? "s" : ""}</div>
+                                        <div className="font-display text-fsc-navy text-lg">{r.count}</div>
+                                        <div className="text-fsc-stone text-xs">recruit{r.count !== 1 ? "s" : ""}</div>
                                     </div>
-                                </div>
+                                </button>
                             ))
                         ) : (
-                            <div className="text-fsc-stone py-8 text-center">No referral data yet</div>
+                            <div className="text-fsc-stone py-8 text-center">No referrals in this period</div>
                         )}
                     </div>
                 </div>

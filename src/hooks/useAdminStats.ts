@@ -3,10 +3,12 @@ import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../firebase/config";
 import type { Member } from "../utils/types";
 
-interface TopRecruiter {
-    uid: string;
-    name: string;
-    referralCount: number;
+// One referral (a recruit and when they joined), so the dashboard can rank
+// "Top Members" over any time window client-side without re-querying.
+export interface ReferralEvent {
+    sponsorUid: string;
+    sponsorName: string;
+    date: string; // ISO of the recruit's signup (dateCreated)
 }
 
 export interface GrowthDataPoint {
@@ -30,7 +32,7 @@ interface AdminStats {
     packageCounts: { basic: number; family: number; premium: number };
     pendingClaims: number;
     pendingPayouts: number;
-    topRecruiters: TopRecruiter[];
+    referralEvents: ReferralEvent[];
     growthData: GrowthDataPoint[];
     pendingClaimsList: PendingClaimItem[];
 }
@@ -43,7 +45,10 @@ export default () => {
         setLoading(true);
         try {
             const [membersSnap, claimsSnap, payoutsSnap] = await Promise.all([
-                getDocs(query(collection(db, "members"), where("isAdmin", "==", false)))
+                // Fetch ALL members (incl. admins) so sponsor names always resolve —
+                // a recruit's sponsor can be the admin/root member. Stats below filter
+                // admins back out.
+                getDocs(collection(db, "members"))
                     .catch((e) => { console.error("members query failed:", e); throw e; }),
                 // Pending claims = submitted or under_review (there is no "pending" status)
                 getDocs(query(collection(db, "claims"), where("status", "in", ["submitted", "under_review"])))
@@ -52,13 +57,19 @@ export default () => {
                     .catch((e) => { console.error("payouts query failed:", e); throw e; }),
             ]);
 
-            const members = membersSnap.docs.map((d) => ({ uid: d.id, ...d.data() }) as Member);
+            const allMembers = membersSnap.docs.map((d) => ({ uid: d.id, ...d.data() }) as Member);
+            // Name lookup spans every member (admins included) so no sponsor shows "Unknown".
+            const nameByUid: Record<string, string> = {};
+            for (const m of allMembers) {
+                nameByUid[m.uid] = `${m.firstName ?? ""} ${m.lastName ?? ""}`.trim() || "Unknown";
+            }
+            // Stats (revenue, package mix, growth) count members only, not admins.
+            const members = allMembers.filter((m) => !m.isAdmin);
 
             const packageCounts = { basic: 0, family: 0, premium: 0 };
             let totalRevenue = 0;
             let activeMembers = 0;
             let pendingAccounts = 0;
-            const referralCount: Record<string, number> = {};
 
             // Build last 6 months buckets
             const now = new Date();
@@ -88,10 +99,6 @@ export default () => {
                 }
 
                 if (m.status === "pending") pendingAccounts++;
-
-                if (m.referredBy) {
-                    referralCount[m.referredBy] = (referralCount[m.referredBy] ?? 0) + 1;
-                }
 
                 // Map dateCreated (Firestore Timestamp) into monthly buckets
                 if (m.dateCreated) {
@@ -124,17 +131,15 @@ export default () => {
                 .sort((a, b) => (a.submitted < b.submitted ? -1 : 1))
                 .slice(0, 5);
 
-            const topRecruiters: TopRecruiter[] = Object.entries(referralCount)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 3)
-                .map(([uid, count]) => {
-                    const found = members.find((m: Member) => m.uid === uid);
-                    return {
-                        uid,
-                        name: found ? `${found.firstName} ${found.lastName}` : "Unknown",
-                        referralCount: count,
-                    };
-                });
+            // One event per recruit — the dashboard ranks "Top Members" over any
+            // chosen window (month / year / all-time) from these client-side.
+            const referralEvents: ReferralEvent[] = allMembers
+                .filter((m) => m.referredBy)
+                .map((m) => ({
+                    sponsorUid: m.referredBy as string,
+                    sponsorName: nameByUid[m.referredBy as string] ?? "Unknown",
+                    date: m.dateCreated?.toDate?.()?.toISOString?.() ?? "",
+                }));
 
             setStats({
                 activeMembers,
@@ -143,7 +148,7 @@ export default () => {
                 packageCounts,
                 pendingClaims: claimsSnap.size,
                 pendingPayouts: payoutsSnap.size,
-                topRecruiters,
+                referralEvents,
                 growthData,
                 pendingClaimsList,
             });
