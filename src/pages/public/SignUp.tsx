@@ -61,7 +61,7 @@ const PAYMENT_INFO = {
     ],
     // Where members send their proof of payment for manual verification.
     receiptContacts: [
-        { label: "Messenger", value: "FaithShield Care Official" },
+        { label: "Messenger", value: "FaithShield Care" },
         { label: "Email", value: "payments@faithshieldcare.com" },
     ],
     verificationDays: "1–2 business days",
