@@ -125,23 +125,12 @@ const About: React.FC = () => {
                                 { role: "Public Relations Officer (PRO)", name: "John Michael Bangoy" },
                                 { role: "Board of Director 1", name: "Julius Onggona" },
                                 { role: "Board of Director 2", name: "Jieryl Brian Bangoy" },
-                            ].map((officer, i) => {
-                                const initials = officer.name
-                                    .split(" ")
-                                    .map((n) => n[0])
-                                    .slice(0, 2)
-                                    .join("")
-                                    .toUpperCase();
-                                return (
-                                    <div key={i} className="border-fsc-cream-dark rounded-2xl border p-5">
-                                        <div className="bg-fsc-navy font-display mb-4 flex h-12 w-12 items-center justify-center rounded-full text-sm font-semibold text-white">
-                                            {initials}
-                                        </div>
-                                        <div className="font-display text-fsc-navy text-base">{officer.name}</div>
-                                        <div className="text-fsc-stone mt-1 text-sm">{officer.role}</div>
-                                    </div>
-                                );
-                            })}
+                            ].map((officer, i) => (
+                                <div key={i} className="border-fsc-cream-dark rounded-2xl border p-5">
+                                    <div className="font-display text-fsc-navy text-base">{officer.name}</div>
+                                    <div className="text-fsc-stone mt-1 text-sm">{officer.role}</div>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </section>
