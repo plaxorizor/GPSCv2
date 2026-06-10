@@ -17,7 +17,7 @@ export interface PaymentAccount {
 }
 
 export const PAYMENT_ACCOUNTS: PaymentAccount[] = [
-    { label: "GCash", accountName: "AP**E J** D.", number: "+63 976 166 ••••", qr: "/qr/gcash.png" },
-    { label: "Maya", accountName: "@ganda1205", number: "+63 *** *** 0503", qr: "/qr/maya.png" },
-    { label: "GoTyme", accountName: "GoTyme Bank", number: "•••• 1213", qr: "/qr/gotyme.png" },
+    { label: "GCash", accountName: "AP**E J** D.", number: "+63 976 166 5381", qr: "/qr/gcash.png" },
+    { label: "Maya", accountName: "@ganda1205", number: "+63 952 441 0503", qr: "/qr/maya.png" },
+    { label: "GoTyme", accountName: "APPLE J•• D•••••", number: "•••• 1213", qr: "/qr/gotyme.png" },
 ];
