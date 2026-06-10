@@ -13,6 +13,31 @@
     <rect x="0" y="0" width="1200" height="8" fill="#C9922A"/>
     <rect x="0" y="624" width="1200" height="6" fill="#1B2D6B"/>
 
-    <!-- Logo only, centered (full lockup: emblem + wordmark + tagline) -->
-    <image href="og-logo.png" x="340" y="55" width="520" height="520" preserveAspectRatio="xMidYMid meet"/>
+    <!-- Real logo (centered, full lockup: emblem + wordmark + tagline) -->
+    <image href="og-logo.png" x="420" y="48" width="360" height="360" preserveAspectRatio="xMidYMid meet"/>
+
+    <!-- Gold divider -->
+    <rect x="540" y="430" width="120" height="3" rx="1.5" fill="#C9922A"/>
+
+    <!-- Kicker -->
+    <text x="600" y="476" text-anchor="middle" font-family="'DejaVu Sans', 'Segoe UI', Arial, sans-serif"
+          font-size="22" letter-spacing="5" fill="#C9922A" font-weight="700">
+        MEMBERSHIP · REFERRAL · CARE
+    </text>
+
+    <!-- Supporting copy -->
+    <text x="600" y="524" text-anchor="middle" font-family="'DejaVu Sans', 'Segoe UI', Arial, sans-serif"
+          font-size="26" fill="#6B6862">
+        Affordable financial assistance, livelihood opportunities,
+    </text>
+    <text x="600" y="560" text-anchor="middle" font-family="'DejaVu Sans', 'Segoe UI', Arial, sans-serif"
+          font-size="26" fill="#6B6862">
+        and compassionate community care.
+    </text>
+
+    <!-- Footer URL -->
+    <text x="600" y="602" text-anchor="middle" font-family="'DejaVu Sans', 'Segoe UI', Arial, sans-serif"
+          font-size="20" fill="#1B2D6B" font-weight="600">
+        faithshieldcare.web.app<tspan fill="#6B6862" font-weight="400"> · Philippines</tspan>
+    </text>
 </svg>
