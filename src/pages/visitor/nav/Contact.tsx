@@ -46,7 +46,14 @@ const Contact: React.FC = () => {
                             </div>
                             <div>
                                 <div className="font-display text-fsc-navy text-base">Facebook</div>
-                                <div className="text-fsc-stone text-sm">facebook.com/faithshieldcare</div>
+                                <a
+                                    href="https://www.facebook.com/faithshieldcare"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-fsc-stone hover:text-fsc-navy text-sm transition-colors"
+                                >
+                                    facebook.com/faithshieldcare
+                                </a>
                             </div>
                         </div>
                     </div>
