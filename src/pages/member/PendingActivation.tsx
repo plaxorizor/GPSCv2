@@ -7,7 +7,7 @@ import type { Member } from "../../utils/types";
 // Holding screen for members whose account is still PENDING. They can sign in
 // (so they know registration worked) but can't reach the dashboard until an
 // admin activates them — per the golden rule, only an admin can do that.
-export default function PendingActivation({ member }: { member: Member }) {
+export default function PendingActivation({ member, onRecheck }: { member: Member; onRecheck: () => Promise<void> | void }) {
     const navigate = useNavigate();
     const [loggingOut, setLoggingOut] = useState(false);
     const [checking, setChecking] = useState(false);
@@ -19,9 +19,16 @@ export default function PendingActivation({ member }: { member: Member }) {
         navigate("/");
     };
 
-    const checkAgain = () => {
+    // Re-read the member doc in place (no full-page reload). If an admin has since
+    // activated them, MemberArea re-renders into the dashboard automatically.
+    const checkAgain = async () => {
+        if (checking) return;
         setChecking(true);
-        window.location.reload(); // re-reads status; activated members fall through to the dashboard
+        try {
+            await onRecheck();
+        } finally {
+            setChecking(false);
+        }
     };
 
     return (

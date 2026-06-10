@@ -1,13 +1,13 @@
 import React from "react";
-import { LayoutGrid, Users, FileText, DollarSign, Wallet, ArrowUpCircle, Settings as SettingsIcon, LogOut } from "lucide-react";
+import { LayoutGrid, Users, FileText, DollarSign, Wallet, ClipboardCheck, Settings as SettingsIcon, LogOut } from "lucide-react";
 
 const tabs = [
     { id: "overview",    label: "Overview",     icon: LayoutGrid },
+    { id: "approvals",   label: "Approvals",    icon: ClipboardCheck },
     { id: "members",     label: "Members",      icon: Users },
     { id: "claims",      label: "Claims",       icon: FileText },
     { id: "commissions", label: "Commissions",  icon: DollarSign },
     { id: "payouts",     label: "Payouts",      icon: Wallet },
-    { id: "upgrades",    label: "Upgrades",     icon: ArrowUpCircle },
     { id: "settings",    label: "Settings",     icon: SettingsIcon },
     { id: "logout",      label: "Logout",       icon: LogOut },
 ];
@@ -15,16 +15,17 @@ const tabs = [
 interface Props {
     current: string;
     onChange: (id: string) => void;
+    approvalsBadge?: number;
     claimsBadge?: number;
     commissionsBadge?: number;
     payoutsBadge?: number;
     onLogout: () => void;
 }
 
-export const MobileBottomNav: React.FC<Props> = ({ current, onChange, claimsBadge, commissionsBadge, payoutsBadge, onLogout }) => (
+export const MobileBottomNav: React.FC<Props> = ({ current, onChange, approvalsBadge, claimsBadge, commissionsBadge, payoutsBadge, onLogout }) => (
     <nav className="lg:hidden fixed bottom-0 inset-x-0 bg-white border-t border-fsc-cream-dark z-50 flex pb-[env(safe-area-inset-bottom)]">
         {tabs.map(({ id, label, icon: Icon }) => {
-            const badge = id === "claims" ? claimsBadge : id === "commissions" ? commissionsBadge : id === "payouts" ? payoutsBadge : undefined;
+            const badge = id === "approvals" ? approvalsBadge : id === "claims" ? claimsBadge : id === "commissions" ? commissionsBadge : id === "payouts" ? payoutsBadge : undefined;
             const isLogout = id === "logout";
             return (
                 <button

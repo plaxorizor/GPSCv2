@@ -1,24 +1,36 @@
-import { useCallback, useEffect, useState } from "react";
-import { ArrowUpCircle, Check, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { ArrowUpCircle, Check, X, Receipt } from "lucide-react";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../firebase/config";
 import { formatCurrency } from "../utils/formatter";
 import { packageLabel } from "../utils/upgrade";
-import { getPendingUpgradeRequests, approveUpgrade, rejectUpgrade, type UpgradeRequest } from "../firebase/upgrades";
+import { subscribePendingUpgradeRequests, approveUpgrade, rejectUpgrade, type UpgradeRequest } from "../firebase/upgrades";
+import ApprovalDetailModal, { type ApprovalDetail } from "./ApprovalDetailModal";
 
 // Admin panel: lists pending package-upgrade requests and lets an admin confirm
-// (apply the upgrade) or reject them. Self-contained — fetches its own data.
-export default function PendingUpgradesPanel({ onChange }: { onChange?: () => void }) {
+// (apply the upgrade) or reject them. Click a row to inspect full details.
+export default function PendingUpgradesPanel({ search = "" }: { search?: string }) {
     const [requests, setRequests] = useState<UpgradeRequest[]>([]);
     const [loading, setLoading] = useState(true);
     const [busyId, setBusyId] = useState<string | null>(null);
+    const [selected, setSelected] = useState<{ req: UpgradeRequest; rows: { label: string; value: string }[] } | null>(null);
 
-    const load = useCallback(() => {
-        setLoading(true);
-        getPendingUpgradeRequests()
-            .then(setRequests)
-            .finally(() => setLoading(false));
+    // Live subscription so new upgrade requests appear without a manual refresh.
+    useEffect(() => {
+        const unsub = subscribePendingUpgradeRequests((reqs) => {
+            setRequests(reqs);
+            setLoading(false);
+        });
+        return () => unsub();
     }, []);
 
-    useEffect(() => load(), [load]);
+    const filtered = useMemo(() => {
+        const q = search.trim().toLowerCase();
+        if (!q) return requests;
+        return requests.filter((r) =>
+            [r.memberName, r.paymentReference, r.fromPackage, r.toPackage].some((v) => (v ?? "").toLowerCase().includes(q)),
+        );
+    }, [requests, search]);
 
     const act = async (id: string, kind: "approve" | "reject") => {
         if (busyId) return;
@@ -26,12 +38,43 @@ export default function PendingUpgradesPanel({ onChange }: { onChange?: () => vo
         try {
             if (kind === "approve") await approveUpgrade(id);
             else await rejectUpgrade(id);
-            load();
-            onChange?.();
+            setSelected(null);
+            // The listener updates the list automatically.
         } finally {
             setBusyId(null);
         }
     };
+
+    // Fetch the member's contact details so the admin can cross-check, then open.
+    const openDetail = async (req: UpgradeRequest) => {
+        let rows = [{ label: "Member", value: req.memberName }];
+        try {
+            const snap = await getDoc(doc(db, "members", req.memberId));
+            if (snap.exists()) {
+                const d = snap.data();
+                rows = [
+                    { label: "Email", value: (d.email as string) || "—" },
+                    { label: "Mobile", value: (d.mobile as string) || "—" },
+                    { label: "City", value: (d.city as string) || "—" },
+                ];
+            }
+        } catch {
+            /* keep the fallback rows */
+        }
+        setSelected({ req, rows });
+    };
+
+    const detailFor = (req: UpgradeRequest, rows: { label: string; value: string }[]): ApprovalDetail => ({
+        kindLabel: "Upgrade request",
+        name: req.memberName,
+        subtitle: `${packageLabel(req.fromPackage)} → ${packageLabel(req.toPackage)} Care`,
+        amount: `${formatCurrency(req.amountDue)} (${req.basis === "full" ? "full" : "difference"})`,
+        reference: req.paymentReference ?? null,
+        method: req.paymentMethod ?? null,
+        date: req.dateRequested || null,
+        rows,
+        confirmLabel: "Confirm & upgrade",
+    });
 
     if (loading || requests.length === 0) return null; // hide when nothing pending
 
@@ -40,12 +83,16 @@ export default function PendingUpgradesPanel({ onChange }: { onChange?: () => vo
             <div className="border-fsc-cream-dark flex items-center gap-2 border-b p-4">
                 <ArrowUpCircle className="text-fsc-green" size={18} />
                 <h2 className="font-display text-fsc-navy text-lg">Pending upgrades</h2>
-                <span className="bg-fsc-green/10 text-fsc-green ml-2 rounded-full px-2 py-0.5 text-xs font-medium">{requests.length}</span>
+                <span className="bg-fsc-green/10 text-fsc-green ml-2 rounded-full px-2 py-0.5 text-xs font-medium">{filtered.length}</span>
             </div>
             <div className="divide-fsc-cream-dark divide-y">
-                {requests.map((r) => (
-                    <div key={r.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
-                        <div>
+                {filtered.map((r) => (
+                    <div
+                        key={r.id}
+                        onClick={() => openDetail(r)}
+                        className="hover:bg-fsc-cream/40 flex cursor-pointer flex-wrap items-center justify-between gap-3 p-4 transition-colors"
+                    >
+                        <div className="min-w-0">
                             <div className="flex items-center gap-2">
                                 <span className="text-fsc-navy font-medium">{r.memberName}</span>
                                 {r.basis === "full" && (
@@ -59,8 +106,19 @@ export default function PendingUpgradesPanel({ onChange }: { onChange?: () => vo
                                 {formatCurrency(r.amountDue)}
                                 {r.basis === "full" ? " (full)" : " (difference)"}
                             </div>
+                            <div className="mt-1.5 flex items-center gap-1.5 text-xs">
+                                <Receipt size={13} className="text-fsc-stone shrink-0" />
+                                {r.paymentReference ? (
+                                    <span className="text-fsc-navy font-mono">
+                                        {r.paymentReference}
+                                        {r.paymentMethod ? <span className="text-fsc-stone font-sans"> · {r.paymentMethod}</span> : null}
+                                    </span>
+                                ) : (
+                                    <span className="text-fsc-stone italic">No reference provided</span>
+                                )}
+                            </div>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                             <button
                                 onClick={() => act(r.id, "reject")}
                                 disabled={busyId === r.id}
@@ -78,7 +136,20 @@ export default function PendingUpgradesPanel({ onChange }: { onChange?: () => vo
                         </div>
                     </div>
                 ))}
+                {filtered.length === 0 && (
+                    <div className="text-fsc-stone p-4 text-center text-xs">No pending upgrades match your search.</div>
+                )}
             </div>
+
+            {selected && (
+                <ApprovalDetailModal
+                    detail={detailFor(selected.req, selected.rows)}
+                    busy={busyId === selected.req.id}
+                    onConfirm={() => act(selected.req.id, "approve")}
+                    onReject={() => act(selected.req.id, "reject")}
+                    onClose={() => setSelected(null)}
+                />
+            )}
         </div>
     );
 }

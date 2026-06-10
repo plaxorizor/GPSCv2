@@ -5,7 +5,7 @@
 // An admin verifies the offline payment and approves: sets the package, RE-ACTIVATES
 // the member, RESETS the eligibility timeline, and renews the term to 365 days.
 
-import { collection, doc, addDoc, getDoc, getDocs, updateDoc, query, where, serverTimestamp, type DocumentData } from "firebase/firestore";
+import { collection, doc, addDoc, getDoc, getDocs, updateDoc, query, where, onSnapshot, serverTimestamp, type DocumentData } from "firebase/firestore";
 import { db } from "./config";
 import { packagePrice, type PackageKey } from "../utils/upgrade";
 import { triggerRenewalCommissions } from "./transactions";
@@ -21,6 +21,8 @@ export interface RenewalRequest {
     dateRequested: string;
     dateDecided: string | null;
     reason?: string | null;
+    paymentReference?: string | null;
+    paymentMethod?: string | null;
 }
 
 // Member submits a renewal request (offline payment + proof handled separately).
@@ -28,6 +30,8 @@ export async function requestRenewal(input: {
     memberId: string;
     memberName: string;
     toPackage: PackageKey;
+    reference?: string;
+    method?: string;
 }): Promise<void> {
     const snap = await getDoc(doc(db, "members", input.memberId));
     if (!snap.exists()) throw new Error("MEMBER_NOT_FOUND");
@@ -49,6 +53,8 @@ export async function requestRenewal(input: {
         dateRequested: serverTimestamp(),
         dateDecided: null,
         reason: null,
+        paymentReference: input.reference?.trim() || null,
+        paymentMethod: input.method ?? null,
     });
 }
 
@@ -62,6 +68,8 @@ const mapRequest = (id: string, data: DocumentData): RenewalRequest => ({
     status: data.status,
     dateRequested: data.dateRequested?.toDate?.()?.toISOString?.() ?? "",
     dateDecided: data.dateDecided?.toDate?.()?.toISOString?.() ?? null,
+    paymentReference: data.paymentReference ?? null,
+    paymentMethod: data.paymentMethod ?? null,
 });
 
 // A member's current pending renewal (if any).
@@ -77,6 +85,13 @@ export async function getPendingRenewalForMember(memberId: string): Promise<Rene
 export async function getPendingRenewalRequests(): Promise<RenewalRequest[]> {
     const snap = await getDocs(query(collection(db, "renewalRequests"), where("status", "==", "pending")));
     return snap.docs.map((d) => mapRequest(d.id, d.data())).sort((a, b) => (b.dateRequested > a.dateRequested ? 1 : -1));
+}
+
+// Admin: live subscription to pending renewal requests. Returns an unsubscribe fn.
+export function subscribePendingRenewalRequests(cb: (requests: RenewalRequest[]) => void): () => void {
+    return onSnapshot(query(collection(db, "renewalRequests"), where("status", "==", "pending")), (snap) => {
+        cb(snap.docs.map((d) => mapRequest(d.id, d.data())).sort((a, b) => (b.dateRequested > a.dateRequested ? 1 : -1)));
+    });
 }
 
 // Admin approves: re-activate the member at the chosen package, reset eligibility,

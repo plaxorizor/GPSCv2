@@ -11,8 +11,6 @@ import {
     ShieldOff,
     ChevronLeft,
     ChevronRight,
-    Archive,
-    RotateCcw,
     Trash2,
 } from "lucide-react";
 import AllMembers from "./AllMembers";
@@ -22,10 +20,8 @@ import { getEligibilityTimeline } from "../../utils/eligibility";
 import { computeRankFromTree, rankName } from "../../utils/rank";
 import { buildReferralTree } from "../../firebase/referral";
 import AddMemberModal from "../../components/AddMemberModal";
-import PendingUpgradesPanel from "../../components/PendingUpgradesPanel";
-import PendingRenewalsPanel from "../../components/PendingRenewalsPanel";
 import ConfirmDialog from "../../components/ConfirmDialog";
-import { sendMemberPasswordReset, archiveMember, restoreMember, hardDeleteMember, forceDeleteMember, getMemberDependencies } from "../../firebase/admin";
+import { sendMemberPasswordReset, hardDeleteMember, forceDeleteMember, getMemberDependencies } from "../../firebase/admin";
 
 export interface MemberRow {
     uid: string;
@@ -45,14 +41,15 @@ export interface MemberRow {
     archived?: boolean;
     dateCreated?: { toDate?: () => Date };
     beneficiaries?: { name: string; relationship: string }[];
+    paymentReference?: string;
+    paymentMethod?: string;
 }
 
 interface Props {
-    onUpdateStatus: (memberId: string, status: "active" | "inactive") => Promise<void>;
     onExport: () => void;
 }
 
-export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
+export const Members: React.FC<Props> = ({ onExport }) => {
     const { members, loading, refetch } = useAllMembers();
     const { isSuperAdmin } = useAdmin();
     const [showAddMember, setShowAddMember] = useState(false);
@@ -61,7 +58,6 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
     const [statusFilter, setStatusFilter] = useState("all");
     const [selectedMember, setSelectedMember] = useState<MemberRow | null>(null);
     const [selectedRank, setSelectedRank] = useState<string>("—");
-    const [activating, setActivating] = useState(false);
     const [copied, setCopied] = useState(false);
     const [resetting, setResetting] = useState(false);
     const [resetMsg, setResetMsg] = useState("");
@@ -72,7 +68,6 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
 
     // Super-admin per-member actions
     const [deps, setDeps] = useState<{ hasDownlines: boolean; hasCommissions: boolean } | null>(null);
-    const [memberActionBusy, setMemberActionBusy] = useState(false);
 
     // Confirmation dialog (replaces window.confirm)
     const [confirmState, setConfirmState] = useState<{
@@ -135,67 +130,6 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
             else next.add(uid);
             return next;
         });
-
-    const requestBulkActivate = () => {
-        const targets = members.filter((m) => selectedIds.has(m.uid) && m.status === "pending" && !m.archived);
-        const skipped = selectedIds.size - targets.length;
-        if (targets.length === 0) {
-            setBulkMsg("No pending members in the selection.");
-            return;
-        }
-        setBulkMsg("");
-        setConfirmState({
-            title: "Activate members",
-            message: `Activate ${targets.length} pending member(s)? This generates their referral codes and pays upline commissions.${
-                skipped ? ` ${skipped} non-pending member(s) will be skipped.` : ""
-            }`,
-            confirmLabel: "Activate",
-            action: async () => {
-                let ok = 0;
-                let fail = 0;
-                for (const m of targets) {
-                    try {
-                        await onUpdateStatus(m.uid, "active");
-                        ok++;
-                    } catch {
-                        fail++;
-                    }
-                }
-                await refetch();
-                setSelectedIds(new Set());
-                setBulkMsg(`Activated ${ok}${fail ? `, ${fail} failed` : ""}${skipped ? `, skipped ${skipped} non-pending` : ""}.`);
-            },
-        });
-    };
-
-    const requestBulkArchive = () => {
-        const targets = members.filter((m) => selectedIds.has(m.uid) && !m.archived);
-        if (targets.length === 0) {
-            setBulkMsg("Nothing to archive in the selection.");
-            return;
-        }
-        setBulkMsg("");
-        setConfirmState({
-            title: "Archive members",
-            message: `Archive ${targets.length} member(s)? They'll be hidden from the lists but their data is kept and can be restored.`,
-            confirmLabel: "Archive",
-            action: async () => {
-                let ok = 0;
-                let fail = 0;
-                for (const m of targets) {
-                    try {
-                        await archiveMember(m.uid);
-                        ok++;
-                    } catch {
-                        fail++;
-                    }
-                }
-                await refetch();
-                setSelectedIds(new Set());
-                setBulkMsg(`Archived ${ok}${fail ? `, ${fail} failed` : ""}.`);
-            },
-        });
-    };
 
     const requestBulkDelete = () => {
         const targets = members.filter((m) => selectedIds.has(m.uid));
@@ -273,33 +207,6 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
         });
     };
 
-    const requestArchiveOne = () => {
-        if (!selectedMember) return;
-        const m = selectedMember;
-        setConfirmState({
-            title: "Archive member",
-            message: `Archive ${m.firstName} ${m.lastName}? They'll be hidden but their data is kept and can be restored.`,
-            confirmLabel: "Archive",
-            action: async () => {
-                await archiveMember(m.uid);
-                await refetch();
-                setSelectedMember(null);
-            },
-        });
-    };
-
-    const handleRestoreOne = async () => {
-        if (!selectedMember) return;
-        setMemberActionBusy(true);
-        try {
-            await restoreMember(selectedMember.uid);
-            await refetch();
-            setSelectedMember(null);
-        } finally {
-            setMemberActionBusy(false);
-        }
-    };
-
     const requestHardDelete = () => {
         if (!selectedMember) return;
         const m = selectedMember;
@@ -373,11 +280,13 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
             filtered = filtered.filter((member) => (member.package ?? "").toLowerCase() === packageFilter.toLowerCase());
         }
 
-        // Archived members are hidden unless you explicitly view the Archived filter
+        // Archived members are hidden unless you explicitly view the Archived filter.
+        // Pending members live solely in the Approvals queue, so the directory never
+        // lists them (not even under "All statuses").
         if (statusFilter === "archived") {
             filtered = filtered.filter((m) => m.archived === true);
         } else {
-            filtered = filtered.filter((m) => !m.archived);
+            filtered = filtered.filter((m) => !m.archived && m.status !== "pending");
             if (statusFilter !== "all") {
                 filtered = filtered.filter((member) => member.status === statusFilter);
             }
@@ -470,19 +379,9 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
         setTimeout(() => setCopied(false), 2000);
     };
 
-    const handleUpdateStatus = async () => {
-        if (!selectedMember) return;
-        setActivating(true);
-        await onUpdateStatus(selectedMember.uid, selectedMember.status === "active" ? "inactive" : "active");
-        await refetch();
-        setActivating(false);
-        setSelectedMember(null);
-    };
 
     return (
         <div className="space-y-6">
-            <PendingUpgradesPanel onChange={refetch} />
-            <PendingRenewalsPanel onChange={refetch} />
             <div className="flex flex-wrap items-end justify-between gap-4">
                 <div>
                     <h1 className="font-display text-fsc-navy text-3xl">Members</h1>
@@ -541,7 +440,6 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                         <option value="all">All statuses</option>
                         <option value="active">Active</option>
                         <option value="inactive">Inactive</option>
-                        <option value="pending">Pending</option>
                         <option value="archived">Archived</option>
                     </select>
                     <button
@@ -587,7 +485,6 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                             packageFilter={packageFilter}
                             statusFilter={statusFilter}
                             onSelectMember={openMember}
-                            onUpdateStatus={onUpdateStatus}
                             selectedIds={selectedIds}
                             onToggleSelect={toggleSelect}
                             canSelectActive={isSuperAdmin}
@@ -688,20 +585,8 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                             {selectedIds.size > 0 && (
                                 <div className="border-fsc-cream-dark flex flex-wrap items-center gap-2 sm:border-l sm:pl-4">
                                     <span className="text-fsc-navy text-sm font-medium">{selectedIds.size} selected</span>
-                                    <button
-                                        onClick={requestBulkActivate}
-                                        className="bg-fsc-green flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-white transition-opacity hover:opacity-90"
-                                    >
-                                        <Check size={14} /> Activate
-                                    </button>
                                     {isSuperAdmin && (
                                         <>
-                                            <button
-                                                onClick={requestBulkArchive}
-                                                className="border-fsc-cream-dark text-fsc-navy hover:bg-fsc-cream flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm transition-colors"
-                                            >
-                                                <Archive size={14} /> Archive
-                                            </button>
                                             <button
                                                 onClick={requestBulkDelete}
                                                 className="flex items-center gap-1.5 rounded-lg border border-[#C41E1E]/25 px-3 py-1.5 text-sm text-[#C41E1E] transition-colors hover:bg-[#C41E1E]/5"
@@ -744,9 +629,7 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                     return (
                         <div
                             className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-                            onClick={() => {
-                                if (!activating) setSelectedMember(null);
-                            }}
+                            onClick={() => setSelectedMember(null)}
                         >
                             <div
                                 className="mx-4 flex w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-xl"
@@ -758,8 +641,7 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                                         <h2 className="font-display text-fsc-navy text-xl">Member Details</h2>
                                         <button
                                             onClick={() => setSelectedMember(null)}
-                                            disabled={activating}
-                                            className="text-fsc-stone hover:text-fsc-navy text-lg transition-colors disabled:opacity-40"
+                                            className="text-fsc-stone hover:text-fsc-navy text-lg transition-colors"
                                         >
                                             ✕
                                         </button>
@@ -793,6 +675,12 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                                             { label: "Birth Date", value: selectedMember.birthDate ?? "—" },
                                             { label: "Joined", value: selectedMember.dateCreated?.toDate?.()?.toLocaleDateString() ?? "—" },
                                             { label: "Status", value: selectedMember.status ?? "—" },
+                                            {
+                                                label: "Payment Ref",
+                                                value: selectedMember.paymentReference
+                                                    ? `${selectedMember.paymentReference}${selectedMember.paymentMethod ? ` (${selectedMember.paymentMethod})` : ""}`
+                                                    : "—",
+                                            },
                                         ].map(({ label, value }) => (
                                             <div key={label}>
                                                 <div className="text-fsc-stone mb-0.5 text-xs">{label}</div>
@@ -845,21 +733,9 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                                     <div className="mt-6 flex gap-3">
                                         <button
                                             onClick={() => setSelectedMember(null)}
-                                            disabled={activating}
-                                            className="border-fsc-cream-dark text-fsc-stone hover:bg-fsc-cream/60 flex-1 rounded-lg border px-4 py-2 transition-colors disabled:opacity-40"
+                                            className="border-fsc-cream-dark text-fsc-stone hover:bg-fsc-cream/60 flex-1 rounded-lg border px-4 py-2 transition-colors"
                                         >
                                             Close
-                                        </button>
-                                        <button
-                                            onClick={handleUpdateStatus}
-                                            disabled={activating}
-                                            className={`flex-1 rounded-lg px-4 py-2 font-medium text-white transition-colors disabled:opacity-70 ${
-                                                selectedMember.status === "active"
-                                                    ? "bg-[#C41E1E] hover:bg-[#A31818]"
-                                                    : "bg-fsc-green hover:bg-fsc-green/80"
-                                            }`}
-                                        >
-                                            {activating ? "Please wait..." : selectedMember.status === "active" ? "Deactivate" : "Activate"}
                                         </button>
                                     </div>
 
@@ -882,33 +758,15 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                                         {resetMsg && <p className="text-fsc-green mt-2 text-xs">{resetMsg}</p>}
                                     </div>
 
-                                    {/* Super-admin: archive / restore / permanently delete */}
+                                    {/* Super-admin: permanently delete (cleanup tool — members are never
+                                        deactivated or archived; inactive status is derived from expiry). */}
                                     {isSuperAdmin && (
                                         <div className="mt-4 space-y-2 rounded-xl border border-[#C41E1E]/20 bg-[#C41E1E]/5 p-3">
                                             <div className="text-xs font-medium tracking-wider text-[#C41E1E]/80 uppercase">Super admin</div>
-                                            {selectedMember.archived ? (
-                                                <button
-                                                    onClick={handleRestoreOne}
-                                                    disabled={memberActionBusy}
-                                                    className="border-fsc-cream-dark text-fsc-navy hover:bg-fsc-cream/60 flex w-full items-center justify-center gap-1.5 rounded-lg border bg-white px-4 py-2 text-sm transition-colors disabled:opacity-50"
-                                                >
-                                                    <RotateCcw size={14} /> Restore member
-                                                </button>
-                                            ) : (
-                                                <button
-                                                    onClick={requestArchiveOne}
-                                                    disabled={memberActionBusy}
-                                                    className="border-fsc-cream-dark text-fsc-navy hover:bg-fsc-cream/60 flex w-full items-center justify-center gap-1.5 rounded-lg border bg-white px-4 py-2 text-sm transition-colors disabled:opacity-50"
-                                                >
-                                                    <Archive size={14} /> Archive member
-                                                </button>
-                                            )}
-
                                             {deps && !deps.hasDownlines && !deps.hasCommissions && (
                                                 <button
                                                     onClick={requestHardDelete}
-                                                    disabled={memberActionBusy}
-                                                    className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-[#C41E1E] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#A31818] disabled:opacity-50"
+                                                    className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-[#C41E1E] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#A31818]"
                                                 >
                                                     <Trash2 size={14} /> Permanently delete
                                                 </button>
@@ -917,7 +775,7 @@ export const Members: React.FC<Props> = ({ onUpdateStatus, onExport }) => {
                                                 <p className="text-xs text-[#C41E1E]/80">
                                                     Can't permanently delete — this member has {deps.hasDownlines ? "downlines" : ""}
                                                     {deps.hasDownlines && deps.hasCommissions ? " and " : ""}
-                                                    {deps.hasCommissions ? "commission history" : ""}. Archive instead to keep the tree intact.
+                                                    {deps.hasCommissions ? "commission history" : ""}.
                                                 </p>
                                             )}
                                             {!deps && <p className="text-fsc-stone text-xs">Checking delete eligibility…</p>}

@@ -1,5 +1,5 @@
-import { useEffect, useState, useCallback } from "react";
-import { collection, getDocs } from "firebase/firestore";
+import { useEffect, useRef, useState, useCallback } from "react";
+import { collection, getDocs, onSnapshot, query, where } from "firebase/firestore";
 import { db } from "../firebase/config";
 import type { AdminPayout } from "../utils/types";
 
@@ -56,6 +56,22 @@ const useAdminPayouts = () => {
 
     useEffect(() => {
         fetchPayouts(true);
+    }, [fetchPayouts]);
+
+    // Live-watch only the small "requested" (pending) subset. When a new payout
+    // request lands, quietly re-pull the full list so it appears without a manual
+    // refresh. Skip the first emission (fires on subscribe) to avoid a double-fetch.
+    const firstPendingSnap = useRef(true);
+    useEffect(() => {
+        const q = query(collection(db, "payouts"), where("status", "==", "requested"));
+        const unsub = onSnapshot(q, () => {
+            if (firstPendingSnap.current) {
+                firstPendingSnap.current = false;
+                return;
+            }
+            fetchPayouts(false);
+        });
+        return () => unsub();
     }, [fetchPayouts]);
 
     return { payouts, loading, refreshing, refetch: () => fetchPayouts(false) };

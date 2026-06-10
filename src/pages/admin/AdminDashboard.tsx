@@ -1,15 +1,16 @@
 // admin/index.tsx
 import { useState } from "react";
-import { LayoutGrid, Users, FileText, DollarSign, Wallet, ArrowUpCircle, Settings as SettingsIcon } from "lucide-react";
+import { LayoutGrid, Users, FileText, DollarSign, Wallet, ClipboardCheck, Settings as SettingsIcon } from "lucide-react";
 import { DashboardSidebar } from "./DashboardSidebar";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { Overview } from "./Overview";
 import { Members } from "./Members";
+import { Approvals } from "./Approvals";
 import { Claims } from "./Claims";
 import { Commissions } from "./Commissions";
 import { Payouts } from "./Payouts";
-import { Upgrades } from "./Upgrades";
 import { Settings } from "./Settings";
+import { usePendingApprovalsCount } from "../../hooks/usePendingApprovalsCount";
 import type { PendingCommission, CommissionRecord, AdminPayout } from "../../utils/types";
 import type { Claim } from "../../utils/types";
 
@@ -33,7 +34,6 @@ interface AdminDashboardProps {
     onRefreshClaims: () => void;
     onRefreshCommissions: () => void;
     onRefreshPayouts: () => void;
-    onUpdateMemberStatus: (memberId: string, status: "active" | "inactive") => Promise<void>;
     onUpdateClaimStatus: (claimId: string, status: "Approved" | "Rejected" | "Released") => Promise<void>;
     onReviewClaim: (claimId: string) => Promise<void>;
     onMarkPayoutSent: (payoutId: string, reference: string) => Promise<void>;
@@ -53,7 +53,6 @@ export default function AdminDashboard({
     onRefreshClaims,
     onRefreshCommissions,
     onRefreshPayouts,
-    onUpdateMemberStatus,
     onUpdateClaimStatus,
     onReviewClaim,
     onMarkPayoutSent,
@@ -64,17 +63,19 @@ export default function AdminDashboard({
 }: AdminDashboardProps) {
     const [currentSection, setCurrentSection] = useState("overview");
 
+    const { counts: approvalsCounts, loading: approvalsLoading } = usePendingApprovalsCount();
+
     const pendingClaimsCount = claims.filter((c) => c.status === "submitted" || c.status === "under_review").length;
     const pendingCommissionsCount = pendingCommissions.length;
     const pendingPayoutsCount = payouts.filter((p) => p.status === "requested").length;
 
     const sidebarItems = [
         { id: "overview",     label: "Overview",     icon: LayoutGrid, badge: null },
+        { id: "approvals",    label: "Approvals",    icon: ClipboardCheck, badge: approvalsCounts.total },
         { id: "members",      label: "Members",      icon: Users,      badge: null },
         { id: "claims",       label: "Claims",       icon: FileText,   badge: pendingClaimsCount },
         { id: "commissions",  label: "Commissions",  icon: DollarSign, badge: pendingCommissionsCount },
         { id: "payouts",      label: "Payouts",      icon: Wallet,     badge: pendingPayoutsCount },
-        { id: "upgrades",     label: "Upgrades",     icon: ArrowUpCircle, badge: null },
         { id: "settings",     label: "Settings",     icon: SettingsIcon, badge: null },
     ];
 
@@ -90,6 +91,7 @@ export default function AdminDashboard({
             <MobileBottomNav
                 current={currentSection}
                 onChange={setCurrentSection}
+                approvalsBadge={approvalsCounts.total}
                 claimsBadge={pendingClaimsCount}
                 commissionsBadge={pendingCommissionsCount}
                 payoutsBadge={pendingPayoutsCount}
@@ -101,9 +103,10 @@ export default function AdminDashboard({
                 screen instead of leaving a big empty gap on wide monitors. */}
             <main className="flex-1 p-6 pb-24 lg:p-10 lg:pb-10 lg:pl-24">
                 {currentSection === "overview" && <Overview loading={loading.stats || false} />}
-                {currentSection === "members" && (
-                    <Members onUpdateStatus={onUpdateMemberStatus} onExport={onExportMembers} />
+                {currentSection === "approvals" && (
+                    <Approvals counts={approvalsCounts} loading={approvalsLoading} />
                 )}
+                {currentSection === "members" && <Members onExport={onExportMembers} />}
                 {currentSection === "claims" && (
                     <Claims
                         claims={claims}
@@ -134,7 +137,6 @@ export default function AdminDashboard({
                         refreshing={refreshing?.payouts || false}
                     />
                 )}
-                {currentSection === "upgrades" && <Upgrades />}
                 {currentSection === "settings" && <Settings />}
             </main>
 

@@ -1,5 +1,5 @@
-import { useEffect, useState, useCallback } from "react";
-import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
+import { useEffect, useRef, useState, useCallback } from "react";
+import { collection, query, where, getDocs, doc, getDoc, onSnapshot } from "firebase/firestore";
 import { db } from "../firebase/config";
 import type { PendingCommission, CommissionRecord } from "../utils/types";
 
@@ -103,6 +103,23 @@ const useAdminCommissions = () => {
 
     useEffect(() => {
         fetchCommissions(true);
+    }, [fetchCommissions]);
+
+    // Live-watch only the "pending" commissions subset. When a new commission is
+    // generated (e.g. a downline signs up), quietly re-pull so it appears without a
+    // manual refresh. Skip the first emission (fires on subscribe) to avoid a
+    // double-fetch on mount; history still updates via actions / the button.
+    const firstPendingSnap = useRef(true);
+    useEffect(() => {
+        const q = query(collection(db, "commissions"), where("status", "==", "pending"));
+        const unsub = onSnapshot(q, () => {
+            if (firstPendingSnap.current) {
+                firstPendingSnap.current = false;
+                return;
+            }
+            fetchCommissions(false);
+        });
+        return () => unsub();
     }, [fetchCommissions]);
 
     return { pendingCommissions, commissionHistory, loading, refreshing, refetch: () => fetchCommissions(false) };

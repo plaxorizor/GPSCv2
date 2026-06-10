@@ -6,8 +6,6 @@ import AdminDashboard from "./AdminDashboard";
 import ConfirmDialog from "../../components/ConfirmDialog";
 
 import {
-    activateMember,
-    deactivateMember,
     markPayoutSent,
     rejectPayout,
     setClaimUnderReview,
@@ -48,11 +46,6 @@ export default function AdminArea() {
     // Handlers
     const handleRefreshClaims = async () => {
         await refetchClaims();
-    };
-
-    const handleUpdateMemberStatus = async (memberId: string, status: string) => {
-        if (status === "active") await activateMember(memberId);
-        if (status === "inactive") await deactivateMember(memberId);
     };
 
     const handleUpdateClaimStatus = async (claimId: string, status: "Approved" | "Rejected" | "Released") => {
@@ -140,7 +133,6 @@ export default function AdminArea() {
             onRefreshClaims={handleRefreshClaims}
             onRefreshCommissions={refetchCommissions}
             onRefreshPayouts={refetchPayouts}
-            onUpdateMemberStatus={handleUpdateMemberStatus}
             onUpdateClaimStatus={handleUpdateClaimStatus}
             onReviewClaim={handleReviewClaim}
             onMarkPayoutSent={handleMarkPayoutSent}

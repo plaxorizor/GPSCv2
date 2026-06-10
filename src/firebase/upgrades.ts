@@ -14,6 +14,7 @@ import {
     updateDoc,
     query,
     where,
+    onSnapshot,
     serverTimestamp,
 } from "firebase/firestore";
 import { db } from "./config";
@@ -32,6 +33,8 @@ export interface UpgradeRequest {
     dateRequested: string;
     dateDecided: string | null;
     reason?: string | null;
+    paymentReference?: string | null;
+    paymentMethod?: string | null;
 }
 
 // Member creates an upgrade request (offline payment + proof handled separately).
@@ -39,6 +42,8 @@ export async function requestUpgrade(input: {
     memberId: string;
     memberName: string;
     toPackage: PackageKey;
+    reference?: string;
+    method?: string;
 }): Promise<void> {
     const snap = await getDoc(doc(db, "members", input.memberId));
     if (!snap.exists()) throw new Error("MEMBER_NOT_FOUND");
@@ -72,6 +77,8 @@ export async function requestUpgrade(input: {
         dateRequested: serverTimestamp(),
         dateDecided: null,
         reason: null,
+        paymentReference: input.reference?.trim() || null,
+        paymentMethod: input.method ?? null,
     });
 }
 
@@ -97,26 +104,36 @@ export async function getPendingUpgradeForMember(memberId: string): Promise<Upgr
     };
 }
 
+// Shared mapping for a pending upgrade-request doc.
+function mapPendingUpgrade(id: string, data: Record<string, unknown>): UpgradeRequest {
+    const d = data;
+    return {
+        id,
+        memberId: d.memberId as string,
+        memberName: d.memberName as string,
+        fromPackage: d.fromPackage as string,
+        toPackage: d.toPackage as string,
+        amountDue: d.amountDue as number,
+        basis: (d.basis as "difference" | "full") ?? "difference",
+        status: "pending",
+        dateRequested: (d.dateRequested as { toDate?: () => Date })?.toDate?.()?.toISOString?.() ?? "",
+        dateDecided: null,
+        paymentReference: (d.paymentReference as string | null) ?? null,
+        paymentMethod: (d.paymentMethod as string | null) ?? null,
+    };
+}
+
 // Admin: all pending upgrade requests, newest first.
 export async function getPendingUpgradeRequests(): Promise<UpgradeRequest[]> {
     const snap = await getDocs(query(collection(db, "upgradeRequests"), where("status", "==", "pending")));
-    return snap.docs
-        .map((d) => {
-            const data = d.data();
-            return {
-                id: d.id,
-                memberId: data.memberId,
-                memberName: data.memberName,
-                fromPackage: data.fromPackage,
-                toPackage: data.toPackage,
-                amountDue: data.amountDue,
-                basis: data.basis ?? "difference",
-                status: data.status as "pending",
-                dateRequested: data.dateRequested?.toDate?.()?.toISOString?.() ?? "",
-                dateDecided: null,
-            };
-        })
-        .sort((a, b) => (b.dateRequested > a.dateRequested ? 1 : -1));
+    return snap.docs.map((d) => mapPendingUpgrade(d.id, d.data())).sort((a, b) => (b.dateRequested > a.dateRequested ? 1 : -1));
+}
+
+// Admin: live subscription to pending upgrade requests. Returns an unsubscribe fn.
+export function subscribePendingUpgradeRequests(cb: (requests: UpgradeRequest[]) => void): () => void {
+    return onSnapshot(query(collection(db, "upgradeRequests"), where("status", "==", "pending")), (snap) => {
+        cb(snap.docs.map((d) => mapPendingUpgrade(d.id, d.data())).sort((a, b) => (b.dateRequested > a.dateRequested ? 1 : -1)));
+    });
 }
 
 // Admin approves: apply the upgrade. Changes package, RESETS eligibility

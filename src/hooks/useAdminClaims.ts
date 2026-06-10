@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
-import { collection, getDocs } from "firebase/firestore";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { collection, getDocs, onSnapshot, query, where } from "firebase/firestore";
 import { db } from "../firebase/config";
 import type { Claim } from "../utils/types";
 
@@ -46,6 +46,23 @@ export default function useAdminClaims() {
 
     useEffect(() => {
         fetchClaims(true);
+    }, [fetchClaims]);
+
+    // Live-watch only the small "pending" subset (submitted / under_review). When a
+    // NEW claim lands, quietly re-pull the full list so it appears without a manual
+    // refresh. We skip the first emission (it fires on subscribe) to avoid a
+    // double-fetch on mount. History changes still update via actions / the button.
+    const firstPendingSnap = useRef(true);
+    useEffect(() => {
+        const q = query(collection(db, "claims"), where("status", "in", ["submitted", "under_review"]));
+        const unsub = onSnapshot(q, () => {
+            if (firstPendingSnap.current) {
+                firstPendingSnap.current = false;
+                return;
+            }
+            fetchClaims(false);
+        });
+        return () => unsub();
     }, [fetchClaims]);
 
     return { claims, loading, refreshing, refetch: () => fetchClaims(false) };

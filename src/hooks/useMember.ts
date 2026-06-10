@@ -1,5 +1,5 @@
 // hooks/useMember.ts
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase/config";
 import useAuth from "../context/useAuth";
@@ -16,47 +16,30 @@ const useMember = () => {
     const [member, setMember] = useState<MemberWithUid | null>(null);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        let isMounted = true;
-
-        const fetchMember = async () => {
-            if (!currentUser) {
-                if (isMounted) {
-                    setMember(null);
-                    setLoading(false);
-                }
-                return;
-            }
-
-            try {
-                const snap = await getDoc(doc(db, "members", currentUser.uid));
-                if (isMounted) {
-                    if (snap.exists()) {
-                        //const memberData = snap.data() as Member;
-                        // Add the uid to the member object
-                        setMember({ uid: snap.id, ...snap.data() } as Member);
-                    } else {
-                        setMember(null);
-                    }
-                    setLoading(false);
-                }
-            } catch (error) {
-                console.error("Error fetching member:", error);
-                if (isMounted) {
-                    setMember(null);
-                    setLoading(false);
-                }
-            }
-        };
-
-        fetchMember();
-
-        return () => {
-            isMounted = false;
-        };
+    // Re-reads the member doc. Exposed as `refetch` so gates (pending / expired)
+    // can re-check status in place instead of forcing a full window reload.
+    const fetchMember = useCallback(async () => {
+        if (!currentUser) {
+            setMember(null);
+            setLoading(false);
+            return;
+        }
+        try {
+            const snap = await getDoc(doc(db, "members", currentUser.uid));
+            setMember(snap.exists() ? ({ uid: snap.id, ...snap.data() } as MemberWithUid) : null);
+        } catch (error) {
+            console.error("Error fetching member:", error);
+            setMember(null);
+        } finally {
+            setLoading(false);
+        }
     }, [currentUser]);
 
-    return { member, loading };
+    useEffect(() => {
+        fetchMember();
+    }, [fetchMember]);
+
+    return { member, loading, refetch: fetchMember };
 };
 
 export default useMember;

@@ -48,7 +48,7 @@ export default function MemberArea() {
     const [loggingOut, setLoggingOut] = useState(false);
     const [pwChanged, setPwChanged] = useState(false);
 
-    const { member, loading: memberLoading } = useMember();
+    const { member, loading: memberLoading, refetch: refetchMember } = useMember();
     const { stats: memberStats, loading: statsLoading } = useMemberStats();
 
     // Only fetch when the member actually visits that section
@@ -102,8 +102,8 @@ export default function MemberArea() {
     //  • expired  → past the 365-day term + 30-day grace; must renew
     //  • active/grace → full dashboard access (grace members get a renewal banner)
     const phase = membershipPhase(member);
-    if (phase === "pending") return <PendingActivation member={member} />;
-    if (phase === "expired") return <ExpiredMembership member={member} />;
+    if (phase === "pending") return <PendingActivation member={member} onRecheck={refetchMember} />;
+    if (phase === "expired") return <ExpiredMembership member={member} onRecheck={refetchMember} />;
 
     // 1. User object — matches Member interface exactly
     const user: Member = {

@@ -375,6 +375,10 @@ export default function SignUpLayout() {
                 country: form.country,
                 package: selectedPlan.name.toLowerCase(),
                 beneficiaries: form.beneficiaries,
+                // Proof of payment the member enters on the Payment step — kept so
+                // an admin can match it against the receipt before activating.
+                paymentReference: form.referenceNumber.trim(),
+                paymentMethod: selectedPaymentMethod,
                 status: "pending",
                 isAdmin: false,
                 dateCreated: serverTimestamp(),

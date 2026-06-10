@@ -165,7 +165,7 @@ function RenewModal({
         setSubmitting(true);
         setError("");
         try {
-            await requestRenewal({ memberId, memberName, toPackage });
+            await requestRenewal({ memberId, memberName, toPackage, reference: referenceNumber.trim(), method: selectedPaymentMethod });
             setDone(true);
         } catch (e) {
             const msg = e instanceof Error ? e.message : "";

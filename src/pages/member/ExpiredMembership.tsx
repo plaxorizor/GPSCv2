@@ -8,7 +8,7 @@ import type { Member } from "../../utils/types";
 // Holding screen for members whose membership has fully EXPIRED (past the 365-day
 // term + 30-day renewal grace). They keep access during grace; once expired they
 // must renew — only an admin can re-activate them.
-export default function ExpiredMembership({ member }: { member: Member }) {
+export default function ExpiredMembership({ member, onRecheck }: { member: Member; onRecheck: () => Promise<void> | void }) {
     const navigate = useNavigate();
     const [loggingOut, setLoggingOut] = useState(false);
     const [checking, setChecking] = useState(false);
@@ -22,9 +22,16 @@ export default function ExpiredMembership({ member }: { member: Member }) {
         navigate("/");
     };
 
-    const checkAgain = () => {
+    // Re-read the member doc in place (no full-page reload). If they've been renewed,
+    // MemberArea re-renders into the dashboard automatically.
+    const checkAgain = async () => {
+        if (checking) return;
         setChecking(true);
-        window.location.reload(); // re-reads status; renewed members fall through to the dashboard
+        try {
+            await onRecheck();
+        } finally {
+            setChecking(false);
+        }
     };
 
     return (

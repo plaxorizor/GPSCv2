@@ -11,7 +11,6 @@ interface Props {
     packageFilter: string;
     statusFilter: string;
     onSelectMember: (member: MemberRow) => void;
-    onUpdateStatus: (uid: string, status: "active" | "inactive") => Promise<void>;
     selectedIds: Set<string>;
     onToggleSelect: (uid: string) => void;
     canSelectActive?: boolean;

@@ -37,7 +37,7 @@ export default function UpgradeModal({ member, toPackage, onClose, onSuccess }: 
         setSubmitting(true);
         setError("");
         try {
-            await requestUpgrade({ memberId: member.uid, memberName, toPackage });
+            await requestUpgrade({ memberId: member.uid, memberName, toPackage, reference: referenceNumber.trim() });
             setDone(true);
         } catch (e) {
             const msg = e instanceof Error ? e.message : "";
