@@ -202,6 +202,16 @@
 - [ ] **`Logo.png` is 1.58 MB** and ships on every page — ask Keith/client for an optimized version (<100 kB) or compress it; biggest remaining transfer cost
 - [ ] Run the full verify trio before any deploy: `bun run test && bun run lint && bun run build`
 
+### Maintainability pass — `fallow` (2026-06-11)
+
+We added [`fallow`](https://fallow.tools) as a dev tool (`bunx fallow health`) and did a 3-stage cleanup. **Health 66 C → 74 B**; dead exports 12.3% → 0.8%; dead files 1.5% → 0%; duplication 11.6% → 9.5%; 0 churn hotspots; 50 → 61 unit tests.
+
+- [x] **Stage 1 — dead code:** removed 14 unused `admin.ts` functions (dropped features + pre-hook fetchers), dead auth wrappers, dead files/types, `autoprefixer`
+- [x] **Stage 2 — de-dupe:** `OfflinePaymentRequestModal` (upgrade + renewal shared ~85%), `applyApprovedRequest` (approve helper), `AuthShell` (SignIn + ForgotPassword chrome)
+- [x] **Stage 3 — complexity:** extracted signup `validateStep` → testable `signup/validation.ts`; no longer a hotspot
+- **Left intentionally:** the score plateaus at 74 because the remaining `-10 hotspots / -10 unit size` come from large React **screen** components (Members, Payouts, PersonalInfoStep, MemberDetailModal…). Splitting JSX-heavy render functions further tends to *hurt* readability for little real-complexity gain — not worth it. The remaining ~9.5% duplication is small, entangled clusters (admin tables, the two pending panels) — low value.
+- **Note:** `bunx fallow` flags some **false positives** (it marked `EmptyState`/`StatusBadge` exports unused when they're imported as defaults). Always let `tsc` be the ground truth before deleting.
+
 ---
 
 ## ⏳ Waiting on others (not code)
