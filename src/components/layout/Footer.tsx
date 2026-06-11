@@ -24,7 +24,7 @@ export const Footer: React.FC = () => (
                     <div className="mt-5 flex items-center gap-3">
                         <span className="text-xs tracking-wider text-white/40 uppercase">Follow us</span>
                         <a
-                            href="https://fb.me/faithshieldcare"
+                            href="https://fb.me/FaithShieldCare"
                             target="_blank"
                             rel="noopener noreferrer"
                             aria-label="FaithShield Care on Facebook"
