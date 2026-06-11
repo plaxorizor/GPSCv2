@@ -19,12 +19,12 @@ export const Footer: React.FC = () => (
                     </div>
                     <p className="text-sm leading-relaxed text-white/60">
                         A community-based membership organization providing affordable financial assistance, livelihood opportunities, and
-                        compassionate care — inspired by Christian values and the Bayanihan spirit.
+                        compassionate care — inspired by the Bayanihan spirit.
                     </p>
                     <div className="mt-5 flex items-center gap-3">
                         <span className="text-xs tracking-wider text-white/40 uppercase">Follow us</span>
                         <a
-                            href="https://www.facebook.com/faithshieldcare"
+                            href="https://fb.me/faithshieldcare"
                             target="_blank"
                             rel="noopener noreferrer"
                             aria-label="FaithShield Care on Facebook"

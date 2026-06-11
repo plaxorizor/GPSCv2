@@ -31,37 +31,31 @@ const Referral: React.FC = () => {
                                 {
                                     level: "01",
                                     position: "Consultant",
-                                    commission: "20%",
                                     desc: "Direct referral commission on every member you personally recruit.",
                                 },
                                 {
                                     level: "02",
                                     position: "District Consultant",
-                                    commission: "5%",
                                     desc: "Earn from your 2nd level — members recruited by your direct referrals.",
                                 },
                                 {
                                     level: "03",
                                     position: "Municipal/City Consultant",
-                                    commission: "3%",
                                     desc: "Earn from your 3rd level downline as your team grows.",
                                 },
                                 {
                                     level: "04",
                                     position: "Provincial Consultant",
-                                    commission: "2%",
                                     desc: "Earn from your 4th level as your network expands provincially.",
                                 },
                                 {
                                     level: "05",
                                     position: "Regional Consultant",
-                                    commission: "1%",
                                     desc: "Earn from your 5th level as you lead a regional team.",
                                 },
                                 {
                                     level: "06",
                                     position: "National Consultant",
-                                    commission: "1%",
                                     desc: "Earn from your 6th level — the highest leadership rank in FaithShield Care.",
                                 },
                             ].map((rank, i) => (
@@ -71,7 +65,6 @@ const Referral: React.FC = () => {
                                         <div className="font-display text-fsc-navy text-base">{rank.position}</div>
                                         <div className="text-fsc-stone mt-0.5 text-sm">{rank.desc}</div>
                                     </div>
-                                    <div className="font-display text-fsc-green shrink-0 text-2xl">{rank.commission}</div>
                                 </div>
                             ))}
                         </div>
@@ -160,7 +153,10 @@ const Referral: React.FC = () => {
                     <div className="mx-auto max-w-4xl px-6 py-12 lg:px-8">
                         <p className="text-fsc-stone text-center text-xs leading-relaxed italic">
                             Income from referral commissions varies based on individual sales effort. Earnings shown are examples only and are not
-                            guaranteed. FaithShield Care is a community-based membership program, not an investment scheme.
+                            guaranteed.
+                        </p>
+                        <p className="text-fsc-stone text-center text-xs leading-relaxed italic">
+                            FaithShield Care is a community-based membership program, not an investment scheme.
                         </p>
                     </div>
                 </section>
