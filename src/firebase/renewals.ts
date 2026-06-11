@@ -8,9 +8,9 @@
 import { collection, doc, addDoc, getDoc, getDocs, updateDoc, query, where, onSnapshot, serverTimestamp, type DocumentData } from "firebase/firestore";
 import { db } from "./config";
 import { uploadReceipt } from "./receipts";
-import { writePublicProfile } from "./publicProfiles";
 import { packagePrice, type PackageKey } from "../utils/upgrade";
 import { triggerRenewalCommissions } from "./commissions";
+import { applyApprovedRequest } from "./requestApproval";
 
 export interface RenewalRequest {
     id: string;
@@ -108,34 +108,16 @@ export async function approveRenewal(requestId: string): Promise<void> {
     const req = reqSnap.data();
     if (req.status !== "pending") throw new Error("ALREADY_DECIDED");
 
-    const now = new Date();
-    const dateExpiry = new Date(now);
-    dateExpiry.setFullYear(dateExpiry.getFullYear() + 1); // renew → 365 days
-    const dateContestabilityEnd = new Date(now);
-    dateContestabilityEnd.setMonth(dateContestabilityEnd.getMonth() + 1);
-
-    await updateDoc(doc(db, "members", req.memberId), {
-        package: req.toPackage, // may differ from current — re-subscription
-        status: "active",
-        dateActivated: serverTimestamp(),
-        dateEligibility: serverTimestamp(), // timeline resets to 0
-        dateExpiry,
-        dateContestabilityEnd,
-        packageLocked: false,
-        // Surface the latest verified payment on the member record. The previous
-        // proof is retained on its own request doc for the audit trail.
-        ...(req.paymentReceiptUrl ? { paymentReceiptUrl: req.paymentReceiptUrl } : {}),
-        ...(req.paymentReference ? { paymentReference: req.paymentReference } : {}),
-        ...(req.paymentMethod ? { paymentMethod: req.paymentMethod } : {}),
+    // Re-activate the member at the chosen package (re-subscription, so it may
+    // differ from current), reset eligibility, renew the term, and approve the request.
+    await applyApprovedRequest({
+        requestCollection: "renewalRequests",
+        requestId,
+        memberId: req.memberId,
+        toPackage: req.toPackage,
+        reactivate: true,
+        payment: req,
     });
-
-    await updateDoc(doc(db, "renewalRequests", requestId), {
-        status: "approved",
-        dateDecided: serverTimestamp(),
-    });
-
-    // Mirror re-activation + (possibly changed) package to the public profile.
-    await writePublicProfile(req.memberId, { status: "active", package: req.toPackage });
 
     // Pay the upline on the full renewal price.
     await triggerRenewalCommissions(req.memberId, req.toPackage as PackageKey);

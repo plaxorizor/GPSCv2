@@ -19,9 +19,9 @@ import {
 } from "firebase/firestore";
 import { db } from "./config";
 import { uploadReceipt } from "./receipts";
-import { writePublicProfile } from "./publicProfiles";
 import { upgradeCharge, upgradeTargets, isWithinGrace, type PackageKey } from "../utils/upgrade";
 import { triggerUpgradeCommissions } from "./commissions";
+import { applyApprovedRequest } from "./requestApproval";
 
 export interface UpgradeRequest {
     id: string;
@@ -152,33 +152,16 @@ export async function approveUpgrade(requestId: string): Promise<void> {
     const req = reqSnap.data();
     if (req.status !== "pending") throw new Error("ALREADY_DECIDED");
 
-    const now = new Date();
-    const dateExpiry = new Date(now);
-    dateExpiry.setFullYear(dateExpiry.getFullYear() + 1); // renew → 365 days
-    const dateContestabilityEnd = new Date(now);
-    dateContestabilityEnd.setMonth(dateContestabilityEnd.getMonth() + 1);
-
-    await updateDoc(doc(db, "members", req.memberId), {
-        package: req.toPackage,
-        dateEligibility: serverTimestamp(), // ← timeline resets to 0
-        dateActivated: serverTimestamp(), // restarts the grace clock too
-        dateExpiry,
-        dateContestabilityEnd,
-        packageLocked: false,
-        // Surface the latest verified payment on the member record. The previous
-        // proof is retained on its own request doc for the audit trail.
-        ...(req.paymentReceiptUrl ? { paymentReceiptUrl: req.paymentReceiptUrl } : {}),
-        ...(req.paymentReference ? { paymentReference: req.paymentReference } : {}),
-        ...(req.paymentMethod ? { paymentMethod: req.paymentMethod } : {}),
+    // Apply the upgrade: change package, reset eligibility, renew the term, and
+    // approve the request. (No re-activation — an upgrading member is active.)
+    await applyApprovedRequest({
+        requestCollection: "upgradeRequests",
+        requestId,
+        memberId: req.memberId,
+        toPackage: req.toPackage,
+        reactivate: false,
+        payment: req,
     });
-
-    await updateDoc(doc(db, "upgradeRequests", requestId), {
-        status: "approved",
-        dateDecided: serverTimestamp(),
-    });
-
-    // Mirror the new package to the public profile.
-    await writePublicProfile(req.memberId, { package: req.toPackage });
 
     // Pay the upline on what the member paid. Re-derive authoritatively from the
     // package pair + the basis recorded at request time (difference vs full),
