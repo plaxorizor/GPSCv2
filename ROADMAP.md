@@ -168,50 +168,39 @@
 
 ---
 
-## 🧹 Code health & housekeeping (full audit — 2026-06-11)
+## 🧹 Code health & housekeeping — ✅ ALL THREE PHASES DONE (2026-06-11)
 
-> Keith's "file structure is messy" complaint is fair. Findings below, ordered by risk (lowest first).
-> **Phase 1 is safe any time. Phase 2 moves ~30 files — do it in one sitting, in one commit, when Keith has nothing in flight.**
+> Keith's "file structure is messy" complaint was fair. Audited, restructured, and verified in one sitting
+> (commits `89f698b` Phase 1 → `dc22532` Phase 2 → `d5aa775` Phase 3). **Not yet deployed — local commits only.**
 
-### Phase 1 — Dead code & footguns (zero behavior change)
+### Phase 1 — Dead code & footguns ✅
 
-- [ ] **`firebase.json` still registers the `functions/` codebase** ⚠️ — a plain `firebase deploy` (without `--only`) would try to build & ship the dead Cloud Functions backend. Remove the `"functions"` block. _(Biggest footgun in the repo.)_
-- [ ] **Delete `functions/`** — stale, unwired, contradicts the no-Cloud-Functions decision, and weighs 180 MB locally (its own `node_modules`). 8 tracked files; the git history keeps them if ever needed.
-- [ ] Delete orphaned source files (verified — nothing imports them):
-    - `src/firebase/payments.ts` (dead PayMongo client)
-    - `src/pages/ReferralTree.tsx` + `src/components/TreeNode.tsx` (old tree page, superseded by member Referrals + react-d3-tree)
-    - `src/pages/visitor/GlobalStyles.tsx`
-    - `src/components/AdminRoute.tsx` (AdminArea does the gating)
-    - `src/components/ui/Button.tsx`
-    - `src/assets/hero.png`, `react.svg`, `vite.svg` (unreferenced; react/vite are Vite-template leftovers)
-    - `src/pages/public/qr/` (old QR images — live ones are in `public/qr/`)
-- [ ] Remove **Vercel leftovers** — `vercel.json`, `.vercelignore`, `.vercel/` (hosting is Firebase now)
-- [ ] `bun remove react-hook-form` — zero imports anywhere
-- [ ] Move OG design sources out of `public/` — `og-image.svg` + `og-logo.png` (1.5 MB!) are build inputs for `og-image.png`, but everything in `public/` ships to hosting. Park them in a `design/` folder (or delete; git keeps them). Check `public/icons.svg` too (looks unreferenced).
+- [x] `firebase.json` no longer registers the `functions/` codebase (a plain `firebase deploy` used to try to build the dead Cloud Functions backend) and `functions/` (180 MB) is deleted
+- [x] Orphaned modules deleted: PayMongo client (`firebase/payments.ts`), old ReferralTree page + TreeNode, GlobalStyles, AdminRoute, ui/Button, unreferenced assets, old `src` QR images
+- [x] Vercel leftovers removed (`vercel.json`, `.vercelignore`, `.vercel/`); `react-hook-form` dropped (zero imports)
+- [x] OG design sources (`og-image.svg`, `og-logo.png` 1.5 MB, `icons.svg`) moved out of `public/` into `design/` so they no longer ship to hosting
 
-### Phase 2 — Folder restructure (the actual "messy" fix)
+### Phase 2 — Folder restructure ✅
 
-Rule of thumb to adopt: **`pages/` holds only routed screens; everything reusable lives under `components/<area>/`.**
+**House rule going forward: `pages/` holds only routed screens; everything reusable lives in `components/<area>/`.**
 
-- [ ] `src/components/` is a flat 20-file grab-bag → split into:
-    - `components/ui/` — ConfirmDialog, EmptyState, StatusBadge (already there), ReceiptUploadField
-    - `components/guards/` — ProtectedRoute, GuestRoute (+ ScrollToTop, ScrollToTopButton)
-    - `components/modals/` — AddMember, ApprovalDetail, ChangePassword, FileClaim, RequestPayout, Upgrade
-    - `components/admin/` — PendingSignups/Upgrades/Renewals panels (+ admin StatCard, DashboardSidebar, MobileBottomNav, `pages/admin/utils.ts` from `pages/`)
-    - `components/member/` — member StatCard, DashboardSidebar, MobileBottomNav, ReferralCard, Welcome (from `pages/member/`)
-    - `components/landing/` — Hero, Pillars, TrustStrip, HowItWorks, Packages, Testimonial, CTABanner, PublicNav, Footer (from `pages/visitor/` — they're sections of Home, not pages)
-- [ ] `pages/visitor/nav/` is misnamed — it holds the static info pages (About, FAQ, Contact, legal …). Rename to `pages/info/`.
-- [ ] Rename `src/firebase/transactions.ts` → `commissions.ts` — it actually holds `triggerCommissions` / upgrade / renewal commission logic; the transaction functions in it are dead PayMongo remnants (strip those too).
-- [ ] Fold `src/pages/Dashboard.tsx` (9-line role switch) into routing or rename to `RoleGate.tsx`.
-- [ ] After moving: `bunx tsc -b && bun run lint && bun run build` must stay green — moves are import-path churn only.
+- [x] `components/` split: `ui/` · `guards/` · `modals/` · `admin/` · `member/` · `layout/` (PublicNav + Footer, shared by Home **and** info pages) · `landing/` (Home sections)
+- [x] `pages/visitor/nav/` → `pages/info/`; `Home.tsx` promoted to `pages/`; `Dashboard.tsx` → `RoleGate.tsx`
+- [x] `firebase/transactions.ts` → `commissions.ts` (its real job); dead PayMongo `createTransaction`/`confirmTransaction` stripped
+- [x] Duplicate `pages/admin/utils.ts` deleted (exact copy of `utils/formatter`); `formatter.tsx` → `.ts`
 
-### Phase 3 — Nice-to-have (optional, low priority)
+### Phase 3 — Modularity, performance & tests ✅
 
-- [ ] **Split `SignUp.tsx` (1,613 lines)** into per-step components — biggest file in the repo by 2×; touched on every signup change
-- [ ] `src/pages/admin/Members.tsx` (908 lines) — extract the member-detail modal
-- [ ] **Route-level code splitting** — `React.lazy` the admin area + react-d3-tree + recharts so visitors don't download the dashboard bundle
-- [ ] **Unit tests for the pure money/date math** — `utils/commission.ts`, `rank.ts`, `membership.ts`, `eligibility.ts` are pure functions, cheap to test, and the highest-stakes logic in the app (no test runner installed today)
-- [ ] Rename `package.json` name `gpscv2` → `faithshieldcare` (cosmetic)
+- [x] **Route-level code splitting** — new `App.tsx` (routes/providers) + bootstrap-only `main.tsx`; dashboard, signup, and info pages are lazy chunks. Visitors no longer download the **4.8 MB barangay dataset** or the **740 kB dashboard** bundle; `AddMemberModal` loads only when an admin clicks "Add Member"
+- [x] **`SignUp.tsx` 1,613 → ~460 lines** — split into `pages/public/signup/` (constants, ConsentGate, PackageStep, PersonalInfoStep, SponsorBeneficiariesStep, PaymentStep, ReviewStep)
+- [x] **`Members.tsx` 908 → ~600 lines** — detail modal extracted to `components/admin/MemberDetailModal` (self-contained: resolves rank + delete-eligibility itself)
+- [x] **Unit tests — `bun run test`, 50 passing** — commission hold/fee math, rank ladder, membership lifecycle, upgrade pricing, benefit eligibility (`tests/` + `tsconfig.tests.json`, runner is Bun's built-in — zero new runtime deps)
+- [x] `package.json` renamed `gpscv2` → `faithshieldcare`
+
+### Remaining (small, no rush)
+
+- [ ] **`Logo.png` is 1.58 MB** and ships on every page — ask Keith/client for an optimized version (<100 kB) or compress it; biggest remaining transfer cost
+- [ ] Run the full verify trio before any deploy: `bun run test && bun run lint && bun run build`
 
 ---
 
