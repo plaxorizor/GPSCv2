@@ -1,16 +1,11 @@
 import React, { useState } from "react";
-import { ArrowRight, CheckCircle, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import logo from "../ui/Logo.png";
 import { useNavigate } from "react-router-dom";
-import { useCountUp } from "../../hooks/useCountUp";
 
 export const Hero: React.FC = () => {
     const navigate = useNavigate();
     const [consultHovered, setConsultHovered] = useState(false);
-
-    const members = useCountUp(2400, 1800, 400);
-    const benefits = useCountUp(1.2, 1800, 550);
-    const provinces = useCountUp(14, 1400, 700);
 
     return (
         <section className="grain-overlay relative overflow-hidden">
@@ -51,47 +46,13 @@ export const Hero: React.FC = () => {
                                 Know more...
                             </button>
                         </div>
-                        <div className="mt-12 flex flex-wrap items-center gap-8 text-sm">
-                            <div>
-                                <div className="font-display text-fsc-navy text-3xl">{Math.floor(members).toLocaleString()}+</div>
-                                <div className="text-fsc-stone text-xs tracking-wider uppercase">Active members</div>
-                            </div>
-                            <div className="bg-fsc-cream-dark h-10 w-px"></div>
-                            <div>
-                                <div className="font-display text-fsc-navy text-3xl">₱{benefits.toFixed(1)}M</div>
-                                <div className="text-fsc-stone text-xs tracking-wider uppercase">Paid in benefits</div>
-                            </div>
-                            <div className="bg-fsc-cream-dark h-10 w-px"></div>
-                            <div>
-                                <div className="font-display text-fsc-navy text-3xl">{Math.floor(provinces)}</div>
-                                <div className="text-fsc-stone text-xs tracking-wider uppercase">Provinces served</div>
-                            </div>
-                        </div>
                     </div>
                     <div className="anim-fade-up anim-delay-200 relative lg:col-span-5">
                         <div className="relative aspect-square">
                             <div className="border-fsc-navy/20 absolute inset-0 rounded-full border"></div>
                             <div className="border-fsc-green/20 absolute inset-8 rounded-full border"></div>
-                            <div className="from-fsc-cream-dark absolute inset-16 flex items-center justify-center rounded-full bg-gradient-to-br to-transparent">
+                            <div className="from-fsc-cream-dark absolute inset-16 flex items-center justify-center rounded-full bg-linear-to-br to-transparent">
                                 <img src={logo} alt="FaithShield Care Logo" className="h-44 w-44 rounded-full object-contain mix-blend-multiply" />
-                            </div>
-                            <div
-                                className="border-fsc-cream-dark absolute top-12 -left-4 max-w-[200px] rounded-2xl border bg-white p-4 shadow-lg"
-                                style={{ animation: "hero-card-in 0.55s ease 0.5s both, float-bob 5s ease-in-out 1.1s infinite" }}
-                            >
-                                <div className="text-fsc-green mb-1 flex items-center gap-2 text-xs font-semibold">
-                                    <CheckCircle size={14} /> Claim approved
-                                </div>
-                                <div className="text-fsc-navy text-sm">₱11,500 hospital cash sent to Maria within 4 days.</div>
-                            </div>
-                            <div
-                                className="border-fsc-cream-dark absolute -right-4 bottom-16 max-w-[200px] rounded-2xl border bg-white p-4 shadow-lg"
-                                style={{ animation: "hero-card-in 0.55s ease 0.8s both, float-bob 6.4s ease-in-out 1.4s infinite" }}
-                            >
-                                <div className="text-fsc-navy-light mb-1 flex items-center gap-2 text-xs font-semibold">
-                                    <Sparkles size={14} /> Just joined
-                                </div>
-                                <div className="text-fsc-navy text-sm">Pedro from Cavite signed up via Aling Nena.</div>
                             </div>
                         </div>
                     </div>
