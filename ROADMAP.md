@@ -128,7 +128,7 @@
 
 - [x] Firestore rules **hardened** — members may only self-edit `mustChangePassword`; `isAdmin`/`isSuperAdmin` escalation blocked on create + update; `commissions`/`transactions` writes are admin-only
 - [x] **PII split** — `publicProfiles` collection mirrors only non-sensitive fields (name/city/package/status/referral links); `members` reads locked to **owner + admin** so members can't read others' PII or receipts; cross-member reads (referral tree, downline counts, commission names) redirected to the mirror; admin **"Sync public profiles"** backfill in Settings
-- [x] **One-account policy** — one mobile number = one account (hard block at signup + admin-encode via a public `phoneNumbers` index; number freed on delete); admin gets a **soft ⚠️ warning** when a new signup matches an existing member's name + birth date
+- [x] **One-account policy** — one mobile number = one account (hard block at signup + admin-encode via a public `phoneNumbers` index; number freed on delete); admin gets a **soft ⚠️ warning** when a new signup matches an existing member's name + birth date. **Deployed & verified live** (phone check confirmed in the production bundle)
 
 ---
 
@@ -151,7 +151,7 @@
 
 ### Firestore
 
-- [x] **`firestore.rules` deployed** — `upgradeRequests` / `renewalRequests` / hardened security / `publicProfiles` all live
+- [x] **`firestore.rules` deployed** — `upgradeRequests` / `renewalRequests` / hardened security / `publicProfiles` / `phoneNumbers` all live
 - [x] **Storage rules deployed** — `receipts/{uid}/…` (payment proof) + `claims/{uid}/…` (attachments), owner+admin access
 - [ ] Index any new collection queries as usage grows
 
@@ -165,6 +165,53 @@
 - [ ] Admin reports / export (CSV or PDF summary)
 - [ ] Member profile edit page (contact info only — beneficiaries stay admin-controlled)
 - [ ] Inbox / messaging feature
+
+---
+
+## 🧹 Code health & housekeeping (full audit — 2026-06-11)
+
+> Keith's "file structure is messy" complaint is fair. Findings below, ordered by risk (lowest first).
+> **Phase 1 is safe any time. Phase 2 moves ~30 files — do it in one sitting, in one commit, when Keith has nothing in flight.**
+
+### Phase 1 — Dead code & footguns (zero behavior change)
+
+- [ ] **`firebase.json` still registers the `functions/` codebase** ⚠️ — a plain `firebase deploy` (without `--only`) would try to build & ship the dead Cloud Functions backend. Remove the `"functions"` block. _(Biggest footgun in the repo.)_
+- [ ] **Delete `functions/`** — stale, unwired, contradicts the no-Cloud-Functions decision, and weighs 180 MB locally (its own `node_modules`). 8 tracked files; the git history keeps them if ever needed.
+- [ ] Delete orphaned source files (verified — nothing imports them):
+    - `src/firebase/payments.ts` (dead PayMongo client)
+    - `src/pages/ReferralTree.tsx` + `src/components/TreeNode.tsx` (old tree page, superseded by member Referrals + react-d3-tree)
+    - `src/pages/visitor/GlobalStyles.tsx`
+    - `src/components/AdminRoute.tsx` (AdminArea does the gating)
+    - `src/components/ui/Button.tsx`
+    - `src/assets/hero.png`, `react.svg`, `vite.svg` (unreferenced; react/vite are Vite-template leftovers)
+    - `src/pages/public/qr/` (old QR images — live ones are in `public/qr/`)
+- [ ] Remove **Vercel leftovers** — `vercel.json`, `.vercelignore`, `.vercel/` (hosting is Firebase now)
+- [ ] `bun remove react-hook-form` — zero imports anywhere
+- [ ] Move OG design sources out of `public/` — `og-image.svg` + `og-logo.png` (1.5 MB!) are build inputs for `og-image.png`, but everything in `public/` ships to hosting. Park them in a `design/` folder (or delete; git keeps them). Check `public/icons.svg` too (looks unreferenced).
+
+### Phase 2 — Folder restructure (the actual "messy" fix)
+
+Rule of thumb to adopt: **`pages/` holds only routed screens; everything reusable lives under `components/<area>/`.**
+
+- [ ] `src/components/` is a flat 20-file grab-bag → split into:
+    - `components/ui/` — ConfirmDialog, EmptyState, StatusBadge (already there), ReceiptUploadField
+    - `components/guards/` — ProtectedRoute, GuestRoute (+ ScrollToTop, ScrollToTopButton)
+    - `components/modals/` — AddMember, ApprovalDetail, ChangePassword, FileClaim, RequestPayout, Upgrade
+    - `components/admin/` — PendingSignups/Upgrades/Renewals panels (+ admin StatCard, DashboardSidebar, MobileBottomNav, `pages/admin/utils.ts` from `pages/`)
+    - `components/member/` — member StatCard, DashboardSidebar, MobileBottomNav, ReferralCard, Welcome (from `pages/member/`)
+    - `components/landing/` — Hero, Pillars, TrustStrip, HowItWorks, Packages, Testimonial, CTABanner, PublicNav, Footer (from `pages/visitor/` — they're sections of Home, not pages)
+- [ ] `pages/visitor/nav/` is misnamed — it holds the static info pages (About, FAQ, Contact, legal …). Rename to `pages/info/`.
+- [ ] Rename `src/firebase/transactions.ts` → `commissions.ts` — it actually holds `triggerCommissions` / upgrade / renewal commission logic; the transaction functions in it are dead PayMongo remnants (strip those too).
+- [ ] Fold `src/pages/Dashboard.tsx` (9-line role switch) into routing or rename to `RoleGate.tsx`.
+- [ ] After moving: `bunx tsc -b && bun run lint && bun run build` must stay green — moves are import-path churn only.
+
+### Phase 3 — Nice-to-have (optional, low priority)
+
+- [ ] **Split `SignUp.tsx` (1,613 lines)** into per-step components — biggest file in the repo by 2×; touched on every signup change
+- [ ] `src/pages/admin/Members.tsx` (908 lines) — extract the member-detail modal
+- [ ] **Route-level code splitting** — `React.lazy` the admin area + react-d3-tree + recharts so visitors don't download the dashboard bundle
+- [ ] **Unit tests for the pure money/date math** — `utils/commission.ts`, `rank.ts`, `membership.ts`, `eligibility.ts` are pure functions, cheap to test, and the highest-stakes logic in the app (no test runner installed today)
+- [ ] Rename `package.json` name `gpscv2` → `faithshieldcare` (cosmetic)
 
 ---
 
@@ -201,5 +248,5 @@
 - `react-phone-input-2` is **incompatible with React 19** — do not reinstall. Use the custom +63 prefix input pattern.
 - Clearing `node_modules/.vite` and restarting dev server is needed after adding new deps mid-session.
 - **Deploy:** `bunx firebase-tools deploy --only firestore:rules,storage,hosting --project faithshieldcare`. CLI active project was once stuck on the old `gpsc-firebase` — `firebase use faithshieldcare` fixed it; keep `--project` explicit as a safety net.
-- **publicProfiles** is the only collection members may read about *other* members. After importing members or if a downline looks stale, run admin → Settings → **Sync public profiles**.
+- **publicProfiles** is the only collection members may read about *other* members. After importing members or if a downline looks stale, run admin → Settings → **Sync public profiles** — it also seeds the `phoneNumbers` registry (one-account policy). **Run it once after the one-account deploy** so pre-existing members' numbers are protected.
 - A **301 redirect is cached "permanently"** by browsers — if a domain/redirect change doesn't show, test in incognito / a fresh browser profile.
