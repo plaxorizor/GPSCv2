@@ -110,6 +110,16 @@ export default function PaymentStep({
                                 {acct.number}
                             </span>
                         </p>
+                        {/* Anti-tamper nudge: if malware on the member's device swaps the QR,
+                            the account name/number won't match — tell them to cross-check. */}
+                        <p
+                            className="mt-3 rounded-lg px-3 py-2 text-center text-xs"
+                            style={{ backgroundColor: "#FEF3E2", color: "#92400E", border: "1px solid #F5D9A8" }}
+                        >
+                            ⚠️ Before sending, confirm your app shows the account name{" "}
+                            <span className="font-semibold">{acct.accountName}</span>. If the name or number doesn't match what's
+                            shown here, stop and contact us.
+                        </p>
                     </div>
                 ))}
 
