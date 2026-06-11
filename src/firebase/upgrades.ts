@@ -21,7 +21,7 @@ import { db } from "./config";
 import { uploadReceipt } from "./receipts";
 import { writePublicProfile } from "./publicProfiles";
 import { upgradeCharge, upgradeTargets, isWithinGrace, type PackageKey } from "../utils/upgrade";
-import { triggerUpgradeCommissions } from "./transactions";
+import { triggerUpgradeCommissions } from "./commissions";
 
 export interface UpgradeRequest {
     id: string;

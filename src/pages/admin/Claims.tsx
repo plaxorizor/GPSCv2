@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Download, Eye, CheckCircle, XCircle, Clock, FileText, Search, X, RefreshCw } from "lucide-react";
 import type { Claim } from "../../utils/types";
-import { formatCurrency, formatDate } from "./utils";
+import { formatCurrency, formatDate } from "../../utils/formatter";
 import StatusBadge from "../../components/ui/StatusBadge";
 
 interface Props {

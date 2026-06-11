@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { ClipboardCheck, Search, X } from "lucide-react";
-import PendingSignupsPanel from "../../components/PendingSignupsPanel";
-import PendingUpgradesPanel from "../../components/PendingUpgradesPanel";
-import PendingRenewalsPanel from "../../components/PendingRenewalsPanel";
+import PendingSignupsPanel from "../../components/admin/PendingSignupsPanel";
+import PendingUpgradesPanel from "../../components/admin/PendingUpgradesPanel";
+import PendingRenewalsPanel from "../../components/admin/PendingRenewalsPanel";
 import EmptyState from "../../components/ui/EmptyState";
 import type { PendingApprovalsCount } from "../../hooks/usePendingApprovalsCount";
 

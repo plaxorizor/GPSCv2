@@ -7,7 +7,7 @@ import type { CustomNodeElementProps, RawNodeDatum } from "react-d3-tree";
 import { PACKAGE_INFO } from "../../utils/types";
 import type { Member, ReferralNode } from "../../utils/types";
 import { rankFromChildren, rankName } from "../../utils/rank";
-import ReferralCard, { type ReferralCardHandle } from "./ReferralCard";
+import ReferralCard, { type ReferralCardHandle } from "../../components/member/ReferralCard";
 
 interface Props {
     user: Member;

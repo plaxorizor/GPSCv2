@@ -1,8 +1,8 @@
 // admin/index.tsx
 import { useState } from "react";
 import { LayoutGrid, Users, FileText, DollarSign, Wallet, ClipboardCheck, Settings as SettingsIcon } from "lucide-react";
-import { DashboardSidebar } from "./DashboardSidebar";
-import { MobileBottomNav } from "./MobileBottomNav";
+import { DashboardSidebar } from "../../components/admin/DashboardSidebar";
+import { MobileBottomNav } from "../../components/admin/MobileBottomNav";
 import { Overview } from "./Overview";
 import { Members } from "./Members";
 import { Approvals } from "./Approvals";

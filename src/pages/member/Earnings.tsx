@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Wallet, Clock, TrendingUp, RefreshCw } from "lucide-react";
-import { StatCard } from "./StatCard";
+import { StatCard } from "../../components/member/StatCard";
 import type { Commission, Payout } from "../../utils/types";
 import { formatCurrency, formatDate } from "../../utils/formatter";
 import StatusBadge from "../../components/ui/StatusBadge";

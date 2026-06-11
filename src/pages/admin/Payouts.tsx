@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Wallet, Clock, CheckCircle, Download, Send, Search, X, RefreshCw } from "lucide-react";
 import type { AdminPayout } from "../../utils/types";
-import { formatCurrency, formatDate } from "./utils";
+import { formatCurrency, formatDate } from "../../utils/formatter";
 
 const METHOD_LABELS: Record<string, string> = {
     gcash:      "GCash",

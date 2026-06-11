@@ -19,8 +19,8 @@ import { useAdmin } from "../../hooks/useAdmin";
 import { getEligibilityTimeline } from "../../utils/eligibility";
 import { computeRankFromTree, rankName } from "../../utils/rank";
 import { buildReferralTree } from "../../firebase/referral";
-import AddMemberModal from "../../components/AddMemberModal";
-import ConfirmDialog from "../../components/ConfirmDialog";
+import AddMemberModal from "../../components/modals/AddMemberModal";
+import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import { sendMemberPasswordReset, hardDeleteMember, forceDeleteMember, getMemberDependencies } from "../../firebase/admin";
 
 export interface MemberRow {

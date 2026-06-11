@@ -13,17 +13,17 @@ import MemberDashboard from "./MemberDashboard";
 import PendingActivation from "./PendingActivation";
 import ExpiredMembership from "./ExpiredMembership";
 import { membershipPhase } from "../../utils/membership";
-import ChangePasswordModal from "../../components/ChangePasswordModal";
-import RequestPayoutModal from "../../components/RequestPayoutModal";
-import FileClaimModal from "../../components/FileClaimModal";
-import ConfirmDialog from "../../components/ConfirmDialog";
+import ChangePasswordModal from "../../components/modals/ChangePasswordModal";
+import RequestPayoutModal from "../../components/modals/RequestPayoutModal";
+import FileClaimModal from "../../components/modals/FileClaimModal";
+import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import { PACKAGE_INFO } from "../../utils/types";
 import { rankFromChildren, rankName } from "../../utils/rank";
 import { isEligible } from "../../utils/commission";
 import { getClaimableBenefits } from "../../utils/eligibility";
 import type { Member, Commission, ReferralNode } from "../../utils/types";
 
-import WelcomeModal from "./Welcome";
+import WelcomeModal from "../../components/member/Welcome";
 
 // Rank mapping based on rank number
 // const getRankName = (rank: number): string => {

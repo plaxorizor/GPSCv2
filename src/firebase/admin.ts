@@ -18,7 +18,7 @@ import {
     writeBatch,
 } from "firebase/firestore";
 import { db } from "./config";
-import { triggerCommissions, type Package } from "./transactions";
+import { triggerCommissions, type Package } from "./commissions";
 import { writePublicProfile, deletePublicProfile } from "./publicProfiles";
 import { releaseMobile } from "./phoneRegistry";
 

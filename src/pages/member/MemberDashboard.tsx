@@ -1,7 +1,7 @@
 // member/index.tsx
 import { LayoutGrid, Wallet, FileText, Settings, Network, Layers } from "lucide-react";
-import { DashboardSidebar } from "./DashboardSidebar";
-import { MobileBottomNav } from "./MobileBottomNav";
+import { DashboardSidebar } from "../../components/member/DashboardSidebar";
+import { MobileBottomNav } from "../../components/member/MobileBottomNav";
 import { MemberOverview } from "./Overview";
 import { MemberReferrals } from "./Referrals";
 import { MemberEarnings } from "./Earnings";

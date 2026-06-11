@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { Wallet, TrendingUp, Users, CheckCircle, Check, Heart, Rocket, Crown, CalendarClock } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { StatCard } from "./StatCard";
+import { StatCard } from "../../components/member/StatCard";
 import { type Member, type EarningsTrendPoint } from "../../utils/types";
 import { formatCurrency, formatDate } from "../../utils/formatter";
-import ReferralCard from "./ReferralCard";
-import FileClaimModal from "../../components/FileClaimModal";
-import EligibilityTimeline from "../../components/EligibilityTimeline";
+import ReferralCard from "../../components/member/ReferralCard";
+import FileClaimModal from "../../components/modals/FileClaimModal";
+import EligibilityTimeline from "../../components/member/EligibilityTimeline";
 import { membershipPhase, graceDaysRemaining, daysUntilExpiry } from "../../utils/membership";
 import type { ClaimBenefit } from "../../utils/eligibility";
 

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { X, CalendarClock, RefreshCw, Clock, Sparkles, CheckCircle } from "lucide-react";
-import PackageComparison from "../../components/PackageComparison";
-import UpgradeModal from "../../components/UpgradeModal";
-import ReceiptUploadField from "../../components/ReceiptUploadField";
+import PackageComparison from "../../components/member/PackageComparison";
+import UpgradeModal from "../../components/modals/UpgradeModal";
+import ReceiptUploadField from "../../components/ui/ReceiptUploadField";
 import { PAYMENT_ACCOUNTS } from "../../data/paymentAccounts";
 import { membershipPhase } from "../../utils/membership";
 import { isWithinGrace, graceDaysLeft, upgradeTargets, packagePrice, packageLabel, GRACE_DAYS, type PackageKey } from "../../utils/upgrade";

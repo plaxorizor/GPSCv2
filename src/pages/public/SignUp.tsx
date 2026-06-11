@@ -5,7 +5,7 @@ import { uploadReceipt } from "../../firebase/receipts";
 import { writePublicProfile } from "../../firebase/publicProfiles";
 import { isMobileTaken, claimMobile } from "../../firebase/phoneRegistry";
 import { db } from "../../firebase/config";
-import ReceiptUploadField from "../../components/ReceiptUploadField";
+import ReceiptUploadField from "../../components/ui/ReceiptUploadField";
 import { PAYMENT_ACCOUNTS } from "../../data/paymentAccounts";
 
 import { Link, useNavigate, useSearchParams } from "react-router-dom";

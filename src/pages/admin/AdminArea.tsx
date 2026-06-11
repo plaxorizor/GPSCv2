@@ -3,7 +3,7 @@ import { useState } from "react";
 import useAuth from "../../context/useAuth";
 import { Navigate, useNavigate } from "react-router-dom";
 import AdminDashboard from "./AdminDashboard";
-import ConfirmDialog from "../../components/ConfirmDialog";
+import ConfirmDialog from "../../components/ui/ConfirmDialog";
 
 import {
     markPayoutSent,

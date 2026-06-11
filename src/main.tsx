@@ -3,31 +3,31 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-import ScrollToTop from "./components/ScrollToTop";
-import ScrollToTopButton from "./components/ScrollToTopButton";
+import ScrollToTop from "./components/guards/ScrollToTop";
+import ScrollToTopButton from "./components/guards/ScrollToTopButton";
 import AuthProvider from "./context/AuthProvider.tsx";
 
-import Home from "./pages/visitor/Home.tsx";
+import Home from "./pages/Home";
 import SignIn from "./pages/public/SignIn";
 import SignUp from "./pages/public/SignUp.tsx";
 import ForgotPassword from "./pages/public/ForgotPassword.tsx";
-import About from "./pages/visitor/nav/About";
-import Membership from "./pages/visitor/nav/Membership";
-import Referral from "./pages/visitor/nav/Referral";
-import FAQ from "./pages/visitor/nav/FAQ";
-import Contact from "./pages/visitor/nav/Contact";
-import PrivacyPolicy from "./pages/visitor/nav/PrivacyPolicy";
-import TermsOfService from "./pages/visitor/nav/TermsOfService";
-import DataPrivacy from "./pages/visitor/nav/DataPrivacy";
+import About from "./pages/info/About";
+import Membership from "./pages/info/Membership";
+import Referral from "./pages/info/Referral";
+import FAQ from "./pages/info/FAQ";
+import Contact from "./pages/info/Contact";
+import PrivacyPolicy from "./pages/info/PrivacyPolicy";
+import TermsOfService from "./pages/info/TermsOfService";
+import DataPrivacy from "./pages/info/DataPrivacy";
 
-import ProtectedRoute from "./components/ProtectedRoute";
-import GuestRoute from "./components/GuestRoute";
+import ProtectedRoute from "./components/guards/ProtectedRoute";
+import GuestRoute from "./components/guards/GuestRoute";
 
 import { firebaseConfig } from "./firebase/config.ts";
 import { initializeApp } from "firebase/app";
 
 import "./index.css";
-import Dashboard from "./pages/Dashboard.tsx";
+import RoleGate from "./pages/RoleGate";
 import NotFound from "./pages/NotFound.tsx";
 
 initializeApp(firebaseConfig);
@@ -78,7 +78,7 @@ createRoot(document.getElementById("root")!).render(
                         path="/dashboard"
                         element={
                             <ProtectedRoute>
-                                <Dashboard />
+                                <RoleGate />
                             </ProtectedRoute>
                         }
                     />

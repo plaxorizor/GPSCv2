@@ -4,8 +4,8 @@ import type { Claim, Member } from "../../utils/types";
 import type { ClaimBenefit } from "../../utils/eligibility";
 import { formatCurrency, formatDate } from "../../utils/formatter";
 import StatusBadge from "../../components/ui/StatusBadge";
-import EligibilityTimeline, { type EligibilityBucket } from "../../components/EligibilityTimeline";
-import FileClaimModal from "../../components/FileClaimModal";
+import EligibilityTimeline, { type EligibilityBucket } from "../../components/member/EligibilityTimeline";
+import FileClaimModal from "../../components/modals/FileClaimModal";
 
 interface Props {
     member: Member;

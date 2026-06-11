@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Clock, CheckCircle, Download, Search, X, RefreshCw } from "lucide-react";
 import type { PendingCommission, CommissionRecord } from "../../utils/types";
-import { formatCurrency, formatDate } from "./utils";
+import { formatCurrency, formatDate } from "../../utils/formatter";
 
 interface Props {
     pendingCommissions: PendingCommission[];

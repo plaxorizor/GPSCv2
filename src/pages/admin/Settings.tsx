@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../../firebase/config";
 import useAuth from "../../context/useAuth";
-import ChangePasswordModal from "../../components/ChangePasswordModal";
+import ChangePasswordModal from "../../components/modals/ChangePasswordModal";
 import { backfillPublicProfiles } from "../../firebase/publicProfiles";
 import { Shield, KeyRound, Mail, Calendar, Hash, RefreshCw } from "lucide-react";
 

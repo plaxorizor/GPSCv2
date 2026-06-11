@@ -2,9 +2,9 @@
 import React, { useState } from "react";
 import { Users, TrendingUp, FileText, Wallet, UserCheck, RefreshCw } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-import { StatCard } from "./StatCard";
+import { StatCard } from "../../components/admin/StatCard";
 import type { PackageMixItem } from "../../utils/types";
-import { formatCurrency, formatDate } from "./utils";
+import { formatCurrency, formatDate } from "../../utils/formatter";
 
 import useAdminStats, { type ReferralEvent } from "../../hooks/useAdminStats";
 

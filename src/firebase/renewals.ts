@@ -10,7 +10,7 @@ import { db } from "./config";
 import { uploadReceipt } from "./receipts";
 import { writePublicProfile } from "./publicProfiles";
 import { packagePrice, type PackageKey } from "../utils/upgrade";
-import { triggerRenewalCommissions } from "./transactions";
+import { triggerRenewalCommissions } from "./commissions";
 
 export interface RenewalRequest {
     id: string;
