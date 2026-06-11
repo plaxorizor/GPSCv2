@@ -14,7 +14,8 @@ import { isMobileTaken, claimMobile } from "../../firebase/phoneRegistry";
 import { db } from "../../firebase/config";
 import logo from "../../components/ui/Logo.png";
 
-import { css, plans, STEPS, PAYMENT_INFO, inputCls, isValidPHMobile, type SignupForm } from "./signup/constants";
+import { css, plans, STEPS, PAYMENT_INFO, inputCls, type SignupForm } from "./signup/constants";
+import { validateSignupStep } from "./signup/validation";
 import ConsentGate from "./signup/ConsentGate";
 import PackageStep from "./signup/PackageStep";
 import PersonalInfoStep, { type BirthParts } from "./signup/PersonalInfoStep";
@@ -91,100 +92,11 @@ export default function SignUpLayout() {
     const validateStep = async (): Promise<boolean> => {
         setError("");
         setInvalidFields(new Set());
-
-        if (step === 2) {
-            // First, flag every empty required field so they all light up red at once.
-            const missing = new Set<string>();
-            if (!form.firstName.trim()) missing.add("firstName");
-            if (!form.lastName.trim()) missing.add("lastName");
-            if (!form.email.trim()) missing.add("email");
-            if (!form.password) missing.add("password");
-            if (!form.confirmPassword) missing.add("confirmPassword");
-            if (!form.mobile.trim()) missing.add("mobile");
-            if (!birthDate) missing.add("birthDate");
-            if (!form.gender) missing.add("gender");
-            if (!form.civilStatus) missing.add("civilStatus");
-            if (!form.streetAddress.trim()) missing.add("streetAddress");
-            if (!form.province.trim()) missing.add("province");
-            if (!form.city.trim()) missing.add("city");
-            if (!form.barangay.trim()) missing.add("barangay");
-            if (missing.size > 0) {
-                setInvalidFields(missing);
-                setError("Please fill in the required fields highlighted.");
-                return false;
-            }
-
-            // Then the logical checks (fields are present but inconsistent).
-            if (form.email !== form.confirmEmail) {
-                setInvalidFields(new Set(["confirmEmail"]));
-                setError("Emails do not match.");
-                return false;
-            }
-            if (form.password !== form.confirmPassword) {
-                setInvalidFields(new Set(["confirmPassword"]));
-                setError("Passwords do not match.");
-                return false;
-            }
-            // Mobile must be a valid PH number.
-            if (!isValidPHMobile(form.mobile)) {
-                setInvalidFields(new Set(["mobile"]));
-                setError("Enter a valid PH mobile number (09XX XXX XXXX or +63 9XX XXX XXXX).");
-                return false;
-            }
-            // One-account policy: a mobile number may belong to only one member.
-            if (await isMobileTaken(form.mobile)) {
-                setInvalidFields(new Set(["mobile"]));
-                setError("This mobile number is already registered. Each person may only have one account.");
-                return false;
-            }
-            // Check age (must be 18+)
-            const birthDateObj = new Date(birthDate);
-            const today = new Date();
-            let age = today.getFullYear() - birthDateObj.getFullYear();
-            const monthDiff = today.getMonth() - birthDateObj.getMonth();
-            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDateObj.getDate())) {
-                age--;
-            }
-            if (age < 18) {
-                setInvalidFields(new Set(["birthDate"]));
-                setError("You must be at least 18 years old to register.");
-                return false;
-            }
-        }
-        if (step === 3) {
-            if (!form.referralCode.trim()) {
-                setInvalidFields(new Set(["referralCode"]));
-                setError("Referral code is required.");
-                return false;
-            }
-
-            const snap = await getDoc(doc(db, "referralCodes", form.referralCode));
-
-            if (!snap.exists()) {
-                setInvalidFields(new Set(["referralCode"]));
-                setError("Invalid referral code.");
-                return false;
-            }
-
-            if (selectedPlan.name !== "Basic") {
-                const missing = new Set<string>();
-                for (let i = 0; i < form.beneficiaries.length; i++) {
-                    if (!form.beneficiaries[i].name.trim()) missing.add(`ben-${i}-name`);
-                    if (!form.beneficiaries[i].relationship) missing.add(`ben-${i}-relationship`);
-                }
-                if (missing.size > 0) {
-                    setInvalidFields(missing);
-                    setError("Please complete the beneficiary details highlighted.");
-                    return false;
-                }
-            }
-        }
-        if (step === 4) {
-            if (!form.referenceNumber.trim()) {
-                setInvalidFields(new Set(["referenceNumber"]));
-                setError("Please enter the reference number from your payment receipt.");
-                return false;
-            }
+        const result = await validateSignupStep(step, { form, birthDate, selectedPlan });
+        if (result) {
+            setInvalidFields(result.invalidFields);
+            setError(result.error);
+            return false;
         }
         return true;
     };

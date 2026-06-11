@@ -1,6 +1,7 @@
 // signup/constants.ts — shared tokens, plan data, payment info, and the form
 // shape used across the signup steps. Single source of truth for the flow.
 
+import type { Dispatch, SetStateAction } from "react";
 import { PAYMENT_ACCOUNTS } from "../../../data/paymentAccounts";
 
 // ── Design tokens (mirrors pro.jsx GlobalStyles) ──────────────────
@@ -100,7 +101,7 @@ export interface SignupForm {
     beneficiaries: Beneficiary[];
 }
 
-export type SetSignupForm = React.Dispatch<React.SetStateAction<SignupForm>>;
+export type SetSignupForm = Dispatch<SetStateAction<SignupForm>>;
 
 // ── PH mobile helpers ─────────────────────────────────────────────
 // Mobile is stored as the local part only (10 digits starting with "9");
