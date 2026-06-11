@@ -5,7 +5,6 @@ import { Hero } from "../components/landing/Hero";
 import { Pillars } from "../components/landing/Pillars";
 import { HowItWorks } from "../components/landing/HowItWorks";
 import { Packages } from "../components/landing/Packages";
-import { TrustStrip } from "../components/landing/TrustStrip";
 import { CTABanner } from "../components/landing/CTABanner";
 import { Navigate, useNavigate } from "react-router-dom";
 import useAuth from "../context/useAuth";
@@ -22,7 +21,6 @@ export default function Home(): React.ReactElement {
             <Pillars />
             <HowItWorks />
             <Packages onChoosePackage={() => navigate("/signup")} />
-            <TrustStrip />
             <CTABanner />
             <Footer />
         </div>

@@ -26,7 +26,7 @@ export const HowItWorks: React.FC = () => {
                         {
                             n: "03",
                             title: "Share with your community",
-                            desc: "Use your personal referral link. Earn 20% on direct sales, plus 5%, 3%, 2%, 1%, 1% across five upline levels.",
+                            desc: "Use your personal referral link. Earn 20% on direct sales.",
                         },
                         {
                             n: "04",
