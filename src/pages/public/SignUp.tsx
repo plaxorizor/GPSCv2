@@ -3,6 +3,7 @@
 // the five step screens live in ./signup/.
 
 import { getDoc, setDoc, doc, serverTimestamp } from "firebase/firestore";
+import { FirebaseError } from "firebase/app";
 import { useState, useMemo } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -22,6 +23,26 @@ import PersonalInfoStep, { type BirthParts } from "./signup/PersonalInfoStep";
 import SponsorBeneficiariesStep from "./signup/SponsorBeneficiariesStep";
 import PaymentStep from "./signup/PaymentStep";
 import ReviewStep from "./signup/ReviewStep";
+
+// Turn a registration error into a friendly, non-technical message. The most
+// common case is a duplicate email (Firebase Auth rejects it at sign-up).
+function signupErrorMessage(err: unknown): string {
+    const code = err instanceof FirebaseError ? err.code : "";
+    switch (code) {
+        case "auth/email-already-in-use":
+            return "An account with this email already exists. Try signing in instead.";
+        case "auth/invalid-email":
+            return "That doesn't look like a valid email address.";
+        case "auth/weak-password":
+            return "Your password is too weak. Use at least 6 characters.";
+        case "auth/network-request-failed":
+            return "Network error. Check your connection and try again.";
+        case "auth/too-many-requests":
+            return "Too many attempts. Please wait a moment and try again.";
+        default:
+            return "Couldn't create your account. Please try again.";
+    }
+}
 
 export default function SignUpLayout() {
     const navigate = useNavigate();
@@ -198,7 +219,7 @@ export default function SignUpLayout() {
 
             navigate("/");
         } catch (err) {
-            setError(err instanceof Error ? err.message : "An unknown error occurred");
+            setError(signupErrorMessage(err));
         } finally {
             setLoading(false);
         }
