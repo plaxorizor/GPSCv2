@@ -11,12 +11,12 @@ export interface ReferralEvent {
     date: string; // ISO of the recruit's signup (dateCreated)
 }
 
-export interface GrowthDataPoint {
+interface GrowthDataPoint {
     month: string;
     members: number;
 }
 
-export interface PendingClaimItem {
+interface PendingClaimItem {
     id: string;
     memberName: string;
     benefit: string;

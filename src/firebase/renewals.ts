@@ -92,12 +92,6 @@ export async function getPendingRenewalForMember(memberId: string): Promise<Rene
     return mapRequest(snap.docs[0].id, snap.docs[0].data());
 }
 
-// Admin: all pending renewal requests, newest first.
-export async function getPendingRenewalRequests(): Promise<RenewalRequest[]> {
-    const snap = await getDocs(query(collection(db, "renewalRequests"), where("status", "==", "pending")));
-    return snap.docs.map((d) => mapRequest(d.id, d.data())).sort((a, b) => (b.dateRequested > a.dateRequested ? 1 : -1));
-}
-
 // Admin: live subscription to pending renewal requests. Returns an unsubscribe fn.
 export function subscribePendingRenewalRequests(cb: (requests: RenewalRequest[]) => void): () => void {
     return onSnapshot(query(collection(db, "renewalRequests"), where("status", "==", "pending")), (snap) => {

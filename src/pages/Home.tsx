@@ -5,7 +5,6 @@ import { Hero } from "../components/landing/Hero";
 import { Pillars } from "../components/landing/Pillars";
 import { HowItWorks } from "../components/landing/HowItWorks";
 import { Packages } from "../components/landing/Packages";
-// import { Testimonial } from "../components/landing/Testimonial"; // hidden for now — not enough real testimonial data yet
 import { TrustStrip } from "../components/landing/TrustStrip";
 import { CTABanner } from "../components/landing/CTABanner";
 import { Navigate, useNavigate } from "react-router-dom";
@@ -23,7 +22,6 @@ export default function Home(): React.ReactElement {
             <Pillars />
             <HowItWorks />
             <Packages onChoosePackage={() => navigate("/signup")} />
-            {/* <Testimonial /> hidden for now — re-enable when real testimonials are available */}
             <TrustStrip />
             <CTABanner />
             <Footer />

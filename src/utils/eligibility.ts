@@ -57,9 +57,6 @@ export const ELIGIBILITY_BY_PACKAGE: Record<PackageKey, EligibilityMilestone[]> 
     ],
 };
 
-// Back-compat export (Basic timeline) — prefer ELIGIBILITY_BY_PACKAGE.
-export const ELIGIBILITY_MILESTONES = ELIGIBILITY_BY_PACKAGE.basic;
-
 export const getEligibilityTimeline = (dateCreated: Date | { toDate: () => Date } | null | undefined, pkg: string = "basic") => {
     const key = (pkg ?? "basic").toLowerCase() as PackageKey;
     const milestones = ELIGIBILITY_BY_PACKAGE[key] ?? ELIGIBILITY_BY_PACKAGE.basic;

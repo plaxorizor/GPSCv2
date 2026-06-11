@@ -134,12 +134,6 @@ function mapPendingUpgrade(id: string, data: Record<string, unknown>): UpgradeRe
     };
 }
 
-// Admin: all pending upgrade requests, newest first.
-export async function getPendingUpgradeRequests(): Promise<UpgradeRequest[]> {
-    const snap = await getDocs(query(collection(db, "upgradeRequests"), where("status", "==", "pending")));
-    return snap.docs.map((d) => mapPendingUpgrade(d.id, d.data())).sort((a, b) => (b.dateRequested > a.dateRequested ? 1 : -1));
-}
-
 // Admin: live subscription to pending upgrade requests. Returns an unsubscribe fn.
 export function subscribePendingUpgradeRequests(cb: (requests: UpgradeRequest[]) => void): () => void {
     return onSnapshot(query(collection(db, "upgradeRequests"), where("status", "==", "pending")), (snap) => {

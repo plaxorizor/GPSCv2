@@ -149,34 +149,10 @@ export interface EarningsTrendPoint {
     amount: number;
 }
 
-export interface DashboardStats {
-    activeMembers: number;
-    totalRevenue: number;
-    totalCommissions: number;
-    pendingClaims: number;
-    pendingPayouts: number;
-    avgClaimTimeDays: number;
-    memberSatisfaction: string;
-}
-
-export interface GrowthDataPoint {
-    month: string;
-    members: number;
-}
-
 export interface PackageMixItem {
     name: string;
     value: number;
     color: string;
-}
-
-export interface TopRecruiter {
-    id: string;
-    firstName: string;
-    lastName: string;
-    initials: string;
-    city: string;
-    referrals: number;
 }
 
 export interface CommissionRecord {

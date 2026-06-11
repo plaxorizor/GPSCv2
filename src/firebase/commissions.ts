@@ -9,7 +9,7 @@ const PACKAGE_AMOUNTS: Record<Package, number> = {
     premium: 4998,
 };
 
-export const COMMISSION_RATES: Record<number, number> = {
+const COMMISSION_RATES: Record<number, number> = {
     1: 0.2,
     2: 0.05,
     3: 0.03,

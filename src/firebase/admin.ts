@@ -1,7 +1,8 @@
-// firebase/admin.ts
-// NOTE: activateMember / deactivateMember / upgradeMember currently write
-// directly to Firestore. Switch to Cloud Functions (httpsCallable) once the
-// Firebase project is upgraded to Blaze — functions/src/index.ts is ready.
+// firebase/admin.ts — admin-context Firestore actions (member activation,
+// deletion, claims, payouts). Read-side admin dashboards use the hooks in
+// src/hooks/ (useAdminStats, useAdminCommissions, useAdminPayouts) which query
+// the publicProfiles mirror; the old direct getDashboardStats/getTopRecruiters
+// fetchers were removed in favor of those.
 import {
     collection,
     getDocs,
@@ -13,7 +14,6 @@ import {
     serverTimestamp,
     query,
     where,
-    orderBy,
     limit as limitQuery,
     writeBatch,
 } from "firebase/firestore";
@@ -83,21 +83,7 @@ export const activateMember = async (uid: string) => {
     }
 };
 
-export const deactivateMember = async (uid: string) => {
-    await updateDoc(doc(db, "members", uid), { status: "inactive" });
-};
-
-// --- ARCHIVE / DELETE (super-admin actions) ---
-
-// Soft delete: hide the member from lists but keep tree + commission history.
-// Reversible via restoreMember.
-export const archiveMember = async (uid: string) => {
-    await updateDoc(doc(db, "members", uid), { archived: true, dateArchived: serverTimestamp() });
-};
-
-export const restoreMember = async (uid: string) => {
-    await updateDoc(doc(db, "members", uid), { archived: false, dateArchived: null });
-};
+// --- DELETE (super-admin actions) ---
 
 // Checks whether a member is safe to hard-delete (no downlines, no commissions).
 export const getMemberDependencies = async (uid: string) => {
@@ -155,27 +141,7 @@ export const sendMemberPasswordReset = async (email: string) => {
     await sendPasswordResetEmail(getAuth(), email);
 };
 
-export const upgradeMember = async (uid: string, newPackage: "family" | "premium") => {
-    const memberSnap = await getDoc(doc(db, "members", uid));
-    if (!memberSnap.exists()) return;
-
-    const data = memberSnap.data();
-    if (data.packageLocked) throw new Error("Package is locked. Contestability period has expired.");
-
-    const dateContestabilityEnd = data.dateContestabilityEnd?.toDate?.();
-    if (!dateContestabilityEnd || new Date() > dateContestabilityEnd) {
-        await updateDoc(doc(db, "members", uid), { packageLocked: true });
-        throw new Error("Contestability period has expired.");
-    }
-
-    await updateDoc(doc(db, "members", uid), { package: newPackage });
-};
-
 // --- CLAIMS ---
-export const getAllClaims = async () => {
-    const snap = await getDocs(collection(db, "claims"));
-    return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-};
 
 // Move a submitted claim into review (no decision recorded yet).
 export const setClaimUnderReview = async (claimId: string) => {
@@ -190,160 +156,7 @@ export const updateClaimStatus = async (claimId: string, status: "approved" | "r
     });
 };
 
-// --- COMMISSIONS ---
-export const getPendingCommissions = async () => {
-    const q = query(collection(db, "commissions"), where("status", "==", "pending"));
-    const snap = await getDocs(q);
-    return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-};
-
-// NOTE: the old per-commission "release" step has been removed. Commissions are
-// now claimable automatically by time (L1 immediately, L2–6 after 7 days) and
-// the member requests a payout. The admin's only action is on the payout itself
-// (markPayoutSent / rejectPayout below).
-
-// --- ADMIN DASHBOARD ---
-
-export const getPendingClaimsCount = async (): Promise<number> => {
-    const q = query(collection(db, "claims"), where("status", "==", "pending"));
-    const snapshot = await getDocs(q);
-    return snapshot.size;
-};
-
-export const getPendingCommissionsCount = async (): Promise<number> => {
-    const q = query(collection(db, "commissions"), where("status", "==", "pending"));
-    const snapshot = await getDocs(q);
-    return snapshot.size;
-};
-
-export const getDashboardStats = async () => {
-    const [membersSnap, claimsSnap, commissionsSnap] = await Promise.all([
-        getDocs(collection(db, "members")),
-        getDocs(query(collection(db, "claims"), where("status", "==", "pending"))),
-        getDocs(query(collection(db, "commissions"), where("status", "==", "pending"))),
-    ]);
-
-    const paidCommissionsSnap = await getDocs(query(collection(db, "commissions"), where("status", "==", "paid")));
-    const totalCommissionsPaid = paidCommissionsSnap.docs.reduce((sum, doc) => sum + (doc.data().amount || 0), 0);
-
-    return {
-        totalMembers: membersSnap.size,
-        activeMembers: membersSnap.docs.filter((d) => d.data().status === "active").length,
-        pendingClaims: claimsSnap.size,
-        pendingCommissions: commissionsSnap.size,
-        totalRevenue: 0,
-        totalCommissionsPaid,
-    };
-};
-
-export const getMembershipGrowth = async (months: number = 6) => {
-    const membersSnap = await getDocs(collection(db, "members"));
-    const monthlyData: Record<string, number> = {};
-
-    const now = new Date();
-    const monthsAgo = new Date();
-    monthsAgo.setMonth(now.getMonth() - months);
-
-    membersSnap.docs.forEach((doc) => {
-        const dateJoined = doc.data().dateJoined;
-        if (dateJoined) {
-            const date = new Date(dateJoined);
-            if (date >= monthsAgo) {
-                const monthKey = date.toLocaleString("default", { month: "short" });
-                monthlyData[monthKey] = (monthlyData[monthKey] || 0) + 1;
-            }
-        }
-    });
-
-    const monthOrder = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const currentMonth = now.getMonth();
-    const result = [];
-
-    for (let i = months - 1; i >= 0; i--) {
-        const monthIndex = (currentMonth - i + 12) % 12;
-        const monthName = monthOrder[monthIndex];
-        result.push({ month: monthName, members: monthlyData[monthName] || 0 });
-    }
-
-    return result;
-};
-
-export const getPackageDistribution = async () => {
-    const membersSnap = await getDocs(collection(db, "members"));
-    const distribution: Record<string, number> = {};
-
-    membersSnap.docs.forEach((doc) => {
-        const pkg = doc.data().package || "basic";
-        distribution[pkg] = (distribution[pkg] || 0) + 1;
-    });
-
-    const colors: Record<string, string> = {
-        basic: "#14365C",
-        family: "#4A8A2C",
-        premium: "#2D5A85",
-    };
-
-    const names: Record<string, string> = {
-        basic: "Basic",
-        family: "Family",
-        premium: "Premium",
-    };
-
-    return Object.entries(distribution).map(([name, value]) => ({
-        name: names[name] || name.charAt(0).toUpperCase() + name.slice(1),
-        value,
-        color: colors[name] || "#6B6862",
-    }));
-};
-
-interface MemberDetails {
-    firstName: string;
-    lastName: string;
-    city: string;
-    initials: string;
-}
-
-export const getTopRecruiters = async (limitCount: number = 5) => {
-    const membersSnap = await getDocs(collection(db, "members"));
-    const referralCounts: Record<string, number> = {};
-    const memberDetails: Record<string, MemberDetails> = {};
-
-    membersSnap.docs.forEach((doc) => {
-        const data = doc.data();
-        const sponsorId = data.referredBy; // was data.sponsorId — wrong field
-        if (sponsorId) {
-            referralCounts[sponsorId] = (referralCounts[sponsorId] || 0) + 1;
-        }
-        memberDetails[doc.id] = {
-            firstName: data.firstName || "",
-            lastName: data.lastName || "",
-            city: data.city || "",
-            initials: `${(data.firstName || "")[0]}${(data.lastName || "")[0]}`.toUpperCase(),
-        };
-    });
-
-    return Object.entries(referralCounts)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, limitCount)
-        .map(([id, count]) => ({ id, ...memberDetails[id], referrals: count }));
-};
-
-export const getRecentClaims = async (limitCount: number = 5) => {
-    const q = query(collection(db, "claims"), orderBy("dateSubmitted", "desc"), limitQuery(limitCount));
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-};
-
-export const getCommissionHistory = async () => {
-    const q = query(collection(db, "commissions"), where("status", "==", "paid"));
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-};
-
-export const getAllPayouts = async () => {
-    const snapshot = await getDocs(collection(db, "payouts"));
-    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-};
+// --- PAYOUTS ---
 
 // Admin confirms a payout was sent (money + proof handed over offline). This
 // also marks every commission the payout covers as "paid".
@@ -375,9 +188,4 @@ export const rejectPayout = async (payoutId: string, reason: string = "") => {
         batch.update(doc(db, "commissions", id), { status: "pending", payoutId: null });
     }
     await batch.commit();
-};
-
-export const getAllCommissions = async () => {
-    const snapshot = await getDocs(collection(db, "commissions"));
-    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 };

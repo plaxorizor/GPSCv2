@@ -11,7 +11,7 @@ import { toDate } from "./commission";
 export const GRACE_DAYS = 90;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-export const PACKAGE_ORDER = ["basic", "family", "premium"] as const;
+const PACKAGE_ORDER = ["basic", "family", "premium"] as const;
 export type PackageKey = (typeof PACKAGE_ORDER)[number];
 
 const norm = (p: string | null | undefined) => (p ?? "").toLowerCase() as PackageKey;

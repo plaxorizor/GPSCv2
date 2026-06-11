@@ -49,5 +49,3 @@ export function usePendingApprovalsCount() {
 
     return { counts, loading, refetch };
 }
-
-export default usePendingApprovalsCount;

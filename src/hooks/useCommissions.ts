@@ -3,7 +3,7 @@ import { collection, query, where, getDocs, getDoc, doc, type Timestamp } from "
 import { db } from "../firebase/config";
 import useAuth from "../context/useAuth";
 
-export interface Commission {
+interface Commission {
     id: string;
     fromMember: string;
     fromMemberName: string;

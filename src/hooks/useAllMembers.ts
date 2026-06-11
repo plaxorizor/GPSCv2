@@ -48,5 +48,3 @@ export const useAllMembers = () => {
 
     return { members, loading, refetch };
 };
-
-export default useAllMembers;

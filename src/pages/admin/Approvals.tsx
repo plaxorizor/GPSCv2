@@ -62,5 +62,3 @@ export function Approvals({ counts, loading }: Props) {
         </div>
     );
 }
-
-export default Approvals;
