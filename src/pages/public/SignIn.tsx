@@ -2,7 +2,30 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { FirebaseError } from "firebase/app";
 import AuthShell, { authInputCls as inputCls, authLabelCls as labelCls } from "../../components/layout/AuthShell";
+
+// Turn a Firebase auth error code into a friendly, non-technical message.
+// Modern Firebase returns "auth/invalid-credential" for both a wrong password
+// and an unknown email (so we can't — and shouldn't — say which one was wrong).
+function signInErrorMessage(code: string): string {
+    switch (code) {
+        case "auth/invalid-credential":
+        case "auth/wrong-password":
+        case "auth/user-not-found":
+            return "Incorrect email or password. Please try again.";
+        case "auth/invalid-email":
+            return "That doesn't look like a valid email address.";
+        case "auth/user-disabled":
+            return "This account has been disabled. Please contact us for help.";
+        case "auth/too-many-requests":
+            return "Too many attempts. Please wait a moment and try again.";
+        case "auth/network-request-failed":
+            return "Network error. Check your connection and try again.";
+        default:
+            return "Couldn't sign you in. Please try again.";
+    }
+}
 
 export default function SignIn() {
     const navigate = useNavigate();
@@ -11,18 +34,23 @@ export default function SignIn() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
+    const [signingIn, setSigningIn] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
     async function handleLogin(e: React.FormEvent) {
         e.preventDefault();
+        if (signingIn) return; // guard against double-submit
         setError("");
-        signInWithEmailAndPassword(auth, email, password)
-            .then(() => {
-                navigate("/");
-            })
-            .catch((err) => {
-                setError(err.message);
-            });
+        setSigningIn(true);
+        try {
+            await signInWithEmailAndPassword(auth, email, password);
+            navigate("/");
+        } catch (err) {
+            const code = err instanceof FirebaseError ? err.code : "";
+            setError(signInErrorMessage(code));
+        } finally {
+            setSigningIn(false);
+        }
     }
 
     return (
@@ -108,12 +136,13 @@ export default function SignIn() {
 
                 <button
                     type="submit"
-                    className="w-full rounded-xl py-3 font-medium text-white transition-colors"
+                    disabled={signingIn}
+                    className="w-full rounded-xl py-3 font-medium text-white transition-colors disabled:opacity-60"
                     style={{ backgroundColor: "#1B2D6B" }}
-                    onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#C9922A")}
+                    onMouseOver={(e) => !signingIn && (e.currentTarget.style.backgroundColor = "#C9922A")}
                     onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#1B2D6B")}
                 >
-                    Sign in
+                    {signingIn ? "Signing in…" : "Sign in"}
                 </button>
             </form>
 
